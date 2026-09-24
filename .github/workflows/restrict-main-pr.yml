@@ -1,0 +1,19 @@
+name: Restrict main PRs to dev
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+    branches: [main]
+
+jobs:
+  head-must-be-dev:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail if PR head is not dev
+        if: github.event.pull_request.head.ref != 'dev'
+        run: |
+          echo "PRs to main must come from branch 'dev' (got '${{ github.event.pull_request.head.ref }}')"
+          exit 1
+      - name: Pass when head is dev
+        if: github.event.pull_request.head.ref == 'dev'
+        run: echo "OK: head is dev"
