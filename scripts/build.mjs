@@ -6,9 +6,9 @@ import { execFileSync } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import sharp from 'sharp';
 import * as esbuild from 'esbuild';
+import { LIGHT_MAX_SIDE } from '../src/scripts/light-variants.js';
 
 const STANDARD_MAX_SIDE = 2560;
-const LIGHT_MAX_SIDE = 1280;
 const LIGHT_MAX_BYTES = 150 * 1024;
 const STANDARD_MAX_BYTES = 300 * 1024;
 const STANDARD_AUDIO_RANGE = Object.freeze({ min: 96000, max: 128000 });
@@ -592,7 +592,12 @@ async function copyPublishableFiles(root, story) {
 }
 
 async function buildBundles(root) {
-  await esbuild.build({ entryPoints: [path.join(root, 'src/scripts/main.js')], bundle: true, format: 'esm', target: 'es2022', minify: true, legalComments: 'none', outdir: path.join(root, 'dist/src/scripts'), entryNames: '[name]-[hash]' });
+  // T215: substituting a literal true makes esbuild drop every test-only
+  // instrumentation branch at bundle time, so globalThis.__cinematicPlayer and
+  // globalThis.__audioInstrument never reach the published bundle. Served from
+  // source (dev server and Playwright) the identifier is undefined and the
+  // instrumentation stays available, so the suites are unaffected.
+  await esbuild.build({ entryPoints: [path.join(root, 'src/scripts/main.js')], bundle: true, format: 'esm', target: 'es2022', minify: true, legalComments: 'none', define: { 'globalThis.__CINEMATIC_PRODUCTION__': 'true' }, outdir: path.join(root, 'dist/src/scripts'), entryNames: '[name]-[hash]' });
   await esbuild.build({ entryPoints: [path.join(root, 'src/styles/tokens.css'), path.join(root, 'src/styles/base.css'), path.join(root, 'src/styles/player.css')], bundle: true, minify: true, outdir: path.join(root, 'dist/src/styles'), entryNames: '[name]-[hash]' });
 }
 
