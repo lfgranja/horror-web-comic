@@ -1,0 +1,594 @@
+.player {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr) auto auto auto auto;
+  width: min(100%, 110rem);
+  min-width: 0;
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: clamp(1rem, 3vw, 2.5rem);
+  gap: var(--space-3);
+}
+
+.player:focus-visible {
+  outline-offset: -0.4rem;
+}
+
+.player-header {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.player-header > div {
+  min-width: 0;
+}
+
+.player-header h1 {
+  max-width: 20ch;
+  min-width: 0;
+  margin: 0.25rem 0 0;
+  overflow-wrap: anywhere;
+  color: var(--mist-100);
+  font-family: var(--font-display);
+  font-size: clamp(1.65rem, 4vw, 3.6rem);
+  font-weight: 400;
+  /* Must stay generous: a tight line-height lets the glyph box exceed the line
+     box, which clips the title at large font sizes (200% zoom) in Firefox and
+     breaks the reflow requirement (SC-017). */
+  line-height: 1.2;
+}
+
+.frame-counter {
+  flex: 0 0 auto;
+  margin: 0 0 0 auto;
+  color: var(--mist-500);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.frame-stage {
+  position: relative;
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  aspect-ratio: var(--frame-aspect, auto);
+  overflow: hidden;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: #03050a;
+  box-shadow: 0 1.5rem 4rem rgba(0, 0, 0, 0.35);
+  isolation: isolate;
+}
+
+.frame-stage::after {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  content: '';
+  background: linear-gradient(180deg, transparent 65%, rgba(3, 5, 10, 0.4));
+}
+
+.frame-picture {
+  display: contents;
+}
+
+.frame-image {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  object-fit: contain;
+  object-position: center;
+}
+
+/* While a frame loads, the image keeps its box (it carries the intrinsic
+   width/height, so it reserves the aspect ratio) and is only made invisible.
+   Removing it from flow would collapse the stage and shift the controls
+   below it, which breaks the CLS budget (FR-015, SC-015). */
+.frame-stage[data-image-loading='true'] .frame-image {
+  visibility: hidden;
+}
+
+.frame-placeholder {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  gap: 0.8rem;
+  color: var(--mist-500);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.loading-mark {
+  display: block;
+  width: 2.5rem;
+  height: 2.5rem;
+  margin: 0 auto;
+  border: 2px solid var(--line);
+  border-top-color: var(--amber-300);
+  border-radius: 50%;
+  animation: spin 1.2s linear infinite;
+}
+
+.frame-description {
+  position: absolute;
+  z-index: 3;
+  right: 0.8rem;
+  bottom: 0.8rem;
+  left: 0.8rem;
+  max-width: min(42rem, calc(100% - 1.6rem));
+  margin: 0;
+  overflow-wrap: anywhere;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid rgba(255, 226, 161, 0.3);
+  border-radius: var(--radius-sm);
+  background: rgba(7, 8, 13, 0.86);
+  color: var(--mist-100);
+  font-size: clamp(0.78rem, 1.4vw, 0.95rem);
+  line-height: var(--description-line-height, 1.45);
+}
+
+.progress-wrap {
+  width: 100%;
+  min-width: 0;
+}
+
+.progress {
+  width: 100%;
+  height: 0.35rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--ink-700);
+}
+
+.progress::after {
+  display: block;
+  width: var(--progress, 25%);
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--amber-400), var(--amber-300));
+  content: '';
+  transition: width 300ms ease;
+}
+
+.control-bar {
+  position: relative;
+  z-index: var(--z-controls);
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: 0.45rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: rgba(13, 16, 25, 0.9);
+  box-shadow: 0 0.6rem 1.8rem rgba(0, 0, 0, 0.24);
+  backdrop-filter: blur(14px);
+}
+
+.control-group {
+  display: flex;
+  min-width: 0;
+  max-width: 100%;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.control-button {
+  display: inline-grid;
+  min-width: 2.8rem;
+  min-height: 2.8rem;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--mist-100);
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.control-button:hover,
+.control-button:focus-visible {
+  border-color: var(--line);
+  background: var(--ink-700);
+}
+
+.control-button.primary,
+.play-toggle,
+.audio-toggle {
+  border-color: rgba(245, 200, 107, 0.42);
+  background: rgba(245, 200, 107, 0.12);
+  color: var(--amber-300);
+}
+
+.audio-toggle {
+  padding-inline: 0.8rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.audio-toggle[data-state='off'] {
+  border-color: var(--line);
+  background: transparent;
+  color: var(--mist-300);
+}
+
+.audio-toggle[data-state='blocked'] {
+  border-color: var(--red-400);
+  color: var(--red-400);
+}
+
+.range-control,
+.select-control {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: auto minmax(5rem, 9rem) auto;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2.8rem;
+  padding: 0.2rem 0.45rem;
+  color: var(--mist-300);
+  font-size: 0.75rem;
+}
+
+.range-control input {
+  accent-color: var(--amber-400);
+}
+
+.range-control output {
+  min-width: 2.6rem;
+  color: var(--mist-100);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.select-control {
+  grid-template-columns: auto auto;
+}
+
+.select-control select {
+  min-width: 0;
+  max-width: 100%;
+  min-height: 2.8rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--ink-800);
+  color: var(--mist-100);
+  padding-inline: 0.5rem;
+}
+
+.audio-hint,
+.audio-status {
+  min-height: 1.2em;
+  margin: 0;
+  color: var(--mist-500);
+  overflow-wrap: anywhere;
+  font-size: 0.78rem;
+}
+
+.audio-status:not(:empty) {
+  color: var(--amber-300);
+}
+
+.overlay {
+  position: fixed;
+  z-index: var(--z-overlay);
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: max(var(--space-4), var(--safe-top)) max(var(--space-4), var(--safe-right)) max(var(--space-4), var(--safe-bottom)) max(var(--space-4), var(--safe-left));
+  background: rgba(3, 5, 10, 0.76);
+  backdrop-filter: blur(8px);
+  pointer-events: none;
+}
+
+.overlay-card {
+  pointer-events: auto;
+}
+
+/* FR-033: at the end of the narrative the navigation controls must stay
+   operable. The end card is informational, so it must not swallow clicks
+   aimed at the control bar beneath it; only its own action captures them. */
+#end-overlay {
+  /* The end card is informational and must never intercept clicks aimed at the
+     control bar (FR-033). The overlay is `position: fixed`, so it is anchored
+     to the VIEWPORT, while the control bar lives in the scrolling document:
+     on a short viewport the document is taller than the screen, so any scroll
+     can move the bar up into the overlay's band and the card then swallows
+     clicks meant for the navigation controls.
+
+     Anchor the overlay to the control bar's real position instead of the
+     viewport bottom, so the band ends exactly where the bar BEGINS and
+     follows the bar wherever it sits. `--control-bar-top` is the bar's
+     viewport-relative top edge, kept current by showEndOverlay() plus the
+     ResizeObserver and the resize/scroll handlers in player.js. It is
+     published on the shared `.app-shell` ancestor because the overlay is a
+     sibling of #player, not a descendant.
+
+     The card is aligned to the START of the band, not centred: when the band is
+     shorter than the card (a scrolled short viewport) centring would push the
+     card's own action below the band and out of reach, and any bottom padding
+     would shrink the content box and let it hang back over the bar. */
+  align-content: start;
+  align-items: start;
+  justify-items: center;
+  grid-template-rows: minmax(0, 1fr);
+  top: 0;
+  /* `--control-bar-top` is the control bar's viewport-relative top edge, so the
+     reserved band is exactly the space above it. The subtraction must be
+     expressed in viewport units: a percentage in `bottom` resolves against the
+     containing block, not the viewport, which made the band far taller than
+     intended. Clamped so a bar at (or above) the viewport top degrades to a
+     minimal band instead of a negative one. */
+  bottom: max(3rem, calc(100dvh - var(--control-bar-top, 100dvh)));
+  padding: max(var(--space-4), var(--safe-top)) max(var(--space-4), var(--safe-right)) 0 max(var(--space-4), var(--safe-left));
+}
+
+#end-overlay .overlay-card {
+  pointer-events: none;
+  /* The card must both stay inside the band above the control bar AND keep its
+     own action reachable. When the band is shorter than the card (a short
+     viewport that has been scrolled, leaving only a narrow strip above the
+     bar) the card scrolls internally rather than overflowing onto the
+     controls; `min-height: 0` is required for a grid item to shrink below its
+     content's intrinsic size and for `overflow: auto` to engage. */
+  min-height: 0;
+  max-height: 100%;
+  overflow: auto;
+  overscroll-behavior: contain;
+  /* Compact: the end card is short, purely informational text plus one action,
+     and on a short viewport the default card padding and display size alone can
+     push the action out of the band. The copy is fully preserved — only its
+     box is tightened (FR-012 governs the frame description, not this card). */
+  padding: clamp(0.7rem, 3vw, 1.25rem);
+}
+
+#end-overlay .overlay-card h2 {
+  margin: 0.2rem 0 0.4rem;
+  font-size: 1.15rem;
+}
+
+#end-overlay .overlay-card p {
+  margin: 0.25rem 0 0.5rem;
+  font-size: 0.85rem;
+}
+
+#end-overlay .overlay-card button {
+  pointer-events: auto;
+}
+
+.frame-stage[data-transition='fade'] .frame-image,
+.frame-stage[data-transition='dissolve'] .frame-image {
+  animation: frame-fade var(--transition-duration, 600ms) var(--transition-easing, ease-in-out) both;
+}
+
+.frame-stage[data-transition='zoom-in'] .frame-image {
+  animation: frame-zoom-in var(--transition-duration, 600ms) var(--transition-easing, ease-in-out) both;
+}
+
+.frame-stage[data-transition='zoom-out'] .frame-image {
+  animation: frame-zoom-out var(--transition-duration, 600ms) var(--transition-easing, ease-in-out) both;
+}
+
+.frame-stage[data-transition='slide-left'] .frame-image {
+  animation: frame-slide-left var(--transition-duration, 600ms) var(--transition-easing, ease-in-out) both;
+}
+
+.frame-stage[data-transition='slide-right'] .frame-image {
+  animation: frame-slide-right var(--transition-duration, 600ms) var(--transition-easing, ease-in-out) both;
+}
+
+.frame-stage[data-transition='cut'] .frame-image,
+.frame-stage[data-transition='none'] .frame-image {
+  animation: none;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes frame-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes frame-zoom-in {
+  from { opacity: 0; transform: scale(0.94); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes frame-zoom-out {
+  from { opacity: 0; transform: scale(1.06); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes frame-slide-left {
+  from { opacity: 0; transform: translateX(4%); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes frame-slide-right {
+  from { opacity: 0; transform: translateX(-4%); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@media (max-height: 30rem) and (orientation: landscape) {
+  .player {
+    gap: 0.35rem;
+    padding: max(0.4rem, var(--safe-top)) max(0.4rem, var(--safe-right)) max(0.4rem, var(--safe-bottom)) max(0.4rem, var(--safe-left));
+  }
+
+  .player-header h1 {
+    font-size: clamp(1rem, 3.5vh, 1.6rem);
+  }
+
+  .frame-stage {
+    max-height: calc(100dvh - 11rem);
+  }
+
+  .frame-image {
+    max-height: calc(100dvh - 11rem);
+  }
+
+  .frame-description {
+    position: absolute;
+    inset: auto 0.4rem 0.4rem;
+    width: auto;
+    max-width: min(42rem, calc(100% - 0.8rem));
+    margin: 0;
+    padding: 0.35rem 0.5rem;
+    font-size: 0.7rem;
+  }
+
+  .control-bar {
+    padding: 0.2rem;
+  }
+
+  .primary-controls {
+    flex-wrap: nowrap;
+  }
+}
+
+@media (min-width: 48rem) {
+  .player {
+    padding: clamp(1.5rem, 4vw, 3.5rem);
+  }
+
+  .frame-stage {
+    min-height: 0;
+  }
+
+  .control-bar {
+    flex-wrap: nowrap;
+  }
+}
+
+@media (max-width: 47.99rem) {
+  .player {
+    min-width: 0;
+    gap: 0.65rem;
+    padding: 0.7rem;
+  }
+
+  .player-header {
+    align-items: flex-start;
+  }
+
+  .player-header h1 {
+    max-width: 100%;
+    font-size: clamp(1.45rem, 8vw, 2.2rem);
+    line-height: 1.2;
+  }
+
+  .frame-counter {
+    margin-left: auto;
+  }
+
+  .frame-stage {
+    width: 100%;
+    min-width: 0;
+    /* Content-sized: the image and the description are both in flow so the
+       description is contained by the stage. Neither may change height between
+       frames — the image is reserved by its intrinsic width/height and the
+       description by --description-min-height — otherwise the controls below
+       shift on every frame change (FR-015, SC-015). */
+    aspect-ratio: auto;
+    overflow: visible;
+    grid-template-rows: auto auto;
+    align-items: stretch;
+  }
+
+  .frame-image {
+    width: 100%;
+    height: auto;
+    min-width: 0;
+  }
+
+  .frame-description {
+    position: relative;
+    inset: auto;
+    width: auto;
+    max-width: none;
+    margin: var(--space-2) var(--space-2) var(--space-1);
+    justify-self: stretch;
+    /* The live region is filled ~500ms after the frame changes, so in flow both
+       axes have to be reserved: stretch undoes the stage's `place-items: center`
+       shrink-wrap (31px empty vs 315px filled), and --description-min-height —
+       a LINE-based floor that scales with this element's own font, never the
+       viewport — holds the height the empty and filled states share
+       (FR-015, SC-015). */
+    min-height: var(--description-min-height);
+  }
+
+  .control-bar {
+    min-width: 0;
+    justify-content: center;
+  }
+
+  .primary-controls {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .utility-controls {
+    display: grid;
+    width: 100%;
+    grid-template-columns: minmax(0, 1fr);
+    justify-content: stretch;
+  }
+
+  .range-control,
+  .select-control {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .range-control {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'label output'
+      'range range';
+  }
+
+  .range-control > span {
+    grid-area: label;
+  }
+
+  .range-control input {
+    width: 100%;
+    min-width: 44px;
+    grid-area: range;
+  }
+
+  .range-control output {
+    min-width: 0;
+    grid-area: output;
+  }
+
+  .select-control {
+    grid-template-columns: minmax(0, 1fr) minmax(44px, auto);
+  }
+
+  .select-control > span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .select-control select {
+    width: 100%;
+    min-width: 0;
+  }
+}
