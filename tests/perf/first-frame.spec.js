@@ -60,7 +60,10 @@ test.describe('reference cold-cache frame arrival', () => {
       for (let index = 0; index < 3; index += 1) {
         const page = await context.newPage();
         await configureReferenceNetwork(page);
-        samples.push(await measureVisibleFrame(page, 'frame-02'));
+        // T212: measured against src/data/story.json, not the fixture. The
+        // fixture's frames are ~1 KB SVGs, so the <2.5 s and <10 s headline
+        // budgets were being verified against assets that never ship.
+        samples.push(await measureVisibleFrame(page, 'frame-02', productionStoryUrl));
         await page.close();
       }
     } finally {
@@ -77,7 +80,8 @@ test.describe('reference cold-cache frame arrival', () => {
       for (let index = 0; index < 3; index += 1) {
         const page = await context.newPage();
         await configureReferenceNetwork(page);
-        samples.push(await measureVisibleFrame(page, 'frame-01'));
+        // T212: see above — the cold first-frame gate must measure production bytes.
+        samples.push(await measureVisibleFrame(page, 'frame-01', productionStoryUrl));
         await page.close();
       }
     } finally {
