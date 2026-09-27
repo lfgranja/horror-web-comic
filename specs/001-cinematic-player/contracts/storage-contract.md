@@ -36,6 +36,13 @@ locais ao dispositivo do usuário.
 
 - Na primeira visita, `hwc.audio` ausente ⇒ áudio **ativo** (`"on"`).
 - `hwc.audio = "off"` ⇒ áudio silenciado em todas as visitas até o usuário religar.
+- A ação **"continuar sem som"** do overlay de áudio bloqueado grava
+  `hwc.audio = "off"` — a mesma chave que o controle dedicado grava. Portanto ela
+  **é** lembrada entre visitas: as visitas seguintes não repetem a tentativa de
+  reprodução automática nem reexibem o overlay, e o áudio só volta a tocar quando
+  o usuário acionar o controle de áudio (T211, 2026-09-27). A ativação por gesto
+  qualificado (FR-016) tem alcance de **uma sessão** e apenas enquanto o áudio não
+  foi desligado explicitamente.
 - `hwc.progress` é atualizado ao pausar, ao navegar manualmente e **também no
   avanço automático** (FR-019).
 - Ao retomar, se `frameId` existir no manifesto, a narrativa abre nesse quadro;
