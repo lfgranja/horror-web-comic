@@ -25,9 +25,88 @@ test('audio assets include compliant AAC/Opus standard and light variants', () =
   }
 });
 
-test('audio build verifies or generates standard and light AAC/Opus', () => {
-  const out = execSync('node scripts/build-images.mjs', { cwd: root, encoding: 'utf8' }).toLowerCase();
-  assert.ok(out.includes('audio') || out.includes('aac') || out.includes('opus'), 'build-images must process audio');
+test('media build fails loudly when it has no master sources', () => {
+  // T207: this repository has no committed frame or audio masters, so the
+  // published variants under assets/ are committed artifacts that the pipeline
+  // cannot reproduce. The build must therefore REFUSE to report success. The
+  // previous version of this test asserted that the command succeeded, which
+  // passed while generating nothing.
+  let exitCode = 0;
+  let output = '';
+  try {
+    output = execSync('node scripts/build-images.mjs', { cwd: root, encoding: 'utf8', stdio: 'pipe' });
+  } catch (error) {
+    exitCode = error.status || 1;
+    output = `${error.stdout || ''}${error.stderr || ''}`;
+  }
+  assert.notEqual(exitCode, 0, 'build-images must fail when it finds no master sources');
+  assert.match(output, /no frame or audio master sources/i, 'the failure must name the missing sources');
+  assert.match(output, /assets\/frames|assets\/audio/, 'the failure must point at where masters belong');
+});
+
+test('media build generates standard and light variants from real masters', async () => {
+  // The positive half of the coverage the old vacuous test only pretended to
+  // provide: with genuine masters present, every documented format and both
+  // tiers must actually be produced.
+  const tmp = fs.mkdtempSync('/tmp/delivery-media-');
+  fs.mkdirSync(path.join(tmp, 'assets/frames'), { recursive: true });
+  fs.mkdirSync(path.join(tmp, 'assets/audio'), { recursive: true });
+  const masterPath = path.join(tmp, 'assets/frames/scene-master.png');
+  await sharp({ create: { width: 1200, height: 800, channels: 3, background: { r: 20, g: 20, b: 30 } } })
+    .png()
+    .toFile(masterPath);
+
+  // Minimal but valid 16-bit PCM mono WAV, 2 s, so validateAudioSource passes.
+  // Broadband noise rather than a tone on purpose: Opus is variable-bitrate,
+  // and a pure sine compresses so far that it lands under the 48000 b/s light
+  // floor, which would test the encoder's behaviour rather than the pipeline.
+  const sampleRate = 16000;
+  const seconds = 2;
+  const samples = Math.floor(sampleRate * seconds);
+  const dataSize = samples * 2;
+  const wav = Buffer.alloc(44 + dataSize);
+  wav.write('RIFF', 0);
+  wav.writeUInt32LE(36 + dataSize, 4);
+  wav.write('WAVE', 8);
+  wav.write('fmt ', 12);
+  wav.writeUInt32LE(16, 16);
+  wav.writeUInt16LE(1, 20);
+  wav.writeUInt16LE(1, 22);
+  wav.writeUInt32LE(sampleRate, 24);
+  wav.writeUInt32LE(sampleRate * 2, 28);
+  wav.writeUInt16LE(2, 32);
+  wav.writeUInt16LE(16, 34);
+  wav.write('data', 36);
+  wav.writeUInt32LE(dataSize, 40);
+  let seed = 22222;
+  for (let i = 0; i < samples; i += 1) {
+    seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+    wav.writeInt16LE(((seed >> 8) % 65536) - 32768, 44 + i * 2);
+  }
+  fs.writeFileSync(path.join(tmp, 'assets/audio/scene-master.wav'), wav);
+
+  const result = await import(path.join(root, 'scripts/build-images.mjs'));
+  const summary = await result.buildImages(tmp);
+  assert.equal(summary.frameSources, 1, 'the frame master must be discovered');
+  assert.equal(summary.audioSources, 1, 'the audio master must be discovered');
+
+  const generated = fs.readdirSync(path.join(tmp, 'assets/frames/generated'));
+  for (const extension of ['avif', 'webp', 'jpg']) {
+    assert.ok(generated.includes(`scene-master.${extension}`), `missing standard ${extension}`);
+    assert.ok(generated.includes(`scene-master-light.${extension}`), `missing light ${extension}`);
+  }
+  // T217: no candidate may advertise a width the 1200 px master cannot fill.
+  for (const file of generated) {
+    const match = /-(\d{3,})\./.exec(file);
+    if (!match) continue;
+    const meta = await sharp(path.join(tmp, 'assets/frames/generated', file)).metadata();
+    assert.equal(meta.width, Number(match[1]), `${file} does not match the width in its own name`);
+  }
+
+  const audio = fs.readdirSync(path.join(tmp, 'assets/audio'));
+  assert.ok(audio.includes('scene-master.aac'), 'missing standard AAC');
+  assert.ok(audio.includes('scene-master-light.opus'), 'missing light Opus');
+  fs.rmSync(tmp, { recursive: true, force: true });
 });
 
 test('image light variants include AVIF/WebP/JPEG bounded by budget', () => {
