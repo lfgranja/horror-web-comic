@@ -1,8 +1,8 @@
 {
-  "initialSceneBytes": 1572864,
-  "frameBytes": 307200,
-  "totalAssetsBytes": 31457280,
-  "compressedScriptBytes": 51200,
-  "compressedStyleBytes": 15360,
-  "compressedCodeBytes": 66560
+  "initialSceneBytes": 1500000,
+  "frameBytes": 300000,
+  "totalAssetsBytes": 30000000,
+  "compressedScriptBytes": 50000,
+  "compressedStyleBytes": 15000,
+  "compressedCodeBytes": 65000
 }
