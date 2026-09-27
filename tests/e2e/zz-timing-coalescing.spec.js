@@ -17,7 +17,14 @@ async function settleAt(page, frameId) {
     player.lastMeasuredDwellMs = null;
   }, frameId);
   await expect(page.locator('#player')).toHaveAttribute('data-frame-id', frameId);
-  await expect(page.locator('#player')).toHaveAttribute('data-status', 'paused');
+  // T202: settling onto the LAST frame by manual navigation now reaches the
+  // ended state (US1/AC4) rather than sitting on it 'paused' with no sign the
+  // story is over. Everywhere else a manual move still pauses.
+  const lastFrameId = await page.evaluate(() => {
+    const player = globalThis.__cinematicPlayer;
+    return player.frames[player.frames.length - 1].frame.id;
+  });
+  await expect(page.locator('#player')).toHaveAttribute('data-status', frameId === lastFrameId ? 'ended' : 'paused');
 }
 
 test('rapid navigation inside the 400 ms window keeps only the last input', async ({ page }) => {
