@@ -62,23 +62,31 @@ Os projetos automatizados são `mobile-chromium` (Pixel 5), `mobile-webkit` (iPh
 ## Imagens
 
 - AVIF é a fonte primária, WebP é a fonte intermediária e JPEG é o fallback.
-- A dimensão máxima é 2560 px no lado maior.
+- A dimensão máxima é 2560 px no lado maior, mas nenhuma variante é ampliada acima do master: um `srcset` só anuncia larguras que o master realmente preenche (T217). Com masters de 1200 px, o conjunto publicado é 320/640/960/1200 e nada além disso.
 - A variante padrão usa AVIF com qualidade aproximada de 50, WebP 75 e JPEG 80.
 - A variante de economia de dados tem lado maior de até 1280 px e no máximo 150 KB por quadro.
 - `scripts/build-images.mjs` gera as variantes e `npm run validate` confirma que as referências do manifesto existem.
+- O build de mídia **falha** quando não encontra nenhum master em `assets/frames/*.svg|png|jpe?g` nem em `assets/audio/*.wav`, em vez de reportar sucesso sem ter gerado nada (T207). Os masters precisam estar versionados para que os arquivos publicados sejam reproduzíveis.
 
 ## Áudio
 
 As trilhas são AAC/Opus entre 96 e 128 kbps. A variante de economia de dados usa 48–64 kbps. O player pré-cria os elementos de cena e quadro, respeita a política de reprodução automática e mantém o fallback silencioso quando um arquivo falha.
 
+A variante de economia é derivada por substituição de nome (`scene-01.aac` → `scene-01-light.opus`), o mesmo vale para as imagens (`frame-01-1200.avif` → `frame-01-light-1200.avif`). Nenhum desses arquivos derivados aparece no manifesto: a resolução acontece em `src/scripts/audio.js` e `src/scripts/player.js`.
+
 ## Orçamentos
 
-- Cena inicial: no máximo 1,5 MB.
-- Quadro: no máximo 300 KB.
-- Ativos totais: no máximo 30 MB.
-- JavaScript comprimido: no máximo 50 KB.
-- CSS comprimido: no máximo 15 KB.
-- Código comprimido total: no máximo 65 KB.
+Os limites são **decimais** (KB = 1000 B, MB = 1000000 B), iguais aos números literais de `spec.md` FR-029 e do plano. Os valores em `budget.json` são os que o build aplica:
+
+| Métrica | Limite | Bytes |
+|---|---|---|
+| Cena inicial | 1,5 MB | 1500000 |
+| Quadro | 300 KB | 300000 |
+| Ativos totais | 30 MB | 30000000 |
+| JavaScript comprimido | 50 KB | 50000 |
+| CSS comprimido | 15 KB | 15000 |
+| Código comprimido total | 65 KB | 65000 |
+
 - O build mede JS e CSS com gzip e falha quando os limites são excedidos.
 - CLS: inferior a 0,1.
 - Primeiro quadro frio: inferior a 2,5 s p75 em 4G de referência (SC-019).
