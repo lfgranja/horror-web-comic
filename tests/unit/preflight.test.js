@@ -16,6 +16,7 @@ const HOST = {
   python3: 'Python 3.14.7',
   ffmpeg: { version: '8.1.2', encoders: ['aac', 'libopus', 'libvpx-vp9'] },
   ffprobe: { version: '8.1.2' },
+  tesseract: { version: '5.5.3' },
   browsers: {
     chromium: '/ms-playwright/chromium-1243/chrome-linux/chrome',
     firefox: '/ms-playwright/firefox-1543/firefox/firefox',
@@ -81,7 +82,8 @@ function hostContext(overrides = {}) {
     ...overrides,
     browsers: { ...HOST.browsers, ...(overrides.browsers || {}) },
     ffmpeg: 'ffmpeg' in overrides ? overrides.ffmpeg : HOST.ffmpeg,
-    ffprobe: 'ffprobe' in overrides ? overrides.ffprobe : HOST.ffprobe
+    ffprobe: 'ffprobe' in overrides ? overrides.ffprobe : HOST.ffprobe,
+    tesseract: 'tesseract' in overrides ? overrides.tesseract : HOST.tesseract
   };
 }
 
@@ -177,6 +179,20 @@ test('ffmpeg must expose the audio encoders used by the media build', async () =
   assert.equal(check(preflight.evaluatePreflight(hostContext({ ffmpeg: null }), projectFixture()), 'ffmpeg').ok, false);
   assert.equal(check(preflight.evaluatePreflight(hostContext({ ffmpeg: { version: '4.4.4', encoders: ['aac', 'libopus'] } }), projectFixture()), 'ffmpeg').ok, false);
   assert.equal(check(report, 'ffmpeg').usedBy.includes('build:images'), true);
+});
+
+test('tesseract must be available for the published-raster content audit', async () => {
+  const preflight = await loadPreflight();
+  // T219: the audit OCRs the shipped frames and fails rather than skipping, so
+  // a host without tesseract cannot certify SC-013.
+  const missing = check(preflight.evaluatePreflight(hostContext({ tesseract: null }), projectFixture()), 'tesseract');
+  assert.equal(missing.ok, false);
+  assert.match(missing.remedy, /tesseract/);
+  const old = check(preflight.evaluatePreflight(hostContext({ tesseract: { version: '3.5.0' } }), projectFixture()), 'tesseract');
+  assert.equal(old.ok, false, 'tesseract 3 is below the declared floor');
+  const result = check(preflight.evaluatePreflight(hostContext(), projectFixture()), 'tesseract');
+  assert.equal(result.ok, true);
+  assert.equal(result.usedBy.includes('test:e2e'), true);
 });
 
 test('ffprobe must be available for the audio probe', async () => {
@@ -327,13 +343,13 @@ test('main reports every missing prerequisite with a remedy and returns non-zero
   const preflight = await loadPreflight();
   const lines = [];
   const code = preflight.main({
-    context: hostContext({ node: null, python3: null, ffmpeg: null, ffprobe: null, chrome: null, lhci: null, browsers: { chromium: null, firefox: null, webkit: null }, browserLaunch: {} }),
+    context: hostContext({ node: null, python3: null, ffmpeg: null, ffprobe: null, tesseract: null, chrome: null, lhci: null, browsers: { chromium: null, firefox: null, webkit: null }, browserLaunch: {} }),
     project: projectFixture({ lockfile: null }),
     out: (text) => lines.push(text)
   });
   const output = lines.join('');
   assert.equal(code, 1);
-  for (const id of ['node', 'python3', 'ffmpeg', 'ffprobe', 'playwright-browsers', 'browser-launch', 'chrome', 'lhci', 'lockfile']) {
+  for (const id of ['node', 'python3', 'ffmpeg', 'ffprobe', 'tesseract', 'playwright-browsers', 'browser-launch', 'chrome', 'lhci', 'lockfile']) {
     assert.match(output, new RegExp(id));
   }
   assert.match(output, /fix:/);
