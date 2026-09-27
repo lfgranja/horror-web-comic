@@ -1,0 +1,111 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 280px;
+  background: var(--ink-950);
+  color: var(--mist-100);
+  font-family: var(--font-ui);
+  overflow-x: hidden;
+}
+
+body {
+  min-width: 280px;
+  min-height: 100dvh;
+  margin: 0;
+  background:
+    radial-gradient(circle at 50% -10%, rgba(71, 85, 105, 0.28), transparent 44%),
+    linear-gradient(160deg, var(--ink-900), var(--ink-950) 72%);
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button,
+select,
+input[type='range'] {
+  min-width: 2.8rem;
+  min-height: 2.8rem;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+.app-shell {
+  min-height: 100dvh;
+  padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);
+}
+
+.error-screen {
+  display: grid;
+  min-height: 100dvh;
+  place-items: center;
+  padding: var(--space-4);
+}
+
+.error-card,
+.overlay-card {
+  width: min(100%, 30rem);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: rgba(18, 24, 39, 0.94);
+  box-shadow: 0 1.5rem 5rem rgba(0, 0, 0, 0.45);
+  padding: clamp(1.5rem, 5vw, 3rem);
+}
+
+.error-card h1,
+.overlay-card h2 {
+  margin: 0.35rem 0 0.8rem;
+  font-family: var(--font-display);
+  font-weight: 400;
+  line-height: 1.05;
+}
+
+.error-card p,
+.overlay-card p {
+  color: var(--mist-300);
+  line-height: 1.6;
+}
+
+.eyebrow {
+  margin: 0;
+  color: var(--amber-300);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-name: none !important;
+    transition-property: none !important;
+  }
+
+  .loading-mark {
+    display: none;
+  }
+}
