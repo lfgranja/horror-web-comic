@@ -63,6 +63,12 @@ test('pause and navigation invalidate pending scene and frame starts', async ({ 
 
 test('teardown invalidates pending starts and prevents later volume writes', async ({ page }) => {
   await openWithDeferredAudio(page);
+  // Capture the volume as it stands with a start still pending. T199 means that
+  // value is the non-zero autoplay probe volume, not 0: asserting against a
+  // literal 0 would only have passed by coincidence, and would have said nothing
+  // about whether a write happened AFTER teardown. What matters is that the
+  // deferred play resolving later leaves the value untouched.
+  const before = await page.evaluate(() => window.__cinematicPlayer.audio.sceneElements.get(0).volume);
   await page.evaluate(() => window.__cinematicPlayer.audio.destroy());
   await page.evaluate(() => {
     for (const pending of window.__deferredAudio) pending.resolve();
@@ -75,7 +81,7 @@ test('teardown invalidates pending starts and prevents later volume writes', asy
   });
   expect(result.destroyed).toBeTruthy();
   expect(result.paused).toBeTruthy();
-  expect(result.volume).toBe(0);
+  expect(result.volume, 'no volume write may land after teardown').toBe(before);
 });
 
 test('does not duplicate the current scene start through repeated initialization', async ({ page }) => {

@@ -266,6 +266,17 @@ cena continuando da posição em que parou).
   cena) a ação correspondente é no-op; durante uma transição, a navegação cancela
   a transição e reposiciona; entradas repetidas em rápida sucessão são
   coalescidas em uma janela de 400 ms (a última prevalece).
+  > **Nota de implementação (T201, 2026-09-27).** A coalescência é
+  > *leading-edge*: a primeira entrada de uma sequência executa imediatamente,
+  > sem atraso, e as entradas subsequentes que caem dentro dos 400 ms seguintes
+  > substituem apenas a navegação ainda pendente. A entrada nunca aguarda a
+  > janela para ser executada. A razão é a latência percebida: um debounce
+  > estrito atrasaria **toda** navegação manual em 400 ms, e o FR-013 exige que
+  > a resposta ao controle seja imediata. A consequência deliberada é que dois
+  > toques separados por menos de 400 ms **executam os dois**, o que corresponde
+  > ao comportamento esperado de toque duplo em leitores de quadrinhos. O
+  > requisito "a última prevalece" aplica-se às entradas que ainda estão
+  > pendentes dentro da janela, não à primeira entrada da sequência.
 - **FR-004**: O áudio DEVE iniciar ativo por padrão, incluindo na primeira visita,
   respeitando as políticas de reprodução automática do navegador; a experiência
   visual inicia automaticamente e, se o áudio for bloqueado, um overlay "toque
@@ -281,8 +292,22 @@ cena continuando da posição em que parou).
   não possuir trilha, o áudio DEVE ser silenciado. Quando um quadro possui áudio
   próprio, ele DEVE somar-se ao da cena (mix), atenuando a cena enquanto o áudio
   do quadro toca.
+  > **Nota de implementação (T203, 2026-09-27).** O crossfade de ≤500 ms vale
+  > para o **avanço automático** entre cenas. Na navegação **manual** (salto de
+  > cena, `Home`, `End`, "Rever do início") o áudio é cortado em ≤100 ms, sem
+  > crossfade, porque FR-003 exige que a navegação manual pause o avanço e
+  > FR-013/T119 exigem que a parada conclua em ≤100 ms: um crossfade de 500 ms
+  > emitiria áudio depois de o usuário ter pausado. O corte é o comportamento
+  > exigido nesses casos, não uma degradação.
 - **FR-007**: A preferência de áudio, o volume e a velocidade DEVEM ser lembrados
   entre visitas.
+  > **Nota de implementação (T211, 2026-09-27).** A ação "continuar sem som" do
+  > overlay de áudio bloqueado grava a **mesma** chave `hwc.audio = "off"` que o
+  > controle dedicado grava, e portanto também é lembrada entre visitas: enquanto
+  > o usuário não religar pelo controle, as visitas seguintes não repetem a
+  > tentativa de reprodução automática nem reexibem o overlay. A ativação por
+  > gesto (FR-016) continua valendo **apenas dentro da sessão corrente**, ou seja,
+  > quando o áudio não foi desligado explicitamente.
 - **FR-008**: A narrativa DEVE ser totalmente compreensível sem áudio
   (medição em SC-004; cobertura de conteúdo via FR-012/SC-013).
 - **FR-009**: A experiência DEVE se adaptar a diferentes tamanhos de tela e
@@ -333,6 +358,15 @@ cena continuando da posição em que parou).
   qualificado ativa o áudio. A ativação por gesto vale para a sessão, cobrindo
   quadros e cenas seguintes; se a preferência persistida for "desligado", o gesto
   não a sobrepõe e o áudio só liga pelo controle dedicado.
+  > **Nota de implementação (T205, 2026-09-27).** "Gesto qualificado" exclui duas
+  > classes de evento de teclado, de forma deliberada: a tecla `Escape` e
+  > qualquer `keydown` cujo alvo seja um `input`, `select`, `textarea` ou
+  > `contenteditable`. A razão é que ativar áudio como efeito colateral de uma
+  > tecla de escape ou de digitação em um campo de formulário é um efeito
+  > inesperado para o usuário, e o requisito de áudio tem um controle dedicado
+  > e sempre visível (FR-005). O requisito passa a ser "qualquer gesto
+  > qualificado **exceto** `Escape` e teclas dirigidas a campos de formulário",
+  > refletido também em `contracts/player-ui-contract.md`.
 - **FR-017**: A narrativa DEVE iniciar automaticamente e avançar automaticamente
   por padrão, no ritmo definido para cada quadro, cena ou história; a velocidade
   escolhida pelo usuário tem precedência sobre o ritmo do autor, que tem

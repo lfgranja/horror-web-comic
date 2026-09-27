@@ -1,7 +1,23 @@
+import { lightAudioSource } from './light-variants.js';
+
 const FADE_IN_DURATION = 300;
 const SCENE_FADE_DURATION = 500;
 const FRAME_FADE_DURATION = 300;
 const STOP_DURATION = 90;
+
+// T199: volume used for the autoplay probe, immediately before play().
+// Chromium (and the other engines) treat a media element with volume === 0 as
+// MUTED, and muted autoplay is permitted. Setting volume to 0 before the first
+// play() therefore made the browser grant playback, so play() resolved instead
+// of rejecting with NotAllowedError: markBlocked() was never reached, the
+// "toque para iniciar" overlay never appeared (FR-004, FR-016, SC-003), and
+// fadeIn then ramped the element up to full gain with no user gesture at all.
+// A tiny non-zero value keeps the element out of the "muted" category, so the
+// real autoplay policy decides, while remaining inaudible — the audible ramp
+// still starts from silence inside fadeIn().
+const AUTOPLAY_PROBE_VOLUME = 0.01;
+
+
 
 function clamp(value, minimum, maximum) {
   const number = Number.isFinite(value) ? value : minimum;
@@ -11,11 +27,6 @@ function clamp(value, minimum, maximum) {
 function fadeProgress(elapsed, duration) {
   if (!(duration > 0)) return 1;
   return clamp(elapsed / duration, 0, 1);
-}
-
-function lightAudioSource(source) {
-  if (!source || source.includes('-light.')) return source;
-  return source.replace(/\.(aac|opus|wav)$/i, (extension) => `-light${extension.toLowerCase() === '.aac' ? '.opus' : extension.toLowerCase()}`);
 }
 
 export class AudioManager {
@@ -50,7 +61,14 @@ export class AudioManager {
     this.destroyed = false;
     this.createElements();
     this.updatePreloadPolicy();
-    if (globalThis.__audioInstrument) globalThis.__audioInstrument.newElementsCreated = 0;
+    // T215: test-only instrumentation, dropped from the production bundle by the
+    // globalThis.__CINEMATIC_PRODUCTION__ define in scripts/build.mjs.
+    // T215: test-only instrumentation. The guard is inlined rather than held in a
+    // module const on purpose: scripts/build.mjs substitutes a literal `true` for
+    // globalThis.__CINEMATIC_PRODUCTION__, and an inlined `!true && …` is dropped
+    // entirely by the minifier, whereas a const would only be folded to `false`
+    // and the hook would survive as dead text in the published bundle.
+    if (!globalThis.__CINEMATIC_PRODUCTION__ && globalThis.__audioInstrument) globalThis.__audioInstrument.newElementsCreated = 0;
     this.bindControls();
     this.emit();
   }
@@ -188,6 +206,14 @@ export class AudioManager {
   isElementPlaying(element) {
     const key = element.dataset.trackKey;
     if (this.failed.has(key)) return false;
+    // T198: an element inside a fade-out ramp is on its way to silence and is
+    // only paused when the ramp completes. Reporting it as "playing" made
+    // playCurrentScene() take its early return (markPlaying + applyMix, with no
+    // play() and no fadeIn), after which the ramp finished, paused the element,
+    // and applyMix() wrote the full target gain onto a paused element that
+    // nothing ever restarted. Toggling back on inside the ~90 ms stop ramp is
+    // enough to hit it — a double-tap on the toggle, or two fast M presses.
+    if (element.dataset.fadeDirection === 'out') return false;
     if (this.activeElementKeys.has(key)) return true;
     return !element.paused && !element.ended;
   }
@@ -208,12 +234,16 @@ export class AudioManager {
     return Boolean(element.dataset.fadeToken);
   }
 
-  beginFade(element, generation = this.lifecycleGeneration) {
+  beginFade(element, generation = this.lifecycleGeneration, direction = 'in') {
     clearTimeout(Number(element.dataset.fadeTimer) || 0);
     this.fadeSequence += 1;
     const token = this.fadeSequence;
     element.dataset.fadeToken = String(token);
     element.dataset.fadeGeneration = String(generation);
+    // T198: record which way the ramp is going. `stopAll` only pauses the
+    // element at the END of the ramp, so for STOP_DURATION ms an element being
+    // faded out is still unpaused and looks "playing" to isElementPlaying().
+    element.dataset.fadeDirection = direction;
     return { token, generation };
   }
 
@@ -226,6 +256,7 @@ export class AudioManager {
     delete element.dataset.fadeTimer;
     delete element.dataset.fadeToken;
     delete element.dataset.fadeGeneration;
+    delete element.dataset.fadeDirection;
   }
 
   requestPlay(element, generation, force = false) {
@@ -290,7 +321,8 @@ export class AudioManager {
     }
     const track = this.story.scenes[sceneIndex]?.audio;
     const targetVolume = clamp(this.volume * (track?.volume ?? 0.6), 0, 1);
-    element.volume = 0;
+    // T199: probe volume, not silence — see AUTOPLAY_PROBE_VOLUME.
+    element.volume = AUTOPLAY_PROBE_VOLUME;
     try {
       await this.requestPlay(element, generation);
     } catch (error) {
@@ -315,7 +347,8 @@ export class AudioManager {
       return true;
     }
     const targetVolume = clamp(this.volume * (track.volume ?? 0.6), 0, 1);
-    element.volume = 0;
+    // T199: probe volume, not silence — see AUTOPLAY_PROBE_VOLUME.
+    element.volume = AUTOPLAY_PROBE_VOLUME;
     try {
       await this.requestPlay(element, generation);
     } catch (error) {
@@ -372,6 +405,15 @@ export class AudioManager {
     const generation = this.invalidateLifecycle();
     this.silentContinuation = true;
     this.enabled = false;
+    // T211: "continuar sem som" is a real audio preference, not a session-only
+    // dismissal. It wrote nothing, so `hwc.audio` stayed absent, the documented
+    // default `audioEnabled: true` applied on the next visit, and the player
+    // re-attempted autoplay and re-showed the overlay every single time. FR-007
+    // requires the preference to be remembered between visits, and
+    // contracts/storage-contract.md states that `hwc.audio = "off"` silences all
+    // visits until the user switches it back on — which the always-visible
+    // control still allows.
+    this.storage.setAudio(false);
     this.awaitingUnlock = false;
     this.sessionBlocked = false;
     const overlay = document.querySelector('#blocked-overlay');
@@ -387,7 +429,10 @@ export class AudioManager {
     const currentFrame = this.currentFrameId ? this.frameElements.get(this.currentFrameId) : null;
     for (const element of this.allElements()) {
       if (this.failed.has(element.dataset.trackKey)) continue;
-      element.volume = 0;
+      // T199: unlock also has to be a real autoplay decision, otherwise the
+      // per-element unlock that Safari demands is satisfied by a muted grant
+      // that proves nothing.
+      element.volume = AUTOPLAY_PROBE_VOLUME;
       const promise = this.requestPlay(element, generation, true);
       promise.catch(() => {});
       if (element !== currentScene && element !== currentFrame) {
@@ -559,7 +604,7 @@ export class AudioManager {
 
   fadeIn(element, targetVolume, duration, generation = this.lifecycleGeneration) {
     const target = clamp(targetVolume, 0, 1);
-    const fade = this.beginFade(element, generation);
+    const fade = this.beginFade(element, generation, 'in');
     element.volume = 0;
     if (duration <= 0) {
       element.volume = target;
@@ -589,7 +634,7 @@ export class AudioManager {
   }
 
   fadeOut(element, duration, generation = this.lifecycleGeneration) {
-    const fade = this.beginFade(element, generation);
+    const fade = this.beginFade(element, generation, 'out');
     const startVolume = clamp(element.volume, 0, 1);
     if (duration <= 0) {
       element.volume = 0;

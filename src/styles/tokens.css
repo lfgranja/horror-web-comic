@@ -39,11 +39,15 @@
      a 200% text zoom always overflows it naturally — the floor stays inert and
      never clips (SC-017).
 
-     12 lines covers the tallest production description (506 chars = 243px at the
-     360x800 reference viewport), so every frame reserves an identical box and
-     CLS stays at 0. */
+      13 lines covers the tallest production description (506 chars) at the
+      NARROWEST supported width, 320px, where it wraps to 261px. The previous
+      value of 12 was derived from the 360x800 reference viewport, where the
+      same text fits in 243px — so at 320px every description swap shifted
+      nav.control-bar by about 18px, which FR-015 forbids as a perceptible
+      displacement. Sizing from the narrowest width keeps the reservation
+      identical at every supported width and CLS at 0. */
   --description-line-height: 1.45;
-  --description-reserve-lines: 12;
+  --description-reserve-lines: 13;
   --description-min-height: calc(var(--description-reserve-lines) * var(--description-line-height) * 1em + 1.5rem + 2px);
 }
 

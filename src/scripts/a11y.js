@@ -12,11 +12,6 @@ export class AccessibilityController {
     }, 500);
   }
 
-  announceAudio(message) {
-    const status = document.querySelector('#audio-status');
-    if (status) status.textContent = message;
-  }
-
   clear() {
     clearTimeout(this.timer);
   }

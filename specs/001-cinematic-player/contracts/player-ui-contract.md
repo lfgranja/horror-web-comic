@@ -64,11 +64,21 @@ controle visível.
   overlay "toque para iniciar" que oferece a ação "continuar sem som" (que **não**
   ativa o áudio) e **qualquer outro gesto qualificado** (`click`, `touchend`,
   `keydown`) ativa o som; nenhuma mensagem de erro é exibida (FR-016).
+  Exceções deliberadas de `keydown` (T205, 2026-09-27): a tecla `Escape` e
+  qualquer `keydown` cujo alvo seja `input`, `select`, `textarea` ou
+  `contenteditable` **não** contam como gesto qualificado — ativar áudio como
+  efeito colateral de escape ou de digitação seria inesperado, e há um controle
+  dedicado e sempre visível (FR-005).
+- No limite entre cenas há crossfade de ≤500 ms; cena sem trilha silencia o áudio
+  (FR-006).
+  O crossfade vale para o **avanço automático**. Na navegação **manual** (salto de
+  cena, `Home`, `End`, "Rever do início") o áudio é cortado em ≤100 ms, sem
+  crossfade, para satisfazer FR-003 (a navegação manual pausa) e FR-013/T119
+  (parada em ≤100 ms) — um crossfade de 500 ms emitiria áudio depois da pausa
+  (T203, 2026-09-27).
 - Desligar aplica corte imediato com micro-rampa anti-clique (conclusão ≤100 ms),
   sem reiniciar a cena; ao religar, a trilha retoma da posição em que estava com
   fade-in de ≤300 ms (FR-006).
-- No limite entre cenas há crossfade de ≤500 ms; cena sem trilha silencia o áudio
-  (FR-006).
 - Áudio de quadro soma-se ao da cena (mix), com ducking da cena para 40% e
   crossfade de 300 ms (FR-006).
 - O controle de volume (0–100%) e o de velocidade (0,5x/1x/2x) são visíveis e

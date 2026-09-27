@@ -1,11 +1,15 @@
 import { watchCapabilities } from './capabilities.js';
+import { lightUrl, resolveImageSources } from './light-variants.js';
 
 const DEFAULT_DURATION = 1500;
 const DEFAULT_TRANSITION = { type: 'fade', durationMs: 600, easing: 'ease-in-out' };
 const MINIMUM_DWELL = 250;
 const COALESCE_WINDOW = 400;
-const LIGHT_MAX_SIDE = 1280;
 const IMAGE_LOAD_TIMEOUT = 10_000;
+// T208: the controls that no-op while the resume overlay demands an explicit
+// resume. Listed here so setControlsSuspended() and the handler wiring cannot
+// drift apart.
+const NAVIGATION_CONTROLS = ['#home', '#previous-scene', '#previous-frame', '#next-frame', '#next-scene', '#end'];
 
 function clamp(value, minimum, maximum) {
   return Math.min(maximum, Math.max(minimum, value));
@@ -14,55 +18,6 @@ function clamp(value, minimum, maximum) {
 function resolveDuration(frame, scene, story, speed) {
   const authored = frame.durationMs ?? scene.defaultFrameDurationMs ?? story.defaultFrameDurationMs ?? DEFAULT_DURATION;
   return Math.max(MINIMUM_DWELL, authored / speed);
-}
-
-function lightUrl(url) {
-  if (!url || /-light(?:\.|-)/i.test(url)) return url;
-  const match = /^(.*?)-(\d{3,})(\.[^./?#]+)([?#].*)?$/.exec(url);
-  if (match) {
-    const width = Math.min(Number(match[2]), LIGHT_MAX_SIDE);
-    return `${match[1]}-light-${width}${match[3]}${match[4] || ''}`;
-  }
-  return url.replace(/(\.[^./?#]+)([?#].*)?$/, (_match, extension, suffix = '') => `-light${extension}${suffix}`);
-}
-
-function lightSrcset(srcset) {
-  if (!srcset) return srcset;
-  const seen = new Set();
-  const candidates = [];
-  for (const part of srcset.split(',')) {
-    const tokens = part.trim().split(/\s+/);
-    if (!tokens[0]) continue;
-    const originalUrl = tokens[0];
-    let descriptor = tokens.slice(1).join(' ');
-    const widthMatch = /^(\d+)w$/.exec(descriptor);
-    if (widthMatch) descriptor = Math.min(Number(widthMatch[1]), LIGHT_MAX_SIDE) + 'w';
-    const lightOfBase = lightUrl(originalUrl);
-    const isBase = /-light\./.test(lightOfBase) && !/-light-\d+\./.test(lightOfBase);
-    let url;
-    if (widthMatch && isBase) {
-      const width = Math.min(Number(widthMatch[1]), LIGHT_MAX_SIDE);
-      url = originalUrl.replace(/([^/]+)(\.[^./?#]+)([?#].*)?$/, (_, base, ext, suf) => base + '-light-' + width + ext + (suf || ''));
-    } else {
-      url = lightUrl(originalUrl);
-    }
-    const key = url + ' ' + descriptor;
-    if (seen.has(key)) continue;
-    seen.add(key);
-    candidates.push(descriptor ? url + ' ' + descriptor : url);
-  }
-  return candidates.join(', ');
-}
-
-function resolveImageSources(image) {
-  const legacy = image.srcset || '';
-  const avif = image.avifSrcset || legacy || (/\.avif(?:[?#]|$)/i.test(image.avif) ? image.avif : '');
-  const webp = image.webpSrcset || legacy || (/\.webp(?:[?#]|$)/i.test(image.webp) ? image.webp : '');
-  const fallback = image.fallbackSrcset || legacy;
-  return {
-    standard: { avif, webp, fallback },
-    light: { avif: lightSrcset(avif), webp: lightSrcset(webp), fallback: lightSrcset(fallback) }
-  };
 }
 
 function setSrcset(element, value, sizes) {
@@ -169,16 +124,14 @@ export class CinematicPlayer {
     // covers the navigation controls (FR-033).
     this.descriptionResizeObserver = new ResizeObserver(() => this.publishControlBarHeight());
     if (this.description) this.descriptionResizeObserver.observe(this.description);
-    // Suppress browser scrolling for the shortcuts the player owns, but never
-    // swallow the native activation keys of a focused control (FR-010).
-    this.keydownOnPlayer = (event) => {
-      const key = event.key;
-      if (key !== 'ArrowRight' && key !== 'ArrowLeft' && key !== 'Home' && key !== 'End' && key !== ' ' && key !== 'Spacebar' && key.toLowerCase() !== 'k') return;
-      const target = event.target;
-      if (target instanceof HTMLElement && target.closest('button, a, input, select, textarea, [role="button"], [tabindex]')) return;
-      event.preventDefault();
-    };
-    this.root.addEventListener('keydown', this.keydownOnPlayer);
+    // T214: the element-level keydown listener that used to live here is gone.
+    // It was registered on #player, so its target could only ever be #player
+    // itself (tabindex="0") or a descendant — and every descendant is a
+    // button/input/select, all matched by the `closest(...)` guard. The
+    // `preventDefault()` below it was therefore unreachable, while the comment
+    // claimed a guarantee it did not provide. Real scroll suppression comes
+    // solely from the document-level handler in bindHandlers(), which is the
+    // one that must keep its preventDefault() (FR-010).
   }
 
   /**
@@ -365,6 +318,12 @@ export class CinematicPlayer {
     this.audio.setPaused(true);
     this.index = target;
     this.status = shouldPlay ? 'playing' : 'paused';
+    // T202: arriving at the last frame by manual navigation must reach the ended
+    // state, not just render the final frame paused with no indication the story
+    // is over (US1/AC4, FR-033). FR-003's "no-op at the limit" is preserved: it
+    // excuses the *End control* doing nothing when already on the last frame,
+    // which is handled by the early return in goEnd(), not here.
+    if (!shouldPlay && target === this.frames.length - 1) this.status = 'ended';
     this.storage.saveProgress(this.frames[this.index].frame.id);
     this.render();
     if (shouldPlay) {
@@ -421,9 +380,28 @@ export class CinematicPlayer {
       this.pause();
     } else if (this.status === 'ended') {
       this.replay();
+    } else if (this.status === 'idle') {
+      // T210: `idle` is the pre-boot state, so the first press must START. It
+      // used to fall through to pause(), which cancelled the auto-start timer
+      // and left the status at 'paused' while the control's accessible name
+      // already read "Reproduzir" — so the first press was consumed and the
+      // user had to press twice to get what the label promised (US1/AC5).
+      this.startPlayback();
     } else {
       this.resume();
     }
+  }
+
+  startPlayback() {
+    if (this.destroyed || this.resumeRequired) return;
+    clearTimeout(this.autoStartTimer);
+    this.autoStartTimer = 0;
+    this.flushPendingNavigation();
+    this.status = 'playing';
+    this.audio.setPaused(false);
+    this.render();
+    this.schedule();
+    this.updateStatus();
   }
 
   pause() {
@@ -469,6 +447,7 @@ export class CinematicPlayer {
     this.storage.saveProgress(this.frames[this.index].frame.id);
     this.resumeRequired = true;
     this.resumeOverlay.hidden = false;
+    this.setControlsSuspended(true);
     this.updateStatus();
     this.focusOverlay(this.resumeOverlay);
   }
@@ -476,8 +455,27 @@ export class CinematicPlayer {
   resumeFromOverlay() {
     if (!this.resumeRequired) return;
     this.resumeRequired = false;
+    this.setControlsSuspended(false);
     this.resume();
     this.root?.focus({ preventScroll: true });
+  }
+
+  /**
+   * T208: while the resume overlay is up, every navigation control is a no-op
+   * (`moveTo` returns early while resumeRequired). With `aria-modal` removed
+   * from the overlay — these are deliberately non-modal status notices, because
+   * FR-016 needs the page to stay interactive and FR-033 needs the navigation
+   * bar to stay live — focus can legitimately land on those controls. Marking
+   * them `aria-disabled` is what tells a screen-reader user why they do
+   * nothing, instead of leaving an enabled-looking button that silently fails.
+   */
+  setControlsSuspended(suspended) {
+    for (const selector of NAVIGATION_CONTROLS) {
+      const control = this.root.querySelector(selector);
+      if (!control) continue;
+      if (suspended) control.setAttribute('aria-disabled', 'true');
+      else control.removeAttribute('aria-disabled');
+    }
   }
 
   replay() {
@@ -532,11 +530,20 @@ export class CinematicPlayer {
     const transition = resolveTransition(frame, item.scene, this.story, this.capabilities.reducedMotion, this.capabilities.shouldDegrade);
     this.cancelTransition();
     this.root.dataset.frameId = frame.id;
+    // The RESOLVED transition type is published here and stays observable while
+    // the frame loads. T197 is enforced in CSS instead: the keyframes are bound
+    // to `.frame-stage[data-transition='…']:not([data-image-loading='true'])`,
+    // so the animation only starts at the moment handleImageLoad() flips
+    // data-image-loading to 'false' and reveals the image. Binding it to the
+    // attribute write instead would have made the 600-700 ms fade run against a
+    // `visibility: hidden` element, and reporting 'cut' until load would have
+    // hidden the resolved value from every consumer of this attribute.
     this.root.dataset.transition = transition.type;
     this.stage.dataset.transition = transition.type;
     this.stage.dataset.imageError = 'false';
     this.stage.style.setProperty('--transition-duration', `${transition.durationMs}ms`);
     this.stage.style.setProperty('--transition-easing', transition.easing);
+    this.pendingTransition = transition;
     this.stage.style.setProperty('--frame-aspect', `${frame.image.width} / ${frame.image.height}`);
     this.image.dataset.frameId = frame.id;
     this.image.alt = frame.alt;
@@ -593,13 +600,46 @@ export class CinematicPlayer {
     if (!next) return;
     const sources = resolveImageSources(next.frame.image);
     const selected = this.capabilities.shouldDegrade ? sources.light : sources.standard;
-    const source = selected.fallback || selected.avif || selected.webp;
+    // T204: applyImageSources() installs the AVIF and WebP <source> elements
+    // AHEAD of the <img> srcset, so the browser paints avif -> webp -> fallback
+    // in that order. The old code preloaded `fallback` first, which on a
+    // normal-connection session meant every frame advance downloaded one extra
+    // JPEG that was immediately discarded, while the frame the user was actually
+    // waiting for was not the frame that had been preloaded (FR-015, SC-008).
+    // Probe format support once and preload the tier the <picture> will choose.
+    const preferred = this.preferredImageFormat();
+    const source = selected[preferred] || selected.fallback || selected.avif || selected.webp;
     if (!source) return;
     const preload = new Image();
     preload.decoding = 'async';
     preload.sizes = next.frame.image.sizes || '100vw';
-    if (selected.fallback) preload.srcset = selected.fallback;
+    // The srcset is the width list for the SAME format tier, not the JPEG
+    // fallback. Assigning a whole multi-candidate srcset string to .src, as the
+    // previous version did, was a second bug on the same line.
+    if (selected[preferred]) preload.srcset = selected[preferred];
     preload.src = source;
+  }
+
+  /**
+   * T204: which format tier the <picture> will actually paint, resolved once
+   * and cached. Detection is a two-line parse of a data URL, which needs no
+   * network round trip and no feature-detection API that differs across engines.
+   */
+  preferredImageFormat() {
+    if (this.preferredFormat) return this.preferredFormat;
+    // canvas.toDataURL falls back to png/jpeg silently when the encoder is
+    // missing, so the returned prefix is the actual capability. Synchronous and
+    // dependency-free, which matters because preloadNext() may run before the
+    // first paint.
+    const supports = (mime) => {
+      try {
+        return document.createElement('canvas').toDataURL(mime).startsWith(`data:${mime}`);
+      } catch {
+        return false;
+      }
+    };
+    this.preferredFormat = supports('image/avif') ? 'avif' : supports('image/webp') ? 'webp' : 'fallback';
+    return this.preferredFormat;
   }
 
   cancelTransition() {
@@ -668,6 +708,13 @@ export class CinematicPlayer {
     this.image.style.visibility = 'visible';
     this.placeholder.hidden = true;
     this.placeholder.setAttribute('aria-hidden', 'true');
+    // T197: flipping data-image-loading above is what actually starts the
+    // authored transition — the keyframes are bound to the stage selector with
+    // `:not([data-image-loading='true'])`, so the animation begins on the same
+    // tick the frame becomes visible instead of running against a hidden
+    // element and being finished before the user sees it. No attribute write is
+    // needed here; `void this.stage.offsetWidth` is deliberately avoided because
+    // the toggle above already forces the selector to re-evaluate.
     if (this.status === 'playing') this.schedule();
   }
 
@@ -679,6 +726,15 @@ export class CinematicPlayer {
       this.imageFallbackPending = false;
       this.applyImageSources(this.imageStandardSources, this.image.sizes || '100vw');
       this.image.src = this.imageStandardSource;
+      // T209: re-arm the watchdog for the retry. render() armed it for the
+      // degraded request; without this the standard retry could hang forever
+      // and `schedule()` would keep returning early, stranding the narrative on
+      // the loading placeholder with no way forward.
+      clearTimeout(this.imageLoadTimer);
+      const retryFrameId = this.image.dataset.frameId;
+      this.imageLoadTimer = setTimeout(() => {
+        if (!this.imageReady && this.image.dataset.frameId === retryFrameId) this.handleImageError();
+      }, IMAGE_LOAD_TIMEOUT);
       return;
     }
     const item = this.frames[this.index];
@@ -723,7 +779,6 @@ export class CinematicPlayer {
     this.descriptionResizeObserver?.disconnect();
     if (this.imageLoadHandler) this.image.removeEventListener('load', this.imageLoadHandler);
     if (this.imageErrorHandler) this.image.removeEventListener('error', this.imageErrorHandler);
-    if (this.keydownOnPlayer) this.root.removeEventListener('keydown', this.keydownOnPlayer);
     this.audio.destroy?.();
     this.a11y.clear();
   }

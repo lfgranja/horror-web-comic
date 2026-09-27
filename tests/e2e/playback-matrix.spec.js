@@ -46,7 +46,12 @@ async function settleAt(page, frameId) {
     player.lastMeasuredDwellMs = null;
   }, frameId);
   await expect(page.locator('#player')).toHaveAttribute('data-frame-id', frameId);
-  await expect(page.locator('#player')).toHaveAttribute('data-status', 'paused');
+  // T202: manual arrival at the last frame is the ended state, not 'paused'.
+  const lastFrameId = await page.evaluate(() => {
+    const player = globalThis.__cinematicPlayer;
+    return player.frames[player.frames.length - 1].frame.id;
+  });
+  await expect(page.locator('#player')).toHaveAttribute('data-status', frameId === lastFrameId ? 'ended' : 'paused');
 }
 
 // Click a navigation control with the coalescing window pre-cleared so the
