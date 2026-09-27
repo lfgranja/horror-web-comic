@@ -1,0 +1,100 @@
+{
+  "schemaVersion": 1,
+  "id": "main-story",
+  "title": "A Casa que Respira",
+  "defaultFrameDurationMs": 1500,
+  "defaultTransition": { "type": "fade", "durationMs": 600, "easing": "ease-in-out" },
+  "scenes": [
+    {
+      "id": "scene-01",
+      "title": "O vestíbulo",
+      "defaultFrameDurationMs": 1500,
+      "defaultTransition": { "type": "fade", "durationMs": 600, "easing": "ease-in-out" },
+      "audio": { "id": "scene-01-audio", "src": "assets/audio/scene-01.aac", "loop": true, "volume": 0.6 },
+      "frames": [
+        {
+          "id": "frame-01",
+          "image": {
+            "avif": "assets/frames/generated/frame-01.avif",
+            "webp": "assets/frames/generated/frame-01.webp",
+            "fallback": "assets/frames/generated/frame-01.jpg",
+            "avifSrcset": "assets/frames/generated/frame-01-320.avif 320w, assets/frames/generated/frame-01-640.avif 640w, assets/frames/generated/frame-01-960.avif 960w, assets/frames/generated/frame-01-1200.avif 1200w, assets/frames/generated/frame-01-1920.avif 1920w, assets/frames/generated/frame-01-2560.avif 2560w",
+            "webpSrcset": "assets/frames/generated/frame-01-320.webp 320w, assets/frames/generated/frame-01-640.webp 640w, assets/frames/generated/frame-01-960.webp 960w, assets/frames/generated/frame-01-1200.webp 1200w, assets/frames/generated/frame-01-1920.webp 1920w, assets/frames/generated/frame-01-2560.webp 2560w",
+            "fallbackSrcset": "assets/frames/generated/frame-01-320.jpg 320w, assets/frames/generated/frame-01-640.jpg 640w, assets/frames/generated/frame-01-960.jpg 960w, assets/frames/generated/frame-01-1200.jpg 1200w, assets/frames/generated/frame-01-1920.jpg 1920w, assets/frames/generated/frame-01-2560.jpg 2560w",
+            "sizes": "100vw",
+            "width": 1200,
+            "height": 800
+          },
+          "alt": "Porta do vestíbulo com a placa “VOLTE QUANDO A CASA ACORDAR”.",
+          "description": "O vestíbulo escuro se abre diante de uma antiga porta de madeira trancada, com a maçaneta enferrujada e uma fresta de luz fria vazando pela soleira. No alto da porta, uma placa de metal gasta traz em letras altas a inscrição “VOLTE QUANDO A CASA ACORDAR”. Uma sombra atravessa a fresta sem corpo que a projete, enquanto o ar parado pesa com poeira. Ao fundo, cada ranger que desce da escada parece responder à respiração da casa, e a madeira da porta estala como se acordasse.",
+          "durationMs": 1500,
+          "transition": { "type": "fade", "durationMs": 600, "easing": "ease-in-out" }
+        },
+        {
+          "id": "frame-02",
+          "image": {
+            "avif": "assets/frames/generated/frame-02.avif",
+            "webp": "assets/frames/generated/frame-02.webp",
+            "fallback": "assets/frames/generated/frame-02.jpg",
+            "avifSrcset": "assets/frames/generated/frame-02-320.avif 320w, assets/frames/generated/frame-02-640.avif 640w, assets/frames/generated/frame-02-960.avif 960w, assets/frames/generated/frame-02-1200.avif 1200w, assets/frames/generated/frame-02-1920.avif 1920w, assets/frames/generated/frame-02-2560.avif 2560w",
+            "webpSrcset": "assets/frames/generated/frame-02-320.webp 320w, assets/frames/generated/frame-02-640.webp 640w, assets/frames/generated/frame-02-960.webp 960w, assets/frames/generated/frame-02-1200.webp 1200w, assets/frames/generated/frame-02-1920.webp 1920w, assets/frames/generated/frame-02-2560.webp 2560w",
+            "fallbackSrcset": "assets/frames/generated/frame-02-320.jpg 320w, assets/frames/generated/frame-02-640.jpg 640w, assets/frames/generated/frame-02-960.jpg 960w, assets/frames/generated/frame-02-1200.jpg 1200w, assets/frames/generated/frame-02-1920.jpg 1920w, assets/frames/generated/frame-02-2560.jpg 2560w",
+            "sizes": "100vw",
+            "width": 1200,
+            "height": 800
+          },
+          "alt": "Fotografia empoeirada com a legenda “ELA AINDA ESTÁ EM CASA”.",
+          "description": "Uma fotografia antiga emoldurada domina o corredor, com o vidro embaçado pela poeira e as bordas carcomidas pelo tempo. A imagem mostra o mesmo corredor vazio da casa, e na parte inferior uma legenda datilografada declara “ELA AINDA ESTÁ EM CASA”. O papel amarelado contrasta com um vulto feminino desfocado ao fundo, parado entre duas portas. O silêncio é cortado por um estalo seco vindo do assoalho, seguido por um passo, depois outro, que avançam e param de repente no escuro.",
+          "durationMs": 1800,
+          "transition": { "type": "dissolve", "durationMs": 700, "easing": "ease-out" }
+        }
+      ]
+    },
+    {
+      "id": "scene-02",
+      "title": "A escada",
+      "defaultFrameDurationMs": 1600,
+      "defaultTransition": { "type": "zoom-in", "durationMs": 650, "easing": "ease-in-out" },
+      "audio": { "id": "scene-02-audio", "src": "assets/audio/scene-02.aac", "loop": true, "volume": 0.6 },
+      "frames": [
+        {
+          "id": "frame-03",
+          "image": {
+            "avif": "assets/frames/generated/frame-03.avif",
+            "webp": "assets/frames/generated/frame-03.webp",
+            "fallback": "assets/frames/generated/frame-03.jpg",
+            "avifSrcset": "assets/frames/generated/frame-03-320.avif 320w, assets/frames/generated/frame-03-640.avif 640w, assets/frames/generated/frame-03-960.avif 960w, assets/frames/generated/frame-03-1200.avif 1200w, assets/frames/generated/frame-03-1920.avif 1920w, assets/frames/generated/frame-03-2560.avif 2560w",
+            "webpSrcset": "assets/frames/generated/frame-03-320.webp 320w, assets/frames/generated/frame-03-640.webp 640w, assets/frames/generated/frame-03-960.webp 960w, assets/frames/generated/frame-03-1200.webp 1200w, assets/frames/generated/frame-03-1920.webp 1920w, assets/frames/generated/frame-03-2560.webp 2560w",
+            "fallbackSrcset": "assets/frames/generated/frame-03-320.jpg 320w, assets/frames/generated/frame-03-640.jpg 640w, assets/frames/generated/frame-03-960.jpg 960w, assets/frames/generated/frame-03-1200.jpg 1200w, assets/frames/generated/frame-03-1920.jpg 1920w, assets/frames/generated/frame-03-2560.jpg 2560w",
+            "sizes": "100vw",
+            "width": 1200,
+            "height": 800
+          },
+          "alt": "Escada escura com o aviso “NÃO OLHE PARA TRÁS”.",
+          "description": "Uma escada estreita de pedra desce em espiral para um patamar escuro onde a luz não alcança. Cada degrau brilha úmido, refletindo um clarão frio que vem do alto. Pintada na parede do patamar, em letras brancas trêmulas, a frase “NÃO OLHE PARA TRÁS” domina o enquadramento. Uma silhueta sem rosto surge no fundo escuro, com as mãos roçando o corrimão. O som que existe só no áudio é um arrastar pesado e ritmado, como um corpo sendo puxado degrau por degrau, subindo junto com a respiração ofegante da casa.",
+          "durationMs": 1600,
+          "transition": { "type": "slide-left", "durationMs": 700, "easing": "ease-in-out" },
+          "audio": { "id": "frame-03-audio", "src": "assets/audio/frame-03.aac", "loop": false, "volume": 0.8 }
+        },
+        {
+          "id": "frame-04",
+          "image": {
+            "avif": "assets/frames/generated/frame-04.avif",
+            "webp": "assets/frames/generated/frame-04.webp",
+            "fallback": "assets/frames/generated/frame-04.jpg",
+            "avifSrcset": "assets/frames/generated/frame-04-320.avif 320w, assets/frames/generated/frame-04-640.avif 640w, assets/frames/generated/frame-04-960.avif 960w, assets/frames/generated/frame-04-1200.avif 1200w, assets/frames/generated/frame-04-1920.avif 1920w, assets/frames/generated/frame-04-2560.avif 2560w",
+            "webpSrcset": "assets/frames/generated/frame-04-320.webp 320w, assets/frames/generated/frame-04-640.webp 640w, assets/frames/generated/frame-04-960.webp 960w, assets/frames/generated/frame-04-1200.webp 1200w, assets/frames/generated/frame-04-1920.webp 1920w, assets/frames/generated/frame-04-2560.webp 2560w",
+            "fallbackSrcset": "assets/frames/generated/frame-04-320.jpg 320w, assets/frames/generated/frame-04-640.jpg 640w, assets/frames/generated/frame-04-960.jpg 960w, assets/frames/generated/frame-04-1200.jpg 1200w, assets/frames/generated/frame-04-1920.jpg 1920w, assets/frames/generated/frame-04-2560.jpg 2560w",
+            "sizes": "100vw",
+            "width": 1200,
+            "height": 800
+          },
+          "alt": "Janela aberta na chuva com “A CHUVA NÃO PARA”.",
+          "description": "Uma janela alta de moldura clara está escancarada para a noite, com a chuva grossa atravessando o quadro em fios prateados. A cortina encharcada cola-se à parede e depois se ergue sozinha, como erguida por uma mão invisível, revelando um quintal afogado no breu. No rodapé da imagem, em letras frias e espaçadas, lê-se “A CHUVA NÃO PARA”. O áudio traz a chuva batendo sem trégua no parapeito e nas folhas, cortada por um sino distante que dobra uma única vez, marcando o fim da narrativa.",
+          "durationMs": 2000,
+          "transition": { "type": "cut", "durationMs": 0, "easing": "linear" }
+        }
+      ]
+    }
+  ]
+}
