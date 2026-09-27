@@ -25,23 +25,35 @@ test('audio assets include compliant AAC/Opus standard and light variants', () =
   }
 });
 
-test('media build fails loudly when it has no master sources', () => {
-  // T207: this repository has no committed frame or audio masters, so the
-  // published variants under assets/ are committed artifacts that the pipeline
-  // cannot reproduce. The build must therefore REFUSE to report success. The
-  // previous version of this test asserted that the command succeeded, which
-  // passed while generating nothing.
-  let exitCode = 0;
-  let output = '';
-  try {
-    output = execSync('node scripts/build-images.mjs', { cwd: root, encoding: 'utf8', stdio: 'pipe' });
-  } catch (error) {
-    exitCode = error.status || 1;
-    output = `${error.stdout || ''}${error.stderr || ''}`;
-  }
-  assert.notEqual(exitCode, 0, 'build-images must fail when it finds no master sources');
-  assert.match(output, /no frame or audio master sources/i, 'the failure must name the missing sources');
-  assert.match(output, /assets\/frames|assets\/audio/, 'the failure must point at where masters belong');
+test('media build discovers the committed masters', () => {
+  // The masters are committed now (media-src/frames/*.jpg, media-src/audio/*.wav), so
+  // the build must succeed and must actually find sources. Asserting the counts
+  // rather than just the exit status is what makes a deleted master fail here
+  // instead of silently regenerating a smaller tree.
+  const output = execSync('node scripts/build-images.mjs', { cwd: root, encoding: 'utf8', stdio: 'pipe' });
+  assert.match(
+    output,
+    /processed [1-9]\d* frame source\(s\) and [1-9]\d* audio source\(s\)/,
+    'the build must report the masters it discovered'
+  );
+});
+
+test('media build fails loudly when it has no master sources', async () => {
+  // T207: a media build that found nothing is a failure, not a pass. Exercised
+  // against a fixture tree rather than the repository, because the repository
+  // now commits its masters and would legitimately succeed.
+  const tmp = fs.mkdtempSync('/tmp/delivery-no-masters-');
+  fs.mkdirSync(path.join(tmp, 'media-src/frames'), { recursive: true });
+  fs.mkdirSync(path.join(tmp, 'media-src/audio'), { recursive: true });
+  const { buildImages } = await import(path.join(root, 'scripts/build-images.mjs'));
+  await assert.rejects(
+    () => buildImages(tmp),
+    (error) => {
+      assert.match(error.message, /no frame or audio master sources/i, 'the failure must name the missing sources');
+      assert.match(error.message, /media-src\/frames|media-src\/audio/, 'the failure must point at where masters belong');
+      return true;
+    }
+  );
 });
 
 test('media build generates standard and light variants from real masters', async () => {
@@ -49,9 +61,9 @@ test('media build generates standard and light variants from real masters', asyn
   // provide: with genuine masters present, every documented format and both
   // tiers must actually be produced.
   const tmp = fs.mkdtempSync('/tmp/delivery-media-');
-  fs.mkdirSync(path.join(tmp, 'assets/frames'), { recursive: true });
-  fs.mkdirSync(path.join(tmp, 'assets/audio'), { recursive: true });
-  const masterPath = path.join(tmp, 'assets/frames/scene-master.png');
+  fs.mkdirSync(path.join(tmp, 'media-src/frames'), { recursive: true });
+  fs.mkdirSync(path.join(tmp, 'media-src/audio'), { recursive: true });
+  const masterPath = path.join(tmp, 'media-src/frames/scene-master.png');
   await sharp({ create: { width: 1200, height: 800, channels: 3, background: { r: 20, g: 20, b: 30 } } })
     .png()
     .toFile(masterPath);
@@ -83,7 +95,7 @@ test('media build generates standard and light variants from real masters', asyn
     seed = (seed * 1103515245 + 12345) & 0x7fffffff;
     wav.writeInt16LE(((seed >> 8) % 65536) - 32768, 44 + i * 2);
   }
-  fs.writeFileSync(path.join(tmp, 'assets/audio/scene-master.wav'), wav);
+  fs.writeFileSync(path.join(tmp, 'media-src/audio/scene-master.wav'), wav);
 
   const result = await import(path.join(root, 'scripts/build-images.mjs'));
   const summary = await result.buildImages(tmp);

@@ -51,12 +51,17 @@
 - Playwright browsers must **launch headless** (preflight verifies; missing system libs = fail).
 - `lhci` needs **Chrome/Chromium** binary (`CHROME_PATH` or install Google Chrome).
 - Run `npx playwright install --with-deps chromium firefox webkit` after `npm ci`.
+- **Fedora hosts cannot run webkit locally.** Playwright's dependency installer is Debian/Ubuntu-only, and the pinned webkit build links against ICU 74 while Fedora 44 ships ICU 77, so `npx playwright install-deps` cannot close the gap. `npm run preflight` therefore always fails the `browser-launch` check here — that check is **CI-enforced** on `ubuntu-latest`. Locally the bar is the other 14 preflight checks plus `npx playwright test tests/e2e --project=mobile-chromium --project=desktop-chromium --project=desktop-firefox`, which covers 3 of the 5 matrix projects. Chromium and Firefox do launch.
 
 ## File Layout
 
 ```
 index.html                 # Shell, controls, overlays, a11y regions
 src/data/story.json        # Narrative manifest (schema v1)
+media-src/                 # Master sources; never published
+  frames/                  # Frame masters (*.svg|png|jpe?g) read by build:images
+  audio/                   # Audio masters (*.wav) read by build:images
+assets/                    # Publishable tree; manifest-referenced, delivery-encoded only
 src/scripts/
   main.js                  # Boot: storage → story → capabilities → a11y → audio → player
   player.js                # CinematicPlayer class (state, nav, render, transitions, preload)
@@ -89,7 +94,7 @@ tests/
 
 ## Common Tasks
 
-**Add a frame:** Edit `src/data/story.json` (follow schema), add assets to `assets/`, run `npm run validate && npm run build:images && npm run build`.
+**Add a frame:** Edit `src/data/story.json` (follow schema), add the master image to `media-src/frames/`, run `npm run validate && npm run build:images && npm run build`. Never put masters or uncompressed sources in `assets/` — it is the publishable tree and the build rejects unreferenced or WAV files there.
 
 **Change budgets:** Edit `budget.json`, then `npm run build` to verify.
 

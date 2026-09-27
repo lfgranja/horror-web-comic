@@ -66,7 +66,9 @@ Os projetos automatizados são `mobile-chromium` (Pixel 5), `mobile-webkit` (iPh
 - A variante padrão usa AVIF com qualidade aproximada de 50, WebP 75 e JPEG 80.
 - A variante de economia de dados tem lado maior de até 1280 px e no máximo 150 KB por quadro.
 - `scripts/build-images.mjs` gera as variantes e `npm run validate` confirma que as referências do manifesto existem.
-- O build de mídia **falha** quando não encontra nenhum master em `assets/frames/*.svg|png|jpe?g` nem em `assets/audio/*.wav`, em vez de reportar sucesso sem ter gerado nada (T207). Os masters precisam estar versionados para que os arquivos publicados sejam reproduzíveis.
+- O build de mídia **falha** quando não encontra nenhum master em `media-src/frames/*.svg|png|jpe?g` nem em `media-src/audio/*.wav`, em vez de reportar sucesso sem ter gerado nada (T207). Os masters precisam estar versionados para que os arquivos publicados sejam reproduzíveis.
+- As duas árvores são distintas por contrato. `media-src/` guarda os masters e nunca é publicada; `assets/` é a árvore publicável e contém apenas arquivos referenciados pelo manifesto e codificados para entrega. O build recusa publicar em `assets/` qualquer arquivo que o manifesto não referencie, e recusa publicar WAV não comprimido, então os masters não podem viver ali. `scripts/build.mjs` só varre `assets/` (`PUBLISHABLE_ROOTS = ['src', 'assets']`), e `media-src/` fica fora do que é copiado para `dist/`.
+- Os quadros publicados hoje são fixtures sintéticas de 1200×800 (~0,19 bit/pixel), promovidas a master a partir das variantes já publicadas. Um build de mídia verde certifica que o pipeline reproduz os seus próprios fixtures — não que a arte final seja reproduzível.
 
 ## Áudio
 
