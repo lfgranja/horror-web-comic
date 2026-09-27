@@ -4,11 +4,12 @@ import process from 'node:process';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
+import { LIGHT_MAX_SIDE } from '../src/scripts/light-variants.js';
 
 export const MAX_STANDARD_SIDE = 2560;
-export const MAX_LIGHT_SIDE = 1280;
-export const MAX_LIGHT_BYTES = 150 * 1024;
-export const MAX_STANDARD_BYTES = 300 * 1024;
+export const MAX_LIGHT_SIDE = LIGHT_MAX_SIDE;
+export const MAX_LIGHT_BYTES = 150_000;
+export const MAX_STANDARD_BYTES = 300_000;
 export const MIN_AUDIO_DURATION_SECONDS = 1;
 export const STANDARD_WIDTHS = [320, 640, 960, 1200, 1920, 2560];
 export const LIGHT_WIDTHS = [320, 640, 960, 1200, 1280];
@@ -83,7 +84,9 @@ async function encodeImage(input, output, width, format, isLight) {
   for (const quality of qualities) {
     const pipeline = sharp(input, { failOn: 'error' })
       .rotate()
-      .resize({ width, fit: 'inside', withoutEnlargement: false });
+      // T217: never enlarge past the master. Upscaling a 1200 px master into
+      // the 1920/2560 candidates published pixels carrying no extra detail.
+      .resize({ width, fit: 'inside', withoutEnlargement: true });
     if (format === 'avif') await pipeline.avif({ quality, effort: isLight ? 3 : 4 }).toFile(output);
     else if (format === 'webp') await pipeline.webp({ quality }).toFile(output);
     else await pipeline.jpeg({ quality }).toFile(output);
@@ -187,12 +190,17 @@ export async function buildImages(root = process.cwd()) {
       await ensureImage(input, lightBaseOutput, Math.min(intrinsicWidth, MAX_LIGHT_SIDE), format, true);
     }
     for (const width of STANDARD_WIDTHS) {
+      // T217: only emit candidates the master can genuinely fill. A width above
+      // the master would either be upscaled or written under a name that lies
+      // about its geometry.
+      if (width > intrinsicWidth) continue;
       for (const [format, settings] of Object.entries(IMAGE_FORMATS)) {
         const output = path.join(generatedDirectory, candidateName(stem, width, format, false));
         await ensureImage(input, output, width, format, false);
       }
     }
     for (const width of LIGHT_WIDTHS) {
+      if (width > intrinsicWidth) continue;
       for (const [format, settings] of Object.entries(IMAGE_FORMATS)) {
         const output = path.join(generatedDirectory, candidateName(stem, width, format, true));
         await ensureImage(input, output, width, format, true);
@@ -208,7 +216,21 @@ export async function buildImages(root = process.cwd()) {
     await ensureAudio(input, path.join(audioDirectory, `${stem}.aac`), AUDIO_VARIANTS.standard);
     await ensureAudio(input, path.join(audioDirectory, `${stem}-light.opus`), AUDIO_VARIANTS.light);
   }
-  return { frameSources: files.length, audioSources: audioFiles.length };
+  const result = { frameSources: files.length, audioSources: audioFiles.length };
+  // T207: a media build that found nothing is a failure, not a pass. Without
+  // this the step exits 0 having generated nothing, so the published variants
+  // under assets/frames/generated and assets/audio are unreproducible and the
+  // CI step proves nothing at all. Commit the frame and audio masters (the
+  // source artwork in assets/frames/*.svg|png|jpe?g and assets/audio/*.wav)
+  // to make the pipeline reproducible.
+  if (files.length === 0 && audioFiles.length === 0) {
+    throw new Error(
+      'buildImages found no frame or audio master sources: expected image masters in ' +
+      'assets/frames/*.svg|png|jpe?g and audio masters in assets/audio/*.wav. ' +
+      'Refusing to report success while the published variants are unreproducible.'
+    );
+  }
+  return result;
 }
 
 const isMain = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
