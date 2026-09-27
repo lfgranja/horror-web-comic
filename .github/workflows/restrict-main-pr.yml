@@ -16,4 +16,4 @@ jobs:
           exit 1
       - name: Pass when head is dev
         if: github.event.pull_request.head.ref == 'dev'
-        run: echo "OK: head is dev"
+        run: 'echo "OK: head is dev"'
