@@ -370,24 +370,24 @@
   pointer-events: auto;
 }
 
-.frame-stage[data-transition='fade'] .frame-image,
-.frame-stage[data-transition='dissolve'] .frame-image {
+.frame-stage:not([data-image-loading='true'])[data-transition='fade'] .frame-image,
+.frame-stage:not([data-image-loading='true'])[data-transition='dissolve'] .frame-image {
   animation: frame-fade var(--transition-duration, 600ms) var(--transition-easing, ease-in-out) both;
 }
 
-.frame-stage[data-transition='zoom-in'] .frame-image {
+.frame-stage:not([data-image-loading='true'])[data-transition='zoom-in'] .frame-image {
   animation: frame-zoom-in var(--transition-duration, 600ms) var(--transition-easing, ease-in-out) both;
 }
 
-.frame-stage[data-transition='zoom-out'] .frame-image {
+.frame-stage:not([data-image-loading='true'])[data-transition='zoom-out'] .frame-image {
   animation: frame-zoom-out var(--transition-duration, 600ms) var(--transition-easing, ease-in-out) both;
 }
 
-.frame-stage[data-transition='slide-left'] .frame-image {
+.frame-stage:not([data-image-loading='true'])[data-transition='slide-left'] .frame-image {
   animation: frame-slide-left var(--transition-duration, 600ms) var(--transition-easing, ease-in-out) both;
 }
 
-.frame-stage[data-transition='slide-right'] .frame-image {
+.frame-stage:not([data-image-loading='true'])[data-transition='slide-right'] .frame-image {
   animation: frame-slide-right var(--transition-duration, 600ms) var(--transition-easing, ease-in-out) both;
 }
 
@@ -465,10 +465,20 @@
 @media (min-width: 48rem) {
   .player {
     padding: clamp(1.5rem, 4vw, 3.5rem);
+    /* T200: a definite height makes the 1fr stage row actually bound. With only
+       min-height the row resolves to the stage's aspect-ratio height, so a
+       1440x900 viewport rendered a 885px frame and pushed the control bar
+       255px below the fold. The stage is then capped and object-fit:contain
+       letterboxes the frame inside the box instead of cropping it. Mobile is
+       deliberately left alone: its reflow behaviour is tuned for content-sized
+       growth (SC-017). */
+    height: 100dvh;
+    overflow-y: auto;
   }
 
   .frame-stage {
     min-height: 0;
+    max-height: 100%;
   }
 
   .control-bar {
