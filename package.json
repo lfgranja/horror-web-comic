@@ -2,6 +2,7 @@
   "name": "horror-web-comic",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
   "type": "module",
   "engines": {
     "node": ">=20.0.0"
@@ -15,6 +16,7 @@
     "test:perf": "playwright test tests/perf",
     "lhci": "lhci autorun",
     "validate": "node scripts/validate-manifest.mjs",
+    "report": "node scripts/compatibility-report.mjs",
     "build:images": "node scripts/build-images.mjs",
     "build": "npm run validate && node scripts/build.mjs",
     "ci": "npm run preflight && npm run validate && npm run test:unit && npm run build:images && npm run build && npm run test:e2e && npm run test:perf",
