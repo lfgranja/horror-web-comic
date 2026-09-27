@@ -200,9 +200,10 @@ test('the build counts only manifest-referenced assets against the total budget'
 test('image build rejects a mislabeled stale AVIF publication', async () => {
   const temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'media-generation-'));
   try {
-    fs.mkdirSync(path.join(temporaryRoot, 'assets/frames'), { recursive: true });
+    fs.mkdirSync(path.join(temporaryRoot, 'media-src/frames'), { recursive: true });
+    fs.mkdirSync(path.join(temporaryRoot, 'assets/frames/generated'), { recursive: true });
     fs.mkdirSync(path.join(temporaryRoot, 'assets/audio'), { recursive: true });
-    const source = path.join(temporaryRoot, 'assets/frames/frame.svg');
+    const source = path.join(temporaryRoot, 'media-src/frames/frame.svg');
     fs.writeFileSync(source, '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><rect width="10" height="10"/></svg>');
     const jpeg = await sharp({ create: { width: 10, height: 10, channels: 3, background: { r: 0, g: 0, b: 0 } } }).jpeg().toBuffer();
     const mislabeled = path.join(temporaryRoot, 'assets/frames/generated/frame.avif');

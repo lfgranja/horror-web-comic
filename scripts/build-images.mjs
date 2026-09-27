@@ -169,18 +169,25 @@ async function ensureAudio(input, output, variant) {
 }
 
 export async function buildImages(root = process.cwd()) {
-  const sourceDirectory = path.join(root, 'assets/frames');
-  const generatedDirectory = path.join(sourceDirectory, 'generated');
+  // Masters are read from media-src/ and every derived file is written under
+  // assets/. The two trees are kept apart on purpose: assets/ is the
+  // publishable tree, and the build refuses to ship anything there that the
+  // manifest does not reference or that is not a delivery-encoded file. Putting
+  // masters in assets/ would fail that contract even though the media build
+  // needs them, so the source tree lives outside it and never ships.
+  const frameSourceDirectory = path.join(root, 'media-src/frames');
+  const generatedDirectory = path.join(root, 'assets/frames/generated');
+  await fs.mkdir(frameSourceDirectory, { recursive: true });
   await fs.mkdir(generatedDirectory, { recursive: true });
   for (const file of await fs.readdir(generatedDirectory)) {
     if (file.includes('-light-light.')) await fs.rm(path.join(generatedDirectory, file), { force: true });
   }
-  const entries = await fs.readdir(sourceDirectory, { withFileTypes: true });
+  const entries = await fs.readdir(frameSourceDirectory, { withFileTypes: true });
   const files = entries
     .filter((entry) => entry.isFile() && !entry.name.includes('-light') && /\.(?:svg|png|jpe?g)$/i.test(entry.name))
     .map((entry) => entry.name);
   for (const file of files) {
-    const input = path.join(sourceDirectory, file);
+    const input = path.join(frameSourceDirectory, file);
     const stem = path.parse(file).name;
     const intrinsicWidth = await sourceWidth(input);
     for (const [format, settings] of Object.entries(IMAGE_FORMATS)) {
@@ -207,26 +214,29 @@ export async function buildImages(root = process.cwd()) {
       }
     }
   }
-  const audioDirectory = path.join(root, 'assets/audio');
-  const audioFiles = (await fs.readdir(audioDirectory)).filter((file) => file.endsWith('.wav') && !file.includes('-light'));
+  const audioSourceDirectory = path.join(root, 'media-src/audio');
+  const audioPublishDirectory = path.join(root, 'assets/audio');
+  await fs.mkdir(audioSourceDirectory, { recursive: true });
+  await fs.mkdir(audioPublishDirectory, { recursive: true });
+  const audioFiles = (await fs.readdir(audioSourceDirectory)).filter((file) => file.endsWith('.wav') && !file.includes('-light'));
   for (const file of audioFiles) {
-    const input = path.join(audioDirectory, file);
+    const input = path.join(audioSourceDirectory, file);
     const stem = path.parse(file).name;
     validateAudioSource(input);
-    await ensureAudio(input, path.join(audioDirectory, `${stem}.aac`), AUDIO_VARIANTS.standard);
-    await ensureAudio(input, path.join(audioDirectory, `${stem}-light.opus`), AUDIO_VARIANTS.light);
+    await ensureAudio(input, path.join(audioPublishDirectory, `${stem}.aac`), AUDIO_VARIANTS.standard);
+    await ensureAudio(input, path.join(audioPublishDirectory, `${stem}-light.opus`), AUDIO_VARIANTS.light);
   }
   const result = { frameSources: files.length, audioSources: audioFiles.length };
   // T207: a media build that found nothing is a failure, not a pass. Without
   // this the step exits 0 having generated nothing, so the published variants
   // under assets/frames/generated and assets/audio are unreproducible and the
   // CI step proves nothing at all. Commit the frame and audio masters (the
-  // source artwork in assets/frames/*.svg|png|jpe?g and assets/audio/*.wav)
-  // to make the pipeline reproducible.
+  // source artwork in media-src/frames/*.svg|png|jpe?g and audio masters in
+  // media-src/audio/*.wav) to make the pipeline reproducible.
   if (files.length === 0 && audioFiles.length === 0) {
     throw new Error(
       'buildImages found no frame or audio master sources: expected image masters in ' +
-      'assets/frames/*.svg|png|jpe?g and audio masters in assets/audio/*.wav. ' +
+      'media-src/frames/*.svg|png|jpe?g and audio masters in media-src/audio/*.wav. ' +
       'Refusing to report success while the published variants are unreproducible.'
     );
   }
