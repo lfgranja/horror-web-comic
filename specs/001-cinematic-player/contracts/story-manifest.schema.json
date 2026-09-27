@@ -75,11 +75,19 @@
         "avif": { "type": "string", "minLength": 1 },
         "webp": { "type": "string", "minLength": 1 },
         "fallback": { "type": "string", "minLength": 1 },
+        "avifSrcset": { "$ref": "#/$defs/widthSrcset" },
+        "webpSrcset": { "$ref": "#/$defs/widthSrcset" },
+        "fallbackSrcset": { "$ref": "#/$defs/widthSrcset" },
         "srcset": { "type": "string", "minLength": 1 },
         "sizes": { "type": "string", "minLength": 1 },
         "width": { "type": "integer", "minimum": 1 },
         "height": { "type": "integer", "minimum": 1 }
       }
+    },
+    "widthSrcset": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^\\s*\\S+\\s+[1-9]\\d*w(?:\\s*,\\s*\\S+\\s+[1-9]\\d*w)*\\s*$"
     },
     "audioTrack": {
       "type": "object",
