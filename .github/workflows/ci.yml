@@ -21,7 +21,12 @@ jobs:
         run: npm ci
 
       - name: Install system media tools
-        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+        # ffmpeg/ffprobe are probed by preflight and used by build:images.
+        # tesseract is required by the published-raster content audit
+        # (tests/e2e/zz-content-audit-published.spec.js, T219): that audit reads
+        # the shipped frames under assets/frames/generated and FAILS rather than
+        # skips when OCR is unavailable, so the tool has to be present.
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg tesseract-ocr
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium firefox webkit
