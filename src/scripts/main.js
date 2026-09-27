@@ -76,7 +76,11 @@ async function boot() {
     document.title = story.title;
     document.querySelector('#story-title').textContent = story.title;
     player.setAudioState(audio.state());
-    globalThis.__cinematicPlayer = player;
+    // T215: test-only hook, stripped from the production bundle by the
+    // globalThis.__CINEMATIC_PRODUCTION__ define. Over 40 browser specs read
+    // this, so gating it at build time is what keeps them working while the
+    // published bundle stays free of it.
+    if (!globalThis.__CINEMATIC_PRODUCTION__) globalThis.__cinematicPlayer = player;
     document.querySelector('#retry-button').addEventListener('click', () => globalThis.location.reload());
   } catch (error) {
     player?.destroy();
