@@ -12,6 +12,7 @@ export const REQUIREMENTS = Object.freeze({
   python3: '3.10.0',
   ffmpeg: '5.0.0',
   ffprobe: '5.0.0',
+  tesseract: '4.0.0',
   audioEncoders: Object.freeze(['aac', 'libopus']),
   browsers: Object.freeze(['chromium', 'firefox', 'webkit']),
   lighthouse: '0.14.0'
@@ -23,6 +24,7 @@ export const CHECK_IDS = Object.freeze([
   'python3',
   'ffmpeg',
   'ffprobe',
+  'tesseract',
   'playwright-browsers',
   'browser-launch',
   'chrome',
@@ -38,8 +40,16 @@ const USED_BY = Object.freeze({
   node: ['preflight', 'ci', 'validate', 'test:unit', 'build', 'test'],
   npm: ['preflight', 'ci', 'lhci', 'playwright install'],
   python3: ['serve', 'playwright.config.js webServer'],
-  ffmpeg: ['build:images', 'ci'],
-  ffprobe: ['build:images', 'build', 'ci'],
+  // T153 residual, closed 2026-09-27: tests/unit/delivery.test.js shells out to
+  // `node scripts/build-images.mjs` and tests/unit/media-generation.test.js invokes
+  // ffprobe directly, so npm run test:unit needs both executables too. The map
+  // previously attributed them only to build:images/build/ci, which under-reported
+  // the real dependency even though the probes themselves were unconditional.
+  ffmpeg: ['build:images', 'test:unit', 'ci'],
+  ffprobe: ['build:images', 'build', 'test:unit', 'ci'],
+  // T219: the published-raster content audit OCRs the shipped frames and fails
+  // rather than skipping, so a missing tesseract must be caught here first.
+  tesseract: ['test:e2e', 'ci'],
   'playwright-browsers': ['test', 'test:e2e', 'test:perf', 'ci'],
   'browser-launch': ['test', 'test:e2e', 'test:perf', 'ci'],
   chrome: ['lhci', 'ci:lighthouse'],
@@ -70,6 +80,7 @@ const REMEDIES = Object.freeze({
   npm: 'install npm 10 or newer with `npm install -g npm@latest` and re-run npm run preflight',
   python3: 'install Python 3.10 or newer (Debian/Ubuntu: sudo apt-get install -y python3; macOS: brew install python3); it serves the static site for npm run serve and the Playwright webServer',
   ffmpeg: 'install ffmpeg 5 or newer built with the aac and libopus encoders (Debian/Ubuntu: sudo apt-get install -y ffmpeg; macOS: brew install ffmpeg), then run npm run build:images',
+  tesseract: 'install tesseract 4 or newer (Debian/Ubuntu: sudo apt-get install -y tesseract-ocr; macOS: brew install tesseract); the published-raster content audit in tests/e2e OCRs the shipped frames and FAILS rather than skipping, so SC-013 cannot be certified without it',
   ffprobe: 'install ffprobe 5 or newer (Debian/Ubuntu: sudo apt-get install -y ffmpeg; macOS: brew install ffmpeg); npm run build:images and npm run build probe every published track with it',
   browsers: 'download the browser executables the matrix needs with `npx playwright install chromium firefox webkit` (add --with-deps on Debian/Ubuntu) and re-run npm run preflight',
   launch: 'install the shared libraries the browsers need with `sudo npx playwright install-deps` on Debian/Ubuntu (or re-run `npx playwright install --with-deps chromium firefox webkit`), then re-run npm run preflight; a downloaded browser that cannot launch fails every test in the matrix',
@@ -342,6 +353,7 @@ export function evaluatePreflight(context, project) {
     versionEntry({ id: 'python3', label: 'Python', found: host.python3, minimum: REQUIREMENTS.python3 }),
     ffmpegEntry(host),
     versionEntry({ id: 'ffprobe', label: 'ffprobe', found: host.ffprobe ? host.ffprobe.version : null, minimum: REQUIREMENTS.ffprobe }),
+    versionEntry({ id: 'tesseract', label: 'tesseract', found: host.tesseract ? host.tesseract.version : null, minimum: REQUIREMENTS.tesseract }),
     browsersEntry(host),
     browserLaunchEntry(host),
     binaryEntry({ id: 'chrome', found: host.chrome, expected: 'a Chrome or Chromium executable for the Lighthouse audit', foundLabel: 'Chrome', command: 'npm run lhci' }),
@@ -428,6 +440,13 @@ function probeFfprobe() {
   return { version: version ? version[1] : null };
 }
 
+function probeTesseract() {
+  const banner = run('tesseract', ['--version']);
+  if (banner === null) return null;
+  const version = /tesseract (\S+)/.exec(banner);
+  return { version: version ? version[1] : null };
+}
+
 async function probeBrowsers() {
   const browsers = {};
   const launches = {};
@@ -491,6 +510,7 @@ export async function buildContext(options = {}) {
     python3: run('python3', ['--version']),
     ffmpeg: probeFfmpeg(),
     ffprobe: probeFfprobe(),
+    tesseract: probeTesseract(),
     browsers,
     browserLaunch: launches,
     chrome: probeChrome(options.environment || process.env),
