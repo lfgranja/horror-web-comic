@@ -157,3 +157,14 @@ Lighthouse CI são atendidos, a matriz de navegadores é testada e o
 `story-manifest.schema.json` (mais o validador de integridade referencial)
 valida o conteúdo real da narrativa. Os protocolos manuais de SC-002 e SC-004
 são executados fora do CI conforme as seções acima.
+
+## Registro de execução — 2026-09-24
+
+- `npm run ci` passou: manifesto, 18 testes unitários, build de produção e orçamentos.
+- A suíte E2E passou em mobile Chromium, desktop Chromium e desktop Firefox: 64 testes por navegador, 192 no total.
+- A matriz responsiva disponível passou em 39 execuções nos três navegadores suportados neste host.
+- Os quatro portões de primeira chegada passaram sob o perfil 4G em Chromium, incluindo todos os quadros do manifesto de produção e cache aquecido verificado.
+- O portão FPS mediu a transição completa e falhou honestamente neste host com 50,76 fps; o código não oculta a falha por skip.
+- O Lighthouse CI passou em três execuções com todas as asserções configuradas.
+- WebKit/mobile Safari não puderam iniciar porque o host não possui `libicu74` e `libjpeg-turbo8`.
+- Os estudos humanos de SC-002 e SC-004 continuam pendentes; nenhum resultado de participantes foi fabricado.

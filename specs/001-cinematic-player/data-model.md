@@ -60,10 +60,13 @@ Unidade narrativa; um passo de navegação.
 
 | Campo | Tipo | Obrigatório | Descrição |
 |-------|------|-------------|-----------|
-| `avif` | string (URL) | sim | Fonte AVIF primária |
-| `webp` | string (URL) | não | Fonte WebP intermediária |
-| `fallback` | string (URL) | sim | Fonte JPEG |
-| `srcset` | string | não | Conjunto responsivo de candidatos |
+| `avif` | string (URL) | sim | Fonte AVIF primária (caminho único) |
+| `webp` | string (URL) | não | Fonte WebP intermediária (caminho único) |
+| `fallback` | string (URL) | sim | Fonte JPEG de fallback (caminho único) |
+| `avifSrcset` | string (width-srcset) | não | Candidatos AVIF responsivos — somente descritores de largura (`NNNw`) |
+| `webpSrcset` | string (width-srcset) | não | Candidatos WebP responsivos — somente descritores de largura (`NNNw`) |
+| `fallbackSrcset` | string (width-srcset) | não | Candidatos JPEG de fallback — somente descritores de largura (`NNNw`) |
+| `srcset` | string (legado) | não | Conjunto legado de candidatos (permissivo — aceita descritores `w`/`x`/`h`); usado como reserva quando `avifSrcset`/`webpSrcset`/`fallbackSrcset` estão ausentes (`resolveImageSources`) |
 | `sizes` | string | não | Expressão de tamanhos de exibição |
 | `width` | inteiro > 0 | sim | Largura intrínseca (evita CLS) |
 | `height` | inteiro > 0 | sim | Altura intrínseca |
@@ -127,6 +130,8 @@ Unidade narrativa; um passo de navegação.
 - Todo `durationMs`/`defaultFrameDurationMs` DEVE estar entre 500 e 30000 ms.
 - `Transition.type` DEVE pertencer ao enum; `durationMs` entre 0 e 2000.
 - `ImageAsset.width` e `height` DEVEM ser > 0 (FR-015).
+- `ImageAsset.avifSrcset`, `webpSrcset` e `fallbackSrcset`, quando presentes, DEVEM usar somente descritores de largura (`NNNw`, um por candidato — padrão `widthSrcset` do schema); `ImageAsset.srcset` (legado, opcional) permanece permissivo e pode usar descritores de largura, densidade ou altura.
+- `resolveImageSources`: `avif` efetivo = `avifSrcset` ?? `srcset` legado ?? `avif` (quando o caminho termina em `.avif`); `webp` efetivo = `webpSrcset` ?? `srcset` legado ?? `webp` (quando termina em `.webp`); `fallback` efetivo = `fallbackSrcset` ?? `srcset` legado.
 - Toda referência de áudio/imagem DEVE apontar para um arquivo existente
   (verificado no build/CI — FR-025).
 - Duração efetiva de um quadro: `frame.durationMs` ?? `scene.defaultFrameDurationMs`
@@ -134,9 +139,7 @@ Unidade narrativa; um passo de navegação.
   (FR-018, FR-021), com piso de `250` ms. A velocidade afeta apenas a permanência;
   as transições mantêm a duração configurada. Para a linha de base de SC-001,
   considera-se ritmo padrão de 1.500 ms por quadro.
-- Transição efetiva: `frame.transition` ?? `scene.defaultTransition` ??
-  `story.defaultTransition` ?? `fade` 600 ms (FR-002); sob
-  `prefers-reduced-motion`, força-se `type: cut`, `durationMs: 0` (FR-011).
+- Transição efetiva (`resolveTransition`): mescla `frame.transition` sobre `scene.defaultTransition` sobre `story.defaultTransition` sobre `fade` 600 ms `ease-in-out` (precedência quadro → cena → história → padrão; FR-002); sob `prefers-reduced-motion`, força-se `type: cut`, `durationMs: 0` (FR-011); sob degradação de capacidades (`shouldDegrade`), qualquer tipo diferente de `cut`/`none` vira corte instantâneo (`type: cut`, `durationMs: 0`, `easing: linear`). A velocidade não altera as transições.
 - Manifesto ausente/malformado/inválido ou com `schemaVersion` incompatível DEVE
   ser rejeitado com tela de erro controlada (FR-023, FR-024).
 - `PersistedState.lastFrameId` inexistente/inválido DEVE ser ignorado e a
