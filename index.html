@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="description" content="Uma história de terror em quadros, com som opcional e acessível.">
+    <meta property="og:title" content="A Casa que Respira">
+    <meta property="og:description" content="Uma história de terror em quadros, com som opcional e acessível.">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="pt_BR">
+    <title>A Casa que Respira</title>
+    <link rel="stylesheet" href="src/styles/tokens.css">
+    <link rel="stylesheet" href="src/styles/base.css">
+    <link rel="stylesheet" href="src/styles/player.css">
+  </head>
+  <body>
+    <main id="app" class="app-shell">
+      <section id="error-screen" class="error-screen" role="alert" hidden>
+        <div class="error-card">
+          <p class="eyebrow">ARQUIVO INTERROMPIDO</p>
+          <h1>Não foi possível abrir a narrativa</h1>
+          <p id="error-message">Verifique o conteúdo e tente novamente.</p>
+          <button id="retry-button" class="control-button primary" type="button">Tentar novamente</button>
+        </div>
+      </section>
+
+      <section id="player" class="player" tabindex="0" data-status="idle" data-audio-state="on" data-transition="cut" aria-label="Player da narrativa">
+        <header class="player-header">
+          <div>
+            <p class="eyebrow">HORROR WEB COMIC</p>
+            <h1 id="story-title">A Casa que Respira</h1>
+          </div>
+          <p id="frame-counter" class="frame-counter" aria-live="off">1 / 4</p>
+        </header>
+
+        <div id="frame-stage" class="frame-stage" data-transition="cut">
+          <div id="frame-placeholder" class="frame-placeholder" aria-hidden="true">
+            <span class="loading-mark"></span>
+            <span class="loading-label">Carregando quadro</span>
+          </div>
+          <picture id="frame-picture" class="frame-picture">
+            <source id="frame-avif" type="image/avif">
+            <source id="frame-webp" type="image/webp">
+            <img id="frame-image" class="frame-image" alt="" aria-describedby="frame-description" data-frame-id="" width="1200" height="800">
+          </picture>
+          <p id="frame-description" class="frame-description" lang="pt-BR" role="status" aria-live="polite" aria-atomic="true"></p>
+        </div>
+
+        <div class="progress-wrap">
+          <div id="progress" class="progress" role="progressbar" aria-label="Progresso da narrativa" aria-valuemin="1" aria-valuemax="4" aria-valuenow="1"></div>
+        </div>
+
+        <nav class="control-bar" aria-label="Controles do player">
+          <div class="control-group primary-controls">
+            <button id="home" class="control-button" type="button" aria-label="Voltar ao início" title="Voltar ao início">⌂</button>
+            <button id="previous-scene" class="control-button" type="button" aria-label="Cena anterior" title="Cena anterior">↞</button>
+            <button id="previous-frame" class="control-button" type="button" aria-label="Quadro anterior" title="Quadro anterior">‹</button>
+            <button id="play-toggle" class="control-button play-toggle" type="button" aria-label="Pausar" title="Pausar">Ⅱ</button>
+            <button id="next-frame" class="control-button" type="button" aria-label="Próximo quadro" title="Próximo quadro">›</button>
+            <button id="next-scene" class="control-button" type="button" aria-label="Próxima cena" title="Próxima cena">↠</button>
+            <button id="end" class="control-button" type="button" aria-label="Ir ao fim" title="Ir ao fim">⇥</button>
+          </div>
+          <div class="control-group utility-controls">
+            <label class="range-control" for="volume"><span>Volume</span><input id="volume" type="range" min="0" max="100" step="1" value="60"><output id="volume-value" for="volume">60%</output></label>
+            <label class="select-control" for="speed"><span>Ritmo</span><select id="speed" aria-label="Velocidade de exibição"><option value="0.5">0,5×</option><option value="1" selected>1×</option><option value="2">2×</option></select></label>
+            <button id="audio-toggle" class="control-button audio-toggle" type="button" aria-pressed="true" aria-describedby="audio-hint">Som</button>
+          </div>
+        </nav>
+        <p id="audio-hint" class="audio-hint">O som pode ser desativado a qualquer momento.</p>
+        <div id="audio-status" class="audio-status" role="status" aria-live="polite"></div>
+      </section>
+
+      <div id="blocked-overlay" class="overlay" role="dialog" aria-modal="true" aria-labelledby="blocked-title" hidden>
+        <div class="overlay-card">
+          <p class="eyebrow">SOM EM ESPERA</p>
+          <h2 id="blocked-title">toque para iniciar</h2>
+          <p>O navegador bloqueou a reprodução automática. Toque na página para ativar o som.</p>
+          <button id="continue-silent" class="control-button" type="button">continuar sem som</button>
+        </div>
+      </div>
+
+      <div id="resume-overlay" class="overlay" role="dialog" aria-modal="true" aria-labelledby="resume-title" hidden>
+        <div class="overlay-card">
+          <p class="eyebrow">NARRATIVA PAUSADA</p>
+          <h2 id="resume-title">Retome quando quiser</h2>
+          <p>A narrativa e o som estão pausados enquanto a aba não está em foco.</p>
+          <button id="resume-button" class="control-button primary" type="button">Retomar</button>
+        </div>
+      </div>
+
+      <div id="end-overlay" class="overlay" role="dialog" aria-modal="true" aria-labelledby="end-title" hidden>
+        <div class="overlay-card">
+          <p class="eyebrow">FIM</p>
+          <h2 id="end-title">fim da narrativa</h2>
+          <p>Você chegou ao fim. A história pode ser revisitada a qualquer momento.</p>
+          <button id="replay" class="control-button primary" type="button">Rever do início</button>
+        </div>
+      </div>
+    </main>
+    <script type="module" src="src/scripts/main.js"></script>
+  </body>
+</html>

@@ -1,0 +1,62 @@
+:root {
+  color-scheme: dark;
+  --ink-950: #07080d;
+  --ink-900: #0d1019;
+  --ink-850: #121827;
+  --ink-800: #1a2234;
+  --ink-700: #2b3850;
+  --mist-100: #f4f7fb;
+  --mist-300: #c7d1df;
+  --mist-500: #b7c4d7;
+  --amber-400: #f5c86b;
+  --amber-300: #ffe2a1;
+  --red-400: #ffd0d0;
+  --line: rgba(199, 209, 223, 0.18);
+  --focus: #ffe2a1;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --radius-sm: 0.5rem;
+  --radius-md: 0.9rem;
+  --radius-lg: 1.4rem;
+  --space-1: 0.35rem;
+  --space-2: 0.65rem;
+  --space-3: 1rem;
+  --space-4: 1.5rem;
+  --space-5: 2.25rem;
+  --font-display: Georgia, 'Times New Roman', serif;
+  --font-ui: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --z-stage: 1;
+  --z-controls: 3;
+  --z-overlay: 10;
+  /* Frame-invariant description reservation (FR-015, SC-015): the live region
+     is filled ~500ms after a frame changes, so the in-flow mobile layout must
+     reserve its box up front or the controls below shift on every frame change.
+     The floor is LINE-based, not viewport-height-based: it costs N lines of THIS
+     element's own line box (line-height × 1em) plus its padding and border, so
+     it scales with the real description typography. Because it tracks font size,
+     a 200% text zoom always overflows it naturally — the floor stays inert and
+     never clips (SC-017).
+
+     12 lines covers the tallest production description (506 chars = 243px at the
+     360x800 reference viewport), so every frame reserves an identical box and
+     CLS stays at 0. */
+  --description-line-height: 1.45;
+  --description-reserve-lines: 12;
+  --description-min-height: calc(var(--description-reserve-lines) * var(--description-line-height) * 1em + 1.5rem + 2px);
+}
+
+/* Short LANDSCAPE viewports cannot fit the tallest description and the control
+   bar at the same time: the stage already has its own reduced-height budget
+   (`max-height: calc(100dvh - 11rem)` in player.css), so any description
+   reservation on top of it pushes the frame image out of the viewport. FR-012
+   forbids clipping the description and the image must stay visible, so the
+   reservation is dropped here and the stage's reserved image box carries the
+   stability instead. Portrait short viewports keep the full reservation. */
+@media (max-height: 30rem) and (orientation: landscape) {
+  :root {
+    --description-reserve-lines: 0;
+    --description-min-height: 0px;
+  }
+}

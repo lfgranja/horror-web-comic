@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "test-story",
+  "title": "A Casa que Respira",
+  "defaultFrameDurationMs": 1500,
+  "defaultTransition": { "type": "fade", "durationMs": 80, "easing": "ease-in-out" },
+  "scenes": [
+    {
+      "id": "scene-01",
+      "title": "O vestíbulo",
+      "defaultFrameDurationMs": 1500,
+      "defaultTransition": { "type": "fade", "durationMs": 80 },
+      "audio": { "id": "scene-01-audio", "src": "tests/fixtures/assets/audio/scene-01.wav", "loop": true, "volume": 0.6 },
+      "frames": [
+        { "id": "frame-01", "image": { "avif": "tests/fixtures/assets/frames/frame-01.svg", "fallback": "tests/fixtures/assets/frames/frame-01.svg", "width": 1200, "height": 800 }, "alt": "Uma porta antiga sob luz fraca", "description": "Uma porta de madeira velha ocupa o vestíbulo. A luz vacila, o ar parece parado e uma sombra cruza a fresta. O texto na placa diz: Volte quando a casa acordar.", "durationMs": 1500, "transition": { "type": "cut", "durationMs": 0 } },
+        { "id": "frame-02", "image": { "avif": "tests/fixtures/assets/frames/frame-02.svg", "fallback": "tests/fixtures/assets/frames/frame-02.svg", "width": 1200, "height": 800 }, "alt": "Uma photograph coberta de poeira", "description": "Uma fotografia coberta de poeira mostra o mesmo corredor. A legenda diz: Ela ainda está em casa. Um ruído seco vem debaixo do assoalho.", "durationMs": 1800, "transition": { "type": "fade", "durationMs": 120 } }
+      ]
+    },
+    {
+      "id": "scene-02",
+      "title": "A escada",
+      "defaultFrameDurationMs": 1600,
+      "defaultTransition": { "type": "dissolve", "durationMs": 100 },
+      "audio": { "id": "scene-02-audio", "src": "tests/fixtures/assets/audio/scene-02.wav", "loop": true, "volume": 0.6 },
+      "frames": [
+        { "id": "frame-03", "image": { "avif": "tests/fixtures/assets/frames/frame-03.svg", "fallback": "tests/fixtures/assets/frames/frame-03.svg", "width": 1200, "height": 800 }, "alt": "Escada estreita descendo para a escuridão", "description": "Uma escada estreita desce para a escuridão. Cada degrau está molhado. No fundo, algo se move; o silêncio é quebrado por um arrastar.", "durationMs": 1600, "transition": { "type": "slide-left", "durationMs": 100 }, "audio": { "id": "frame-03-audio", "src": "tests/fixtures/assets/audio/frame-03.wav", "loop": false, "volume": 0.8 } },
+        { "id": "frame-04", "image": { "avif": "tests/fixtures/assets/frames/frame-04.svg", "fallback": "tests/fixtures/assets/frames/frame-04.svg", "width": 1200, "height": 800 }, "alt": "Uma janela aberta para a chuva", "description": "A janela está aberta para a chuva. A cortaza se move although não há vento. No vidro, a escrita diz: Não olhe para trás.", "durationMs": 1600, "transition": { "type": "cut", "durationMs": 0 } }
+      ]
+    }
+  ]
+}
