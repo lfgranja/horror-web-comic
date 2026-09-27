@@ -92,3 +92,24 @@ A preferência de áudio, volume, velocidade e posição de leitura é local ao 
 ## Entrega
 
 Consulte `docs/delivery.md` para a matriz de navegadores, formatos de mídia, orçamento de desempenho e verificações de publicação.
+
+## Relatório de compatibilidade
+
+`npm run report` audita um manifesto narrativo contra o schema desta Distribuição e emite um relatório legível, sem executar build, navegador ou codificação de mídia:
+
+```bash
+npm run report
+npm run report -- ../outro-projeto/src/data/story.json
+npm run report -- ../outro-projeto/src/data/story.json --root ../outro-projeto
+npm run report -- manifest.json --json
+npm run report -- manifest.json --out relatorio.md
+```
+
+O relatório cobre estrutura, schema, portabilidade das referências, inventário de assets, variantes leves (`-light-*`), orçamento de entrega e metadados de acessibilidade. Ele **não** substitui `npm run build`: navegador, Lighthouse, FPS e conformidade WCAG não são verificáveis a partir do manifesto. O código de saída é `0` quando o manifesto é compatível e `1` quando há erros, então o comando também serve como portão em CI.
+
+A documentação comercial que acompanha esta ferramenta está em `docs/monetization/`.
+
+## Licença
+
+MIT. Consulte `LICENSE`.
+
