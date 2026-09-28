@@ -75,3 +75,46 @@ export function frameId(page) {
 export async function waitForFrame(page, id) {
   await expect(page.locator('#player')).toHaveAttribute('data-frame-id', id);
 }
+
+/**
+ * Pin every frame's dwell so automatic advance cannot change the scene or frame
+ * mid-assertion.
+ *
+ * A test that captures a media element, then waits, then asserts on it is racing
+ * the auto-advance timer: on a loaded runner the story can legitimately cross a
+ * frame (or scene) boundary during the wait, and the assertion then measures an
+ * element the player has already left. That failure is engine- and
+ * load-dependent and has nothing to do with the behaviour under test, which is
+ * why it must be removed rather than retried.
+ */
+export async function freezeAdvance(page) {
+  await page.evaluate(() => {
+    const player = globalThis.__cinematicPlayer;
+    for (const item of player.frames) item.frame.durationMs = 600000;
+  });
+}
+
+/**
+ * Record whether the auto-start timer was ever armed, instead of polling for it.
+ *
+ * `autoStartTimer` is truthy only inside a ~250 ms window opened in the
+ * constructor. A test that polls for it from the test process loses that race
+ * whenever page initialisation plus the first poll exceeds the window, which is
+ * exactly what happens on a slow or loaded engine. Sampling from inside the page
+ * — installed before any page script runs — observes the transient state
+ * regardless of how slow the test process is.
+ *
+ * After calling this, read `window.__autoStartObservedMax`: it is > 0 when the
+ * timer was armed, and 0 when it never was.
+ */
+export async function installAutoStartObserver(page) {
+  await page.addInitScript(() => {
+    window.__autoStartObservedMax = 0;
+    const sample = () => {
+      const armed = globalThis.__cinematicPlayer?.autoStartTimer ?? 0;
+      if (armed > window.__autoStartObservedMax) window.__autoStartObservedMax = armed;
+    };
+    const timer = setInterval(sample, 4);
+    setTimeout(() => clearInterval(timer), 10000);
+  });
+}

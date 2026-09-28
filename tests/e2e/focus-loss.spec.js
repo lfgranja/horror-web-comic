@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { openPlayer } from './helpers.js';
+import { openPlayer, installAutoStartObserver } from './helpers.js';
 
 async function hideTab(page) {
   await page.evaluate(() => {
@@ -9,13 +9,20 @@ async function hideTab(page) {
 }
 
 test('startup focus loss clears auto-start, pauses audio, saves progress, and requires overlay resume', async ({ page }) => {
+  // Record the transient auto-start state from inside the page instead of
+  // polling for it. The timer is truthy only inside a ~250 ms window, so a poll
+  // from the test process loses the race whenever initialisation plus the first
+  // poll exceeds it — reproducible on a loaded chromium, which is what made this
+  // look like an engine difference.
+  await installAutoStartObserver(page);
   await page.goto('/?story=tests/fixtures/story.json', { waitUntil: 'commit' });
   // Wait for the player instance, not for the `idle` status: the auto-start
-  // window is only 250 ms wide, and on a slower engine (WebKit) the first poll
-  // can land after it has already closed, so `status === 'idle'` is never
-  // observed. The auto-start timer is armed inside the constructor, so once the
-  // instance exists the pending auto-start is guaranteed to be observable.
-  await page.waitForFunction(() => globalThis.__cinematicPlayer?.autoStartTimer > 0);
+  // window is only 250 ms wide and the status is not reliably observable.
+  await page.waitForFunction(() => Boolean(globalThis.__cinematicPlayer));
+  expect(
+    await page.evaluate(() => window.__autoStartObservedMax),
+    'the auto-start timer must have been armed inside the constructor'
+  ).toBeGreaterThan(0);
   await hideTab(page);
 
   await expect(page.locator('#resume-overlay')).toBeVisible();

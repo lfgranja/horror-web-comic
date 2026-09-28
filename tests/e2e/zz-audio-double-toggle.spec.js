@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { openPlayer } from './helpers.js';
+import { openPlayer, freezeAdvance } from './helpers.js';
 
 const STORY = 'tests/fixtures/story.json';
 
@@ -27,17 +27,10 @@ async function readSceneAudio(page) {
 }
 
 /**
- * Pin the current frame's dwell long enough that automatic advance cannot
- * change scene mid-assertion. Without this the element captured at the start of
- * an evaluate can be the outgoing one by the time the waits finish, and the
- * assertion then measures a scene the player has legitimately left.
+ * `freezeAdvance` now lives in helpers.js: pinning the frame dwell is needed by
+ * every test that captures a media element, waits, then asserts on it, so it is
+ * shared rather than re-declared per spec.
  */
-async function freezeAdvance(page) {
-  await page.evaluate(() => {
-    const player = globalThis.__cinematicPlayer;
-    for (const item of player.frames) item.frame.durationMs = 600000;
-  });
-}
 
 test.describe('T198 — re-enable inside the stop ramp', () => {
   test('a toggle-off/on pair faster than STOP_DURATION still yields audible scene audio', async ({ page }) => {
