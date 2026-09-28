@@ -107,7 +107,24 @@ async function send(body, filePath, stats, request, response) {
   const headers = {
     'content-type': contentType(filePath),
     'accept-ranges': 'bytes',
-    'cache-control': 'no-store'
+    // A freshness lifetime, deliberately, not `no-store`.
+    //
+    // tests/perf/first-frame.spec.js certifies SC-008 — that a *warm* production
+    // first frame arrives within 1.5 s at p75 — and it establishes "warm" by
+    // asserting that some /src/ resource reports `transferSize === 0`. In the
+    // Resource Timing API that means the response came from cache with no network
+    // request at all, which requires a max-age. A previous `no-store` here made
+    // that assertion permanently false, and the performance gate could not run.
+    //
+    // `no-cache` would not be a workaround: a 304 still carries response headers,
+    // so transferSize is not 0. This server also sends no ETag or Last-Modified, so
+    // a revalidating policy could not produce a 304 either.
+    //
+    // Safe for correctness: Playwright creates a fresh browser context per test and
+    // the HTTP cache is scoped to the context, so nothing survives between tests. A
+    // file edited between runs is still picked up, because the next run starts with
+    // an empty cache.
+    'cache-control': 'public, max-age=60'
   };
 
   if (request.method === 'HEAD') {
