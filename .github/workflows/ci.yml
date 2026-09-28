@@ -31,6 +31,40 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium firefox webkit
 
+      - name: Provide a null audio sink for headless browsers
+        # Firefox does not tolerate a missing output device. With no cubeb context
+        # it raises OnMediaSinkAudioError; the element's error event then reaches
+        # AudioManager.handleMediaFailure and the track is latched as failed for the
+        # rest of the session, so any assertion that the element actually plays
+        # fails. Chromium and WebKit degrade silently, which is why this presented as
+        # an engine difference.
+        #
+        # The suite must not depend on real audio hardware, so give cubeb a real
+        # output that discards its samples: a PulseAudio null sink. Because it is a
+        # genuine output as far as cubeb is concerned, "currentTime advanced" and
+        # "the element is not paused" stay meaningful assertions instead of being
+        # assertions about a missing device.
+        #
+        # There is no Firefox pref for this: media.cubeb.force_null_context forces
+        # the failure on purpose, and force_mock_context only compiles under
+        # ENABLE_TESTS. The daemon is started as the runner user because PulseAudio
+        # refuses to run as root.
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends pulseaudio pulseaudio-utils
+          pulseaudio --start --exit-idle-time=-1 --load="module-null-sink sink_name=ci_null rate=48000 channels=2"
+          for attempt in $(seq 1 15); do
+            if pactl info 2>/dev/null | grep -q 'Default Sink: ci_null'; then
+              break
+            fi
+            if [ "$attempt" = "15" ]; then
+              echo "::error::the null audio sink never became the default sink"
+              exit 1
+            fi
+            sleep 1
+          done
+          pactl info | grep -E 'Server Name|Default Sink'
+
       # Production gate in the exact required order declared in AGENTS.md:
       # preflight && validate && test:unit && build:images && build && test:e2e && test:perf.
       # Each step invokes the existing npm script (see scripts.ci in package.json).

@@ -51,6 +51,16 @@
 - Playwright browsers must **launch headless** (preflight verifies; missing system libs = fail).
 - `lhci` needs **Chrome/Chromium** binary (`CHROME_PATH` or install Google Chrome).
 - Run `npx playwright install --with-deps chromium firefox webkit` after `npm ci`.
+- **The e2e suite needs an audio output, but not a real one.** Firefox does not tolerate a
+  missing output device: it raises `OnMediaSinkAudioError`, the element's `error` event
+  reaches `AudioManager.handleMediaFailure`, and the track is latched as failed for the
+  session. Chromium and WebKit degrade silently, which makes it look engine-specific. CI
+  installs PulseAudio and loads a `module-null-sink` for this (see the *Provide a null
+  audio sink* step in `ci.yml`); to run the matrix locally, install `pulseaudio
+  pulseaudio-utils`, run `pulseaudio --start --exit-idle-time=-1 --load="module-null-sink
+  sink_name=ci_null"`, and `pactl set-default-sink ci_null`. There is no Firefox pref for
+  it: `media.cubeb.force_null_context` forces the failure on purpose, and
+  `force_mock_context` only compiles under `ENABLE_TESTS`.
 - **Fedora hosts cannot run webkit locally.** Playwright's dependency installer is Debian/Ubuntu-only, and the pinned webkit build links against ICU 74 while Fedora 44 ships ICU 77, so `npx playwright install-deps` cannot close the gap. `npm run preflight` therefore always fails the `browser-launch` check here — that check is **CI-enforced** on `ubuntu-latest`. Locally the bar is the other 14 preflight checks plus `npx playwright test tests/e2e --project=mobile-chromium --project=desktop-chromium --project=desktop-firefox`, which covers 3 of the 5 matrix projects. Chromium and Firefox do launch.
 
 ## File Layout
