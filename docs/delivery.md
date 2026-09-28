@@ -12,7 +12,7 @@ e imprime, para cada falha, o comando de correção.
 | --- | --- | --- | --- |
 | Node.js | 20.0.0 | `node` | todos os scripts |
 | npm | 10.0.0 | `npm` | todos os scripts, `lhci`, `npx playwright install` |
-| Python 3 | 3.10.0 | `python3` | `npm run serve`, `webServer` de `playwright.config.js` |
+| Node.js | 20 ou superior | `node` | `npm run serve`, `webServer` de `playwright.config.js` (via `scripts/serve-e2e.mjs`) |
 | ffmpeg (com `aac` e `libopus`) | 5.0.0 | `ffmpeg` | `npm run build:images` |
 | ffprobe | 5.0.0 | `ffprobe` | `npm run build:images`, `npm run build` |
 | Chromium, Firefox, WebKit | revisão do Playwright fixado | downloads do Playwright | `npm test`, `npm run test:e2e`, `npm run test:perf` |

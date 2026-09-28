@@ -168,24 +168,57 @@ async function ensureAudio(input, output, variant) {
   validateAudio(output, variant.codec, variant.format, variant.minimumBitrate, variant.maximumBitrate);
 }
 
+// Masters are read from media-src/ and every derived file is written under
+// assets/. The two trees are kept apart on purpose: assets/ is the publishable
+// tree, and the build refuses to ship anything there that the manifest does not
+// reference or that is not a delivery-encoded file. Putting masters in assets/
+// would fail that contract even though the media build needs them, so the source
+// tree lives outside it and never ships.
+export const SOURCE_ROOTS = Object.freeze({ frames: 'media-src/frames', audio: 'media-src/audio' });
+
+/**
+ * Discover the committed master sources without encoding anything.
+ *
+ * Split out of buildImages so a test can assert that the committed masters are
+ * discoverable without running the encoders. Encoding writes into assets/, and a
+ * test that regenerated those files in place would race any other test reading
+ * the same byte totals — and the output is not byte-stable across ffmpeg/sharp
+ * versions, so the totals would depend on the runner.
+ */
+export async function discoverSources(root = process.cwd()) {
+  const frameDirectory = path.join(root, SOURCE_ROOTS.frames);
+  const audioDirectory = path.join(root, SOURCE_ROOTS.audio);
+  const frameFiles = (await readdirOrEmpty(frameDirectory, true))
+    .filter((entry) => entry.isFile() && !entry.name.includes('-light') && /\.(?:svg|png|jpe?g)$/i.test(entry.name))
+    .map((entry) => entry.name);
+  const audioFiles = (await readdirOrEmpty(audioDirectory, false))
+    .filter((file) => file.endsWith('.wav') && !file.includes('-light'));
+  return {
+    frameSources: frameFiles.length,
+    audioSources: audioFiles.length,
+    frameFiles,
+    audioFiles
+  };
+}
+
+async function readdirOrEmpty(directory, withFileTypes) {
+  try {
+    return await fs.readdir(directory, withFileTypes ? { withFileTypes: true } : undefined);
+  } catch (error) {
+    if (error?.code === 'ENOENT') return [];
+    throw error;
+  }
+}
+
 export async function buildImages(root = process.cwd()) {
-  // Masters are read from media-src/ and every derived file is written under
-  // assets/. The two trees are kept apart on purpose: assets/ is the
-  // publishable tree, and the build refuses to ship anything there that the
-  // manifest does not reference or that is not a delivery-encoded file. Putting
-  // masters in assets/ would fail that contract even though the media build
-  // needs them, so the source tree lives outside it and never ships.
-  const frameSourceDirectory = path.join(root, 'media-src/frames');
+  const frameSourceDirectory = path.join(root, SOURCE_ROOTS.frames);
   const generatedDirectory = path.join(root, 'assets/frames/generated');
   await fs.mkdir(frameSourceDirectory, { recursive: true });
   await fs.mkdir(generatedDirectory, { recursive: true });
   for (const file of await fs.readdir(generatedDirectory)) {
     if (file.includes('-light-light.')) await fs.rm(path.join(generatedDirectory, file), { force: true });
   }
-  const entries = await fs.readdir(frameSourceDirectory, { withFileTypes: true });
-  const files = entries
-    .filter((entry) => entry.isFile() && !entry.name.includes('-light') && /\.(?:svg|png|jpe?g)$/i.test(entry.name))
-    .map((entry) => entry.name);
+  const { frameFiles: files } = await discoverSources(root);
   for (const file of files) {
     const input = path.join(frameSourceDirectory, file);
     const stem = path.parse(file).name;
@@ -214,11 +247,11 @@ export async function buildImages(root = process.cwd()) {
       }
     }
   }
-  const audioSourceDirectory = path.join(root, 'media-src/audio');
+  const audioSourceDirectory = path.join(root, SOURCE_ROOTS.audio);
   const audioPublishDirectory = path.join(root, 'assets/audio');
   await fs.mkdir(audioSourceDirectory, { recursive: true });
   await fs.mkdir(audioPublishDirectory, { recursive: true });
-  const audioFiles = (await fs.readdir(audioSourceDirectory)).filter((file) => file.endsWith('.wav') && !file.includes('-light'));
+  const { audioFiles } = await discoverSources(root);
   for (const file of audioFiles) {
     const input = path.join(audioSourceDirectory, file);
     const stem = path.parse(file).name;
