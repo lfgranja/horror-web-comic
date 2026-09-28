@@ -114,3 +114,41 @@ remediation is complete and verified, but the gate is not green.
   be gated on `will-change`/`transform`-only properties.
 - This host is shared and loaded, but the 60 fps idle baseline rules that out as the
   explanation. A CI run remains the authoritative measurement.
+
+## CI measurement (PR #18, run 36473448205) — the deliverable of this PR
+
+The measurement race is fixed and the duration now reads 120 ms, matching the fixture,
+on every engine. What the corrected measurement shows is **per-engine**, and it inverts
+the reading:
+
+| engine | SC-018 outcome on CI |
+|---|---|
+| `mobile-chromium` | **pass** (≥ 60 fps) |
+| `desktop-chromium` | **pass** (≥ 60 fps) |
+| `desktop-firefox` | **pass** (≥ 60 fps) |
+| `mobile-webkit` | fail — 14.0, 10.1, 1.0, 1.0 fps |
+| `desktop-webkit` | fail — 10.1, 9.9, 9.1 fps |
+
+**Three of five engines pass.** The player does reach 60 fps during a transition; this is
+not a budget that is universally too tight, and not a universal rendering cost. It is
+WebKit-specific, at roughly a fifth of the frame budget.
+
+The same run also failed `zz-ci-budgets.spec.js:81` — "a host that produced no rAF
+samples in 300 ms" — on `desktop-webkit` only. That is the second WebKit-only
+performance signal in the same gate, and it points the same way. That test was
+previously observed failing on `mobile-webkit`, so it appears to be WebKit-specific and
+somewhat unstable rather than deterministic.
+
+### The number this PR could not capture
+
+`measureRaf` records a `raf_baseline_fps` annotation and the corrected test records
+`transition_fps`, but **neither surfaces in the CI annotations or the job log** — only
+the failure messages do. So the CI baseline is unavailable, and that gap is exactly what
+matters here: if WebKit's *idle* baseline is also ~10–14 fps, then WebKit cannot render
+at 60 in this environment at all and the transition figure is not a property of the
+player. If WebKit's baseline is ~60 and only the transition drops, the cost is real and
+engine-specific.
+
+Making that comparison automatic — asserting the transition against the host baseline
+the test already measures, rather than against a flat 60 — would answer it on every run
+instead of leaving it to be reconstructed from failure messages.
