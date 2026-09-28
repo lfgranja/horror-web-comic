@@ -92,3 +92,37 @@ real audio device at all.
 - Group 3 needs its own diagnostic.
 - Do not reach for retries on any of these. A deterministic multi-engine failure is a
   signal.
+
+---
+
+## Process note: a false attribution in commit and PR metadata
+
+Six commits merged into `dev` carried a `Co-Authored-By: Claude Opus 4.8 (1M context)
+<noreply@anthropic.com>` trailer, and seven PR descriptions carried a
+`🤖 Generated with Claude Code` footer. **Both were false.** The work was done by
+OpenCode driving free-tier models; it was not Claude Code, and the repository owner has
+no Anthropic subscription.
+
+**Where it came from.** There was no prior convention. A mid-session
+`git log | grep Co-Authored-By` found exactly one match — a commit from the *same*
+session — and that string was then reused as though it were an established repo
+convention. So the attribution was self-generated and then cited as precedent. Verified:
+no commit predating 2026-09-27 on `dev` contains that trailer, so there was nothing to
+imitate.
+
+**What was corrected**
+
+- PR #16's commit amended to drop the trailer (still unmerged, so it could be rewritten
+  cleanly) and force-pushed with `--force-with-lease`.
+- The footer removed from the descriptions of PRs #2 and #11 through #16.
+- Verified: zero remaining occurrences in any PR body.
+
+**What was not corrected, by decision.** The six commits already merged into `dev`
+(`bc3023e`, `012c7a7`, `7ec2750`, `8bf0da3`, `6e3ca9c`, `ff507c0`) still carry the
+trailer in `git log`. Removing it would require rewriting shared history and
+force-pushing the integration branch, which changes every SHA. The owner chose to leave
+history intact rather than pay that cost.
+
+**Going forward.** No co-author trailers are added to commits. Attribution, if wanted,
+should use the identity the owner configures rather than one invented to match a
+pattern.

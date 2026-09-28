@@ -105,9 +105,17 @@ test('resets an incompatible persisted state before loading the player', async (
     }));
   });
   await openPausedAtStart(page);
+  // The requirement is that the incompatible state is DISCARDED and the defaults
+  // applied — not that the key stays absent. The default for audio is on (FR-004),
+  // so the seeded 'off' must not survive, and the app is entitled to persist that
+  // default. Asserting the key was null raced that write: on a slower engine the
+  // reset-then-persist sequence had not finished, and the test read the persisted
+  // 'on' instead. Only webkit was slow enough to lose it, which made it look like an
+  // engine difference.
   await expect(page.locator('#player')).toHaveAttribute('data-frame-id', 'frame-01');
   expect(await page.evaluate(() => localStorage.getItem('hwc.schemaVersion'))).toBe('1');
-  expect(await page.evaluate(() => localStorage.getItem('hwc.audio'))).toBe(null);
+  expect(await page.evaluate(() => localStorage.getItem('hwc.audio')), 'the persisted off preference must be discarded').not.toBe('off');
+  await expect(page.locator('#player')).not.toHaveAttribute('data-audio-state', 'off');
 });
 
 test('resolves concurrent progress by updatedAt, sequence, and tab identifier', async ({ browser }) => {
