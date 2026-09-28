@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { openPlayer } from './helpers.js';
+import { openPlayer, freezeAdvance } from './helpers.js';
 
 test('pauses both progression and audio state without restarting the scene', async ({ page }) => {
   await page.addInitScript(() => {
@@ -24,6 +24,13 @@ test('pauses within 100ms and preserves the scene position', async ({ page }) =>
     };
   });
   await openPlayer(page, 'tests/fixtures/story.json', { pause: true });
+  // The 1 100 ms wait below used to race the auto-advance timer: frame-01 lasts
+  // 1 500 ms, so on a loaded runner the story crossed into frame-02 (or further)
+  // before the pause, and the assertions then measured a scene the player had
+  // legitimately left. Measured on a loaded box, this failed on chromium AND
+  // firefox — it was never an engine difference. Freezing the dwell removes the
+  // race instead of retrying it.
+  await freezeAdvance(page);
   const initialFrame = await page.locator('#player').getAttribute('data-frame-id');
   await page.evaluate(() => window.__cinematicPlayer.resume());
   await page.waitForTimeout(1_100);
