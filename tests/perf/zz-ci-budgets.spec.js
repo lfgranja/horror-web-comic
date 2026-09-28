@@ -21,13 +21,20 @@ function readText(relativePath) {
 
 test.describe('zz-ci delivery budgets are pinned and enforced', () => {
   test('budget.json pins the spec byte limits (FR-029)', () => {
+    // Decimal, matching the limits the specification states literally (SC-014:
+    // "cena inicial <=1,5 MB, cada quadro <=300 KB, total de ativos <=30 MB, codigo
+    // comprimido <=65 KB"). These were binary MiB/KiB values (1572864, 307200, ...)
+    // that PR #10 replaced in budget.json without updating this guard, so every
+    // assertion here disagreed with the file it exists to protect. The units are
+    // spelled out in each message because "MB" alone is ambiguous between SI and
+    // binary, and that ambiguity is what allowed the two to drift apart.
     const budget = readJson('budget.json');
-    expect(budget.initialSceneBytes, 'initial scene must stay <= 1.5 MB').toBe(1572864);
-    expect(budget.frameBytes, 'per-frame must stay <= 300 KB').toBe(307200);
-    expect(budget.totalAssetsBytes, 'total assets must stay <= 30 MB').toBe(31457280);
-    expect(budget.compressedScriptBytes, 'compressed script must stay <= 50 KB').toBe(51200);
-    expect(budget.compressedStyleBytes, 'compressed style must stay <= 15 KB').toBe(15360);
-    expect(budget.compressedCodeBytes, 'compressed code aggregate must stay <= 65 KB').toBe(66560);
+    expect(budget.initialSceneBytes, 'initial scene must stay <= 1.5 MB (1500000 bytes)').toBe(1500000);
+    expect(budget.frameBytes, 'per-frame must stay <= 300 KB (300000 bytes)').toBe(300000);
+    expect(budget.totalAssetsBytes, 'total assets must stay <= 30 MB (30000000 bytes)').toBe(30000000);
+    expect(budget.compressedScriptBytes, 'compressed script must stay <= 50 KB (50000 bytes)').toBe(50000);
+    expect(budget.compressedStyleBytes, 'compressed style must stay <= 15 KB (15000 bytes)').toBe(15000);
+    expect(budget.compressedCodeBytes, 'compressed code aggregate must stay <= 65 KB (65000 bytes)').toBe(65000);
   });
 
   test('lighthouserc.json enforces the delivery thresholds (SC-014/SC-015)', () => {
