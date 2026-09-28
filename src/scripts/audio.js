@@ -368,7 +368,21 @@ export class AudioManager {
       this.markBlocked();
       return false;
     }
-    this.failed.add(key);
+    // Per spec clarification (Session 2026-09-27): a refusal that is not a
+    // permission refusal (e.g., interruption, transient engine refusal) must
+    // not permanently disable the track. Only a genuine load failure should be
+    // latched; everything else lets retry or a qualified gesture recover.
+    if (error?.name === 'NotSupportedError') {
+      this.failed.add(key);
+      this.activeElementKeys.delete(key);
+      this.activeFrameKeys.delete(key);
+      this.applyMix();
+      this.emit();
+      return false;
+    }
+    // Transient refusal: do not latch, do not block. The retry or gesture
+    // path in playCurrentScene / unlockPrecreatedElements will recover.
+    return false;
     this.activeElementKeys.delete(key);
     this.activeFrameKeys.delete(key);
     this.applyMix();
