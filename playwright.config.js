@@ -15,7 +15,13 @@ export default defineConfig({
     screenshot: 'only-on-failure'
   },
   webServer: {
-    command: 'python3 -m http.server 8080',
+    // Range-capable on purpose. A media element that has to seek needs HTTP
+    // Range; `python3 -m http.server` answers a partial request with a full 200,
+    // which WebKit rejects outright ("unexpected 200 HTTP status code for range
+    // request") and Firefox can abort with a sink error. Chromium tolerates it,
+    // so the defect presented as an engine difference. Every assertion that sets
+    // currentTime and then checks the position depends on this working.
+    command: 'node scripts/serve-e2e.mjs 8080',
     url: 'http://127.0.0.1:8080',
     reuseExistingServer: !process.env.CI,
     timeout: 30_000
