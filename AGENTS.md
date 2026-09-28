@@ -46,7 +46,7 @@
 
 ## Environment Gotchas
 
-- `npm run serve` + Playwright `webServer` both need **python3**.
+- Playwright `webServer` runs `scripts/serve-e2e.mjs`, which implements **HTTP Range**. `python3 -m http.server` does not, and a media element that has to seek then fails to load on WebKit ("unexpected 200 HTTP status code for range request") and Firefox, while Chromium tolerates it. Do not swap the e2e server back.
 - `build:images` + `build` need **ffmpeg/ffprobe** with aac & libopus encoders.
 - Playwright browsers must **launch headless** (preflight verifies; missing system libs = fail).
 - `lhci` needs **Chrome/Chromium** binary (`CHROME_PATH` or install Google Chrome).
