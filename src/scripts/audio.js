@@ -754,7 +754,13 @@ export class AudioManager {
     const status = document.querySelector('#audio-status');
     const hint = document.querySelector('#audio-hint');
     if (toggle) {
-      toggle.setAttribute('aria-pressed', String(this.enabled));
+      // FR-014: the control must reflect the effective state, not the stored
+      // preference. While blocked the browser refuses playback, so a control
+      // derived from `enabled` advertises itself as on while the blocked overlay is
+      // up and the control is aria-disabled. Derive it from `state()` — the same
+      // value that backs data-state and the status text — so the two
+      // representations cannot drift.
+      toggle.setAttribute('aria-pressed', String(state === 'on' || state === 'paused'));
       toggle.dataset.state = state;
       if (state === 'blocked') toggle.setAttribute('aria-disabled', 'true');
       else toggle.removeAttribute('aria-disabled');
