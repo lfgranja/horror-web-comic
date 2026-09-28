@@ -137,3 +137,110 @@ structurally invisible to resolve-stubs. No such change was made.
 - The path-(b) latch is a real latent defect and is **not** fixed here, per decision
   P1. It now has a normative requirement in `spec.md` FR-016 saying what it should do;
   see the separate bug report.
+
+---
+
+# Round 2 — root cause found; the 3-route product change reverted
+
+**Status after this round: partial.** The real cause is identified and fixed. Three
+unrelated failures remain, one of which is a separate environment issue.
+
+## What the product change did, and why it was reverted
+
+The 3-route classification in `handlePlayFailure` was applied (commit `7563e9f`) and
+**reverted** (commit `4666c7e`):
+
+| | without the 3-route change | with it |
+|---|---|---|
+| failed | 4 | 8 |
+| passed | 836 | 831 |
+
+It did not fix `pause.spec.js:17` and introduced 4 regressions. `zz-autoplay-real.spec.js:126`
+and `zz-audio-double-toggle.spec.js:80` both encode the **2-way** assumption — that any
+refusal yields the blocked state — and a 3-way classification changes the contract they
+assert. The change was aimed at the wrong mechanism; see below.
+
+## The actual root cause: the e2e server had no HTTP Range
+
+`playwright.config.js` served the suite with `python3 -m http.server`, which **ignores the
+`Range` header** and answers a partial request with a full `200`. A media element that
+has to seek needs Range. The seek at `pause.spec.js:33` therefore raised a media error,
+the element's `error` event reached `handleMediaFailure`, and `failed.add(key)` latched
+the track for the session.
+
+The CI probe recorded the engine's own words:
+
+```
+WebKit   Media failed to load: R2: Received unexpected 200 HTTP status code for range request
+Firefox  OnMediaSinkAudioError
+Chromium (no error — it tolerates a non-seekable response)
+```
+
+The probe also caught both engines *already knowing* the range was bogus before the fix:
+WebKit reported `seekable=[[0,8]]`, Firefox `seekable=[[0,1.365]]` against an 8 s file.
+
+**This is why the earlier diagnosis was wrong.** The probe instrumented `play()` and saw
+only *resolved* calls, so I concluded autoplay was not involved — correct. But I then
+attributed the `failed` latch to `handlePlayFailure`, without noticing `audio.js:102`
+routes an element `error` event to `handleMediaFailure` → `failed.add`, a **second latch
+site invisible to any `play()`-level probe**. The latch was a *symptom* of the media
+error, not an autoplay classification problem.
+
+## Changes in this round
+
+| File | Change | Notes |
+|------|--------|-------|
+| `scripts/serve-e2e.mjs` | added | Range-capable static server: 206 + `content-range` for a satisfiable Range, 416 for an unsatisfiable one, `accept-ranges` on every response, containment check against traversal |
+| `playwright.config.js` | modified | `webServer` now runs `node scripts/serve-e2e.mjs 8080` |
+| `docs/delivery.md` | modified | the e2e server prerequisite is Node, not python3 |
+| `AGENTS.md` | modified | records that the e2e server must not be swapped back to `python3 -m http.server` |
+| `src/scripts/audio.js` | reverted | back to the 2-way classification; net zero change from `012c7a7` |
+
+**The T198/T199 specs were left untouched on purpose.** T199 loads a `data:` URL, which
+never touches the network, and T198 asserts `dataset.fadeDirection` and
+`isElementPlaying()` — pure JS state. Neither loads media over HTTP, so neither is
+affected by the server change and neither needed its assertions relaxed.
+
+## Local Verification
+
+- `node --check scripts/serve-e2e.mjs` → pass
+- Manual: full request → `200`, 768078 bytes; `Range: bytes=0-1023` → `206` with
+  `content-range: bytes 0-1023/768078`; `../../../etc/passwd` → `404`
+- `npm run test:unit` → **119/119**
+- `npm run preflight` → 14/15; the only failure is the known Fedora `browser-launch` gap
+- `node_modules` unchanged, no new dependency
+
+## CI result (run 36376341071)
+
+`Unit tests`, `Build media variants` and `Production build` all pass. The matrix:
+**6 failed / 833 passed / 1 flaky**, down from 8 failed.
+
+**Fixed by the Range server:** `pause.spec.js:17` now passes on `mobile-webkit` and
+`desktop-webkit`. It previously failed on both.
+
+**Still open, three distinct causes:**
+
+1. `pause.spec.js:17` on `desktop-firefox` — same symptom, different engine error.
+   Firefox reports `OnMediaSinkAudioError`, and it had only buffered 1.365 s of an 8 s
+   file. Leading hypothesis: the CI runner has no audio output device, so Firefox's sink
+   fails where Chromium and WebKit fall back silently. Needs its own diagnostic.
+2. `zz-autoplay-real.spec.js:82` on `mobile-webkit` and `desktop-webkit` —
+   `ariaPressed` expected `"false"`, received `"true"`. Now that the media error is gone
+   the track genuinely plays, so the T199 test's blocked/granted branch logic no longer
+   matches what the engine does. The test, not the product, needs review.
+3. `sync.spec.js:96` on 3 engines — `Expected: null, Received: "on"` for the audio state
+   after resetting an incompatible persisted state. Historically flaky, but now
+   reproducing on three engines and worth its own look.
+
+## Follow-ups
+
+- **Land the Range server on its own.** It is independently correct, it fixes a real
+  infrastructure defect, and it removed two of the three WebKit failures. It does not by
+  itself make the gate green.
+- Separate diagnostics for the Firefox audio-sink failure and for `sync.spec.js:96`.
+- Re-run `/speckit.bug.assess` once the three above are settled; this assessment's
+  Root Cause Hypothesis section is stale and should not be trusted as written.
+- The `handleMediaFailure` one-way latch at `audio.js:707-709` is still a real latent
+  defect: a single media error permanently disables a track with no recovery path. That
+  is now better characterised than in the original report, but it is **not** the cause of
+  these failures and was deliberately left alone.
