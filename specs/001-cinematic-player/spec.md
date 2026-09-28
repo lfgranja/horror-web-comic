@@ -74,6 +74,13 @@
 - Q: O que fazer com estado persistido de `schemaVersion` desconhecido/incompatível? → A: Descartar o estado salvo e aplicar os padrões (volta ao início; áudio/volume/velocidade padrão), sem bloquear a experiência.
 - Q: Ao pausar a narrativa, o áudio da cena também pausa? → A: Sim; a pausa interrompe avanço e áudio, e a retomada continua o áudio da posição em que parou.
 
+### Session 2026-09-27
+
+- Q: O reparo do gate de testes pode alterar o código de produção do áudio, ou o escopo é apenas os testes? → A: Escopo apenas os testes nesta rodada; o defeito de desabilitamento permanente de faixa fica registrado como pendência separada, para não misturar correção de instrumentação de teste com mudança de semântica de áudio.
+- Q: É preciso identificar em runtime qual causa congela a reprodução antes de corrigir? → A: Sim. Registrar, em uma única execução de diagnóstico, o motivo de cada recusa de reprodução observada e o estado do áudio no instante da falha, porque recusa de permissão, falha transitória e duração indefinida produzem o mesmo sintoma e a leitura de código não as separa.
+- Q: O que a experiência DEVE fazer com uma recusa de reprodução que não é recusa de permissão? → A: Não classificá-la como bloqueio e não desabilitar a faixa permanentemente; a faixa DEVE poder ser reativada por nova tentativa ou por gesto qualificado. A recusa de permissão permanece sendo a única condição que dispara o overlay.
+- Q: A janela de 250 ms do auto-start deve ficar como literal ou virar injetável? → A: Permanecer literal; corrigir o teste para registrar o valor máximo observado em vez de depender de uma janela que um motor lento pode perder.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Assistir à história como um filme (Priority: P1)
@@ -207,6 +214,12 @@ cena continuando da posição em que parou).
   aparece, oferecendo "continuar sem som" (que não ativa o áudio) além de
   qualquer gesto qualificado que ativa o som; o controle passa a exibir o
   estado "bloqueado" até a ativação.
+- Uma tentativa de reprodução é interrompida ou cancelada no curso de uma troca
+  de faixa, pausa ou avanço: a experiência NÃO mostra o overlay de bloqueio e
+  NÃO desabilita a faixa de forma permanente; uma nova tentativa ou um gesto
+  qualificado a reativa. Um motor que recuse a reprodução sem que isso seja
+  recusa de permissão (comportamento legítimo e específico de cada navegador)
+  NÃO DEVE ser tratado como falha de produto.
 - O usuário alterna o áudio no meio de uma cena: a transição de som é imediata
   (≤100 ms) e não reinicia nem interrompe o quadro atual; ao religar, a trilha
   retoma da posição em que estava.
@@ -358,6 +371,16 @@ cena continuando da posição em que parou).
   qualificado ativa o áudio. A ativação por gesto vale para a sessão, cobrindo
   quadros e cenas seguintes; se a preferência persistida for "desligado", o gesto
   não a sobrepõe e o áudio só liga pelo controle dedicado.
+  > **Classificação de recusa (2026-09-27).** Recusa de permissão de reprodução
+  > permanece a ÚNICA condição que dispara o overlay. Uma recusa de reprodução que
+  > não configure recusa de permissão — por exemplo, uma tentativa interrompida ou
+  > cancelada no curso de uma troca de faixa, pausa ou Advance — NÃO DEVE ser
+  > classificada como bloqueio, NÃO DEVE exibir o overlay e NÃO DEVE desabilitar a
+  > faixa de forma permanente: a faixa DEVE permanecer reativável por nova
+  > tentativa ou por gesto qualificado. Falha de carregamento de arquivo segue
+  > FR-032. A ausência dessa distinção produz o sintoma de áudio permanentemente
+  > mudo com o controle em estado "ligado", que é indistinguível de um bloqueio
+  > para quem assiste.
   > **Nota de implementação (T205, 2026-09-27).** "Gesto qualificado" exclui duas
   > classes de evento de teclado, de forma deliberada: a tecla `Escape` e
   > qualquer `keydown` cujo alvo seja um `input`, `select`, `textarea` ou
