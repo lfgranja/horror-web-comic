@@ -25,17 +25,51 @@ test('audio assets include compliant AAC/Opus standard and light variants', () =
   }
 });
 
-test('media build discovers the committed masters', () => {
-  // The masters are committed now (media-src/frames/*.jpg, media-src/audio/*.wav), so
-  // the build must succeed and must actually find sources. Asserting the counts
-  // rather than just the exit status is what makes a deleted master fail here
-  // instead of silently regenerating a smaller tree.
-  const output = execSync('node scripts/build-images.mjs', { cwd: root, encoding: 'utf8', stdio: 'pipe' });
-  assert.match(
-    output,
-    /processed [1-9]\d* frame source\(s\) and [1-9]\d* audio source\(s\)/,
-    'the build must report the masters it discovered'
+test('every published stem has a committed master, and the build finds them', async () => {
+  // The masters are committed now (media-src/frames/*.jpg, media-src/audio/*.wav).
+  //
+  // This asserts the master/published correspondence WITHOUT running the encoder.
+  // An earlier version of this test shelled out to `build-images.mjs` at the repo
+  // root, which regenerated all 126 published assets while `node --test` was
+  // running this file in parallel with compatibility-report.test.js — and that
+  // test asserts exact byte totals. The regeneration is also not byte-stable
+  // across ffmpeg/sharp versions, so the totals it produced depended on the
+  // runner. A unit test must not mutate the tree it is measuring.
+  const names = (directory, filter) => new Set(fs.readdirSync(directory).filter(filter).map((file) => path.parse(file).name));
+
+  const frameMasters = names(
+    path.join(root, 'media-src/frames'),
+    (file) => !file.includes('-light') && /\.(?:svg|png|jpe?g)$/i.test(file)
   );
+  const audioMasters = names(
+    path.join(root, 'media-src/audio'),
+    (file) => file.endsWith('.wav') && !file.includes('-light')
+  );
+  assert.ok(frameMasters.size > 0, 'the repository must commit frame masters');
+  assert.ok(audioMasters.size > 0, 'the repository must commit audio masters');
+
+  // Published names carry a -light marker and a -<width> descriptor, in that
+  // order (frame-01-light-320), plus a base form (frame-01-light). Strip the
+  // width first, then the marker, to recover the stem the master is named after.
+  const publishedFrames = new Set(
+    [...names(path.join(root, 'assets/frames/generated'), () => true)]
+      .map((stem) => stem.replace(/-\d{3,}$/, '').replace(/-light$/, ''))
+  );
+  const publishedAudio = names(path.join(root, 'assets/audio'), (file) => file.endsWith('.aac'));
+
+  for (const stem of publishedFrames) {
+    assert.ok(frameMasters.has(stem), `published frame "${stem}" has no committed master in media-src/frames`);
+  }
+  for (const stem of publishedAudio) {
+    assert.ok(audioMasters.has(stem), `published track "${stem}" has no committed master in media-src/audio`);
+  }
+
+  // And the build itself must discover the same count, proving the naming
+  // convention the build filters on actually matches what is committed.
+  const { discoverSources } = await import(path.join(root, 'scripts/build-images.mjs'));
+  const discovered = await discoverSources(root);
+  assert.equal(discovered.frameSources, frameMasters.size, 'the build must discover every committed frame master');
+  assert.equal(discovered.audioSources, audioMasters.size, 'the build must discover every committed audio master');
 });
 
 test('media build fails loudly when it has no master sources', async () => {
