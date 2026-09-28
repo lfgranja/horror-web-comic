@@ -3,7 +3,36 @@
 - **Slug**: e2e-audio-timing-flakes
 - **Fixed**: 2026-09-27
 - **Assessment**: ./assessment.md
-- **Status**: partial
+- **Status**: partial — one of the two causes is fixed, the other is a product defect and is NOT fixed here
+
+## CI diagnostic that changed the diagnosis (second pass)
+
+A probe replicating `pause.spec.js:17` was run **in CI** (the host's engines resume
+correctly and cannot reproduce it). Result, after `openPlayer` and before the test's own
+resume:
+
+| | `failed` set | `play()` outcomes | scene after resume | `currentTime` |
+|---|---|---|---|---|
+| chromium | `[]` | 1× `NotAllowedError`, then 3× resolved | not paused, vol 0.36 | advances 0.19 → 3.03 |
+| webkit | **`['scene-0']`** | 1× `NotAllowedError`, then 2× resolved | **paused**, vol 0 | **stuck at 0.04** |
+| firefox | **`['scene-0']`** | 1× resolved | **paused**, vol 0 | **stuck at 0.04** |
+
+`enabled`, `awaitingUnlock`, `sessionBlocked` and `silentContinuation` are all healthy
+in every engine. The **only** difference is that on webkit and firefox the scene track
+is already inside `AudioManager.failed` before the test resumes — and that set has no
+`delete` and no `clear` anywhere, so the track can never be restarted again.
+
+**The cause of `pause.spec.js:17` is the path-(b) one-way latch, i.e. the product defect
+reported separately in `../audio-track-latch-on-transient-refusal/`.** It is not
+autoplay policy, and not a test race. On firefox the only recorded `play()` *resolved*,
+yet the track was already latched — so a refusal with a name other than
+`NotAllowedError` is reaching `handlePlayFailure` and permanently killing the track
+exactly as that report predicted.
+
+This falsifies the premise of decision P1 ("scope this fix to the tests; the latch is a
+separate, latent defect"). The latch is not latent and not unrelated: it is the cause of
+three of the four gate failures. `freezeAdvance` was aimed at a frame-advance race that
+does not exist on these engines, which is why `pause.spec.js:17` still fails.
 
 ## Summary
 
@@ -45,8 +74,13 @@ expect(await page.evaluate(() => window.__autoStartObservedMax)).toBeGreaterThan
   still proves the timer *was* armed, but no longer depends on the test process
   winning a 250 ms race
 - `tests/e2e/pause.spec.js::pauses within 100 ms and preserves the scene position` —
-  pins frame dwell so the wait cannot cross a boundary
-- No production code touched, per decision P1
+  pins frame dwell so the wait cannot cross a boundary. **This did not fix the failure**
+  in CI: the test still fails on webkit and firefox because the underlying cause is the
+  `failed` latch, not a frame race. The `freezeAdvance` call is retained because the
+  frame-advance race it removes is real and observable, but it is not what was breaking
+  this assertion.
+- No production code touched, per decision P1 — a decision whose premise the CI
+  diagnostic then falsified
 
 ## Local Verification
 
