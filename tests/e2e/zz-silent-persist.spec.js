@@ -58,6 +58,12 @@ test.describe('T211 — "continuar sem som" persists across visits', () => {
     }));
     expect(after.enabled, 're-enabling from the control must work (FR-005)').toBe(true);
     expect(after.stored).toBe('on');
-    await expect(page.locator('#audio-toggle')).toHaveAttribute('aria-pressed', 'true');
+    // The preference is now 'on' and persists, but play() is stubbed to refuse
+    // every attempt, so the engine re-blocks immediately and the effective state is
+    // 'blocked'. aria-pressed follows the effective state (FR-014), so it must be
+    // false here. This previously asserted 'true' because aria-pressed was derived
+    // from the stored preference, which is the drift this branch fixes.
+    await expect(page.locator('#player')).toHaveAttribute('data-audio-state', 'blocked');
+    await expect(page.locator('#audio-toggle')).toHaveAttribute('aria-pressed', 'false');
   });
 });
