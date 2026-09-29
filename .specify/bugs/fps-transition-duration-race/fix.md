@@ -340,3 +340,47 @@ went past that boundary, deliberately and with the owner's decision at each step
   diagnostic; if it stays, it is the only perf spec that measures two delivery paths, and that
   is worth keeping in mind when it next fails on a loaded runner.
 
+## The CI result (run 36502253771, branch `fix/sc-018-comparison`)
+
+The follow-up above promised that one CI run would decide this. It ran, and it decided
+against the fixture hypothesis. `transition/baseline` per project and per arm:
+
+| project | fixture-svg (vector) | production-raster | verdict |
+|---|---|---|---|
+| `mobile-chromium` | 65.31 / 60.00 = **1.09** | 60.65 / 60.01 = **1.01** | healthy |
+| `desktop-chromium` | 65.41 / 60.02 = **1.09** | 60.69 / 60.00 = **1.01** | healthy |
+| `desktop-firefox` | 66.63 / 59.97 = **1.11** | 60.80 / 63.16 = **0.96** | healthy |
+| `mobile-webkit` | 11.49 / 62.91 = **0.18** | 18.01 / 64.72 = **0.28** | both arms collapse |
+| `desktop-webkit` | 29.85 / 36.42 = **0.82** | 39.66 / 60.90 = **0.65** | both arms collapse |
+
+**The fixture is not the cause.** Chromium and Firefox hold ~1.0 on *both* arms, while both
+WebKit projects collapse on *both*. Migrating SC-018 to the production manifest under T212
+would therefore still leave the WebKit gate red — the media format is not what is being
+measured.
+
+The format does make a difference, and it is the opposite direction from the local probe:
+on WebKit the delivery raster is the *faster* of the two (18.01 vs 11.49 on mobile, 39.66 vs
+29.85 on desktop), so the ~1 KB SVG carries some real cost. It is not enough to explain the
+gate, and the two measurements disagree on which format is cheaper — the local host was too
+contended to rank them, and the direction is not load-bearing for the conclusion either way.
+
+**So the cost is in the player's transition path, not the media, and the next change belongs
+in `src/styles/player.css`.** That is now a supported hypothesis rather than the guess it was
+when it was first raised, and it is a new defect with a new root cause, so it belongs in its
+own assessment rather than in this slug.
+
+Two caveats on these numbers, so the next reader does not over-trust a single cell:
+
+- `desktop-webkit`'s fixture-svg baseline read 36.42 where that project otherwise idles near
+  62, so its 0.82 is a suspect cell. The conclusion does not rest on it: the raster arm in the
+  same project drew a healthy 60.90 baseline and still only reached 39.66.
+- `mobile-webkit` reported two different idle baselines inside one run — 26.06 in the SC-018
+  test and 62.91 in the comparison arm, same project, same fixture. WebKit baseline readings
+  on these runners are unstable enough that any single reading should be treated as a range.
+
+The comparison test itself passed on all five projects, and its host-capability guard did not
+trip in CI — the runners hold a meaningful idle baseline, which is precisely what this host
+could not do and why the local attempt was uninformative. The three perf failures in the run
+are unchanged and pre-existing: SC-018 on `mobile-webkit` and `desktop-webkit`, plus
+`zz-ci-budgets.spec.js:81` on `mobile-webkit`.
+
