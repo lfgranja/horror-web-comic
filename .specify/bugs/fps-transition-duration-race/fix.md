@@ -516,3 +516,112 @@ real-device benchmark — and all four weaken or relocate a guarantee, so all fo
 the owner. What this change removes is the false impression that the suite already covers
 it.
 
+## Round 4 — the WebKit cost was the measuring instrument, not the player
+
+The spec said the transition must hold ≥60 fps on a ~4 GB entry-level phone. Nothing in CI
+is that device, so this round built the closest available substrate and measured the same
+thing on it.
+
+### What the measurement says
+
+The identical assertion — transition fps ÷ the same host's idle fps, over the same
+fixture's 120 ms fade — on the two substrates:
+
+| substrate | WebKit ratio |
+|---|---|
+| `ubuntu-latest`, Playwright WebKit (WPE, no GPU) | **0.171 – 0.403** |
+| `macos-15`, Playwright WebKit (Core Animation → Metal) | **0.800 – 1.128** |
+
+Per project on macOS, both delivery paths:
+
+| project / arm | baseline | transition | ratio |
+|---|---|---|---|
+| `mobile-webkit` fixture-svg | 59.41 | 66.67 | **1.122** |
+| `mobile-webkit` production-raster | 60.13 | 58.99 | **0.981** |
+| `desktop-webkit` fixture-svg | 60.00 | 67.67 | **1.128** |
+| `desktop-webkit` production-raster | 59.60 | 61.17 | **1.026** |
+
+**WebKit sustains the host's full frame rate on a real compositor. There is no WebKit
+performance defect in this player.** The 0.17 was the Linux WPE build software-compositing
+every frame of a composited animation, and nothing about the player changed between the
+two rows.
+
+That closes the question this slug opened, and it closes it against both hypotheses that
+were raised along the way:
+
+- **Not the fixture.** The production raster arm is at 0.98–1.03 on the same substrate,
+  and both arms collapse identically on Linux. Round 2 already refuted the re-rasterization
+  theory on its own; this confirms it from the other direction.
+- **Not `player.css`.** No `will-change`, no keyframe change, no `contain` was ever
+  applied, and the transition runs at 1.13 on a hardware compositor. There was nothing to
+  fix in the CSS. Had the earlier `will-change` guess gone in on the strength of the
+  SVG theory, it would have shipped a change to the product's real animation path to
+  satisfy a software rasterizer's limitation.
+
+The research that pointed here was right and is now measured rather than cited:
+`firejune/spine-html`'s "headless WebKit is a software rasterizer, measured up to 28× off
+real Safari" is exactly the ratio gap between the two rows above.
+
+### The macOS job could not start, and the reason matters
+
+The first run of `macos-webkit-compositor` on `macos-14` measured nothing. All four tests
+died during page setup:
+
+```
+Protocol error (Page.overrideSetting): Unknown setting: PushAPIEnabled
+```
+
+Not a flaky test and not a threshold question. `playwright-core/browsers.json` pins webkit's
+revision to **2251** for `mac14` and `mac14-arm64` against a default of **2359**, and the
+Playwright client has sent `Page.overrideSetting(PushAPIEnabled)` at page initialisation
+since 1.62.0. WebKit 2251 does not implement that setting, and `macos-14` is arm64, so it
+takes the stale pin. The job now runs on `macos-15`, which takes 2359.
+
+`zz-ci-budgets.spec.js` asserts `runs-on: macos-14` is **absent**, with that reason in the
+failure message. Reverting the label reads like a harmless cleanup and would turn the
+measurement into a job that fails for an unrelated reason.
+
+### The job proves its own substrate
+
+It reads `WEBGL_debug_renderer_info` and fails when the renderer matches a software path.
+This matters because a macOS job that silently degraded would report the same 0.17 it was
+added to disprove and then look like confirmation. The probe did not fail on any of the
+four runs — the only error was a ratio — so no run was certified on a software renderer.
+
+One gap, and it is the same one this slug already fixed once: the renderer string is an
+annotation, so it reaches the report archive but not the job log, and the archive only
+uploads on failure. The literal renderer is therefore not readable from a green run. It
+should be on stdout next to `SC-018-COMPARISON` for the same reason that one is.
+
+### What is now decided, and what is still open
+
+Decided and certified per commit: the transition costs the compositor essentially nothing
+(≥0.9 of the host's own idle rate) on Chromium, Firefox, and — on a hardware compositor —
+WebKit.
+
+Still open, and now with the evidence that bears on it: **the Linux WebKit projects will
+keep failing SC-018 at ~0.2–0.4 forever, and that failure is now measured to be a property
+of the WPE software rasterizer rather than of this player.** The same assertion passes on
+the same WebKit at 1.13. That is the evidence the ecosystem's documented per-engine
+threshold pattern normally lacks — `jborgese/benefit-finder` relaxes WebKit because of its
+"different rendering pipeline" without measuring that pipeline; this repo can now point at
+the number. It is still the owner's decision, and it is still a weakening of the guarantee
+as stated on Linux, so it was not applied here.
+
+Also still open, unchanged: `zz-ci-budgets.spec.js:81` on `mobile-webkit`, which fails
+intermittently with "no rAF samples in 300ms"; and the literal "≥60 fps on the reference
+device", which the spec now records as periodic real-device certification rather than a
+per-commit gate.
+
+### Local Verification (round 4)
+
+| Command | Result |
+|---|---|
+| `node --check` both specs; `lighthouserc.json` + `package.json` parse | pass |
+| `npm run preflight` | 14/15 — the one failure is this host's Fedora/ICU webkit launch, documented in AGENTS.md and unrelated |
+| `npm run test:unit` | **122/122** |
+| `tests/perf/zz-ci-budgets.spec.js` | **6/6** |
+| guard negative tests | Lighthouse profile → red; runner `ubuntu-latest` → red; runner `macos-14` → red. All restored. |
+| `tests/perf/fps.spec.js` local | fails on the unfit host with the intended self-explaining message |
+| CI `36513728294` | `macos-webkit-compositor` **success**; Linux `gate` fails only on the known WebKit ratio and the known `zz-ci-budgets:81` flake |
+
