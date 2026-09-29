@@ -384,3 +384,135 @@ could not do and why the local attempt was uninformative. The three perf failure
 are unchanged and pre-existing: SC-018 on `mobile-webkit` and `desktop-webkit`, plus
 `zz-ci-budgets.spec.js:81` on `mobile-webkit`.
 
+## Round 3 — SC-018 asserted against the host's own idle rate
+
+### The spec already scoped this requirement to a device CI does not have
+
+`specs/001-cinematic-player/spec.md:526` reads:
+
+> **SC-018**: As transições mantêm ≥60 fps **no dispositivo de referência de SC-001**
+
+and `spec.md:467` defines that device:
+
+> **SC-001**: ...em um smartphone de médio porte (referência: **~4 GB de RAM, tela
+> 360×800, CPU de entrada**)
+
+So the requirement was never "≥60 fps on whatever machine runs the suite". It was
+≥60 fps on a 4 GB entry-level phone. A shared GitHub runner is not that, and headless
+WebKit — a software rasterizer with no GPU — is the furthest possible thing from it.
+The gate was asserting a number on a machine the requirement does not name, and had
+been red for a reason that was about the harness rather than about the player.
+
+### What changed
+
+`SC018_MIN_RATIO = 0.9` replaces the flat 60. The assertion is now that the
+transition sustains ≥90% of the rate that **the same host** sustains when idle — which
+is the host-independent form of "a 120 ms fade must not cost the compositor most of
+the frame budget". A `SC018_MIN_HOST_FPS = 30` precondition rejects a host too slow to
+certify a ratio at all, the same reasoning as `zz-ci-budgets.spec.js:81`.
+
+Measured ratios (run 36502253771) put the floor in context:
+
+| project | ratio | vs 0.9 |
+|---|---|---|
+| `mobile-chromium` | 1.088 | +21% |
+| `desktop-chromium` | 1.090 | +21% |
+| `desktop-firefox` | 1.111 | +23% |
+| `desktop-webkit` | 0.820 | fails |
+| `mobile-webkit` | 0.183 | fails |
+
+### This does not turn `dev` green, and could not
+
+No defensible ratio both admits WebKit's 0.183 and means anything. A 120 ms fade running
+at a sixth of the host's own frame rate is not smooth; certifying it needs a floor around
+0.15, which is how a delivery guarantee is eroded into a rubber stamp. **WebKit failing
+here is the correct result of a correctly-specified gate.** The WebKit transition cost
+is real, engine-specific, and unfixed — it now fails for the right reason instead of
+failing as a mysterious 14 fps against an arbitrary 60.
+
+The research behind that choice, and its sources:
+
+- `firejune/spine-html/CLAUDE.md` — *"Headless WebKit is a software rasterizer. Never
+  cite its timings as Safari performance evidence — measured up to 28× off real Safari,
+  in both directions. Headless is for visual regression only."* and *"Never assert
+  absolute milliseconds in tests; assert the deterministic counters instead."* The same
+  file records an unrelated Linux-WebKit rasterizer defect whose mechanism *"is not
+  identified, and it reproduces on the CI runner only"*, and the principle *"a per-texel
+  precision number read off one platform is a platform's number, whatever it is derived
+  from"* — which is exactly the defect the flat 60 was.
+- Playwright's own docs state: *"While running WebKit on Linux CI is usually the most
+  affordable option, for the closest-to-Safari experience you should run WebKit on mac."*
+- Ecosystem precedent for gates that do not survive headless WebKit: `jborgese/benefit-finder`
+  asserts `fps >= 15` (*"Headless browsers don't have GPU acceleration"*) and a per-engine
+  jank bound (`browserName === 'webkit' ? 16 : 10`); `ironyh/VueSIP`'s test named
+  *"should maintain 60 FPS during animations"* asserts `> 30` and skips WebKit and CI;
+  `TortoiseWolfe/SpokeToWork`, `objectstack-ai/objectui` and `lgtm-hq/turbo-themes` all use
+  documented per-engine guards. **No project found keeps a 60 fps headless-WebKit gate,
+  because none passes.**
+
+What was explicitly **not** done, and why:
+
+- **No `will-change` on `.frame-image`.** No measurement exists of layer promotion in a
+  *software* compositor, and the one WebKit engine statement on the case attributes the
+  opacity win to the GPU (*"the effect is done by the GPU"*, bug 264966). There is also
+  no evidence the cost is in the player's CSS at all: the CI comparison above shows both
+  delivery paths collapsing, and `frame-fade` already animates only `opacity`, which is
+  compositable.
+- **No per-engine threshold and no WebKit skip.** Both would make `dev` green by weakening
+  the guarantee rather than by meeting it, and both are the owner's call, not a test
+  change. The ecosystem has both patterns documented; neither is applied here.
+
+### The guard moved with the threshold, and was proven to catch a violation
+
+`zz-ci-budgets.spec.js:108` pinned the literal `toBeGreaterThanOrEqual(60)`, so it had to
+change in the same commit or the meta-test would have failed. It now pins the *named*
+assertion, the *value* of the floor, and the host precondition — and asserts the flat 60
+has **not** returned alongside the ratio:
+
+```js
+expect(fps.includes('toBeGreaterThanOrEqual(SC018_MIN_RATIO)'), '...').toBe(true);
+expect(fps.includes('const SC018_MIN_RATIO = 0.9'), '...retuning it is a delivery decision').toBe(true);
+expect(fps.includes('toBeGreaterThan(SC018_MIN_HOST_FPS)'), '...').toBe(true);
+expect(fps.includes('toBeGreaterThanOrEqual(60)'), '...must not return...').toBe(false);
+```
+
+Proven non-vacuous: loosening the floor to `0.15` turns this guard red with
+*"SC-018 baseline ratio floor must stay pinned; retuning it is a delivery decision"*.
+It was restored to `0.9` and the guard re-run green. A guard that has only ever passed
+proves nothing.
+
+### Local Verification
+
+| Command | Result |
+|---|---|
+| `node --check` on both specs | pass |
+| `npm run test:unit` | **122/122** |
+| `tests/perf/zz-ci-budgets.spec.js --project=mobile-chromium` | **6/6** |
+| guard loosened to 0.15, meta-test re-run | **fails as designed**, then restored |
+| `tests/perf/fps.spec.js` SC-018 on 3 local projects | 3 failed — see below |
+
+The three local SC-018 failures are the host, not the change, and this run quantifies why
+better than any argument could: `desktop-chromium` measures **0.224** here against **1.090**
+in CI, and `desktop-firefox` **0.408** against **1.111** — the same engines, the same
+fixture, the same assertion, a 5× disagreement between this host and a CI runner.
+
+The failure text is the other half of the value:
+
+```
+the transition ran at 0.224x the host's idle 60.02 fps — a 120ms fade must not cost
+the compositor most of the frame budget
+```
+
+which replaces `Expected: >= 60 / Received: 14.2857`, a number that said nothing about
+which host produced it or what it meant.
+
+### The delivery gap this leaves open
+
+The literal **"≥60 fps on the SC-001 reference device" is now explicitly UNVERIFIED by
+this suite.** It needs a real 4 GB entry-level phone, which this repository has no means
+to reach. The options are the four the research surfaced — a documented per-engine
+threshold, a documented WebKit skip, a macOS runner for real WebKit signal, or a
+real-device benchmark — and all four weaken or relocate a guarantee, so all four belong to
+the owner. What this change removes is the false impression that the suite already covers
+it.
+
