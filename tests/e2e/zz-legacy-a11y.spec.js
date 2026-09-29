@@ -9,6 +9,7 @@ import {
   resetStorage,
   selectors,
   FRAME_IDS,
+  freezeAdvance,
 } from './helpers.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -97,6 +98,13 @@ test.describe('US4 T053a every frame has description and alt', () => {
     await resetStorage(page);
     await openApp(page);
     await waitForPlayer(page);
+    // This loop walks the whole story asserting one live-region update at a time.
+    // The legacy fixture authors dwells of 800-2500ms, so on a loaded engine the
+    // auto-advance can cross into the next frame while the test is still reading
+    // the current one, and the assertion then measures a frame the player has
+    // already left. freezeAdvance pins every dwell; helpers.js:90 documents why
+    // this must be removed rather than retried.
+    await freezeAdvance(page);
 
     for (let i = 0; i < FRAME_IDS.length; i += 1) {
       await expectFrameId(page, FRAME_IDS[i]);
