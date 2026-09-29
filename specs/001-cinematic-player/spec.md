@@ -77,7 +77,7 @@
 ### Session 2026-09-29 (escopo de certificação da SC-018)
 
 - Q: A SC-018 exige ≥60 fps em um celular de médio porte. O CI pode certificar isso? → **A: não, e a redação anterior prometia mais do que qualquer substrato de CI entrega.** Onde a versão anterior dizia apenas "≥60 fps no dispositivo de referência de SC-001", ela nomeava um aparelho que nenhum runner reproduz: CI não simula pressão de memória de 4 GB (swap), throttling térmico em animação sustentada, nem GPU de entrada. A SC-018 passa a separar o que é decidido por commit do que exige aparelho real.
-- Q: O que o CI decide, a cada commit? → **A: que a transição não custa o compositor.** `tests/perf/fps.spec.js` afirma que a transição sustenta ≥90% da taxa de quadros que **o mesmo host** sustenta ocioso, com uma precondição que rejeita host lento demais para que a razão signifique algo. A razão é a forma independente de máquina de "um fade de 120 ms não pode consumir a maior parte do frame budget", e vale em qualquer engine: o Chromium e o Firefox medem 1,09–1,11.
+- Q: O que o CI decide, a cada commit? → **A: que a transição é composta — a aplicação não agenda trabalho por frame.** A taxa de quadros foi testada como gate em duas formas (número plano, depois razão contra o baseline do host) e **as duas mediam o rasterizador**: o mesmo código leu 0,17–0,40 no build WPE sem GPU e 0,80–1,13 no mesmo WebKit atrás de Core Animation, e no host de desenvolvimento local o firefox leu 0,34. Um gate de frame rate em runner Linux é, em 2 de 5 projetos, um gate sobre a máquina. O que é decidido agora é um **contador**: quantos quadros de animação a aplicação agenda durante a transição, medido por uma sonda que conta todo `requestAnimationFrame` e desconta os dela própria. É o mesmo inteiro em qualquer engine e em qualquer substrato, e é a propriedade que decide fluidez num aparelho de 4 GB — uma animação de keyframes é composta, e o que compete com ela é a thread principal. Hoje o valor é 0, porque o único `requestAnimationFrame` do player é a publicação diferida da altura da barra de controle, que uma transição de quadro nunca alcança. Se alguém adicionar um laço de rAF, um indicador de progresso ou um listener que invalide estilo por frame, o contador sobe e o gate dispara — em toda engine, num rasterizador de software tão seguramente quanto numa GPU, e sem esperar por aparelho real. A taxa de quadros continua sendo medida e impressa, como evidência para a certificação em aparelho real.
 - Q: Onde o WebKit é medido, dado que o WebKit do runner Linux é software? → **A: em runner macOS, com a prova embutida.** O WebKit do Playwright no Linux é o build WPE, sem GPU, e compõe por software — aí uma animação de `opacity` compositorizada mede ~0,18× a taxa ociosa do host, número que é propriedade de um rasterizador de software, não do WebKit nem deste player. A Playwright documenta que a experiência mais próxima do Safari é o WebKit no macOS, e lá o WebKit headless cria uma `NSWindow` real composta pelo window server (Core Animation → Metal). O job `macos-webkit-compositor` roda `npm run test:perf:webkit` nesse runner, e o próprio teste lê `WEBGL_debug_renderer_info` e **falha** se o renderer for um caminho de software — para que o job não degrade em silêncio para o mesmo 0,18× que foi criado para desmentir e então pareça confirmá-lo.
 - Q: O que fica fora do alcance de qualquer CI, mesmo com as camadas acima? → **A: o número literal "≥60 fps no dispositivo de referência".** Ele exige o aparelho da SC-001 e passa a ser certificação periódica com aparelho real, não um gate por commit. Registrado como lacuna de entrega conhecida, não como-item verde.
 - Q: Ferramenta padrão do Google para medir frame timing resolveria? → **A: não, e por um motivo estrutural.** AndroidX Macrobenchmark e JankStats medem frame timing de **aplicativo nativo** — injetam no processo do app e não medem uma página web no Chrome. Não é limitação de configuração. O caminho que de fato mede é um aparelho real em nuvem (BrowserStack/Sauce, US$ 29–140/mês) rodando um contador de `requestAnimationFrame`, em periodicidade e não a cada commit.
@@ -533,12 +533,13 @@ cena continuando da posição em que parou).
 - **SC-017**: A experiência é operável e legível no nível WCAG 2.2 AAA: alvos de
   toque ≥44×44 px, contraste WCAG 1.4.6 (≥7:1 texto normal; ≥4,5:1 texto grande)
   e foco visível em todos os controles.
-- **SC-018**: As transições não custam o compositor: mantêm ≥90% da taxa de quadros
-  que o próprio host sustenta ocioso, verificado a cada commit contra um compositor com
-  GPU (WebKit medido em runner macOS, demais engines no runner Linux). A variante literal
-  "≥60 fps no dispositivo de referência de SC-001" **não é decidível por CI** — exige o
-  aparelho de ~4 GB e é certificação periódica com aparelho real, não gate por commit
-  (ver *Session 2026-09-29*). E viram corte instantâneo sob movimento reduzido.
+- **SC-018**: As transições são compostas: a aplicação **não agenda nenhum quadro de
+  animação** enquanto a transição corre, e a transição observada é a que o manifesto
+  declara — verificado a cada commit nos 5 projetos. A taxa de quadros é **medida e
+  registrada, não é gate**, porque decide o rasterizador e não o produto (ver *Session
+  2026-09-29*). A variante literal "≥60 fps no dispositivo de referência de SC-001" **não
+  é decidível por CI** — exige o aparelho de ~4 GB e é certificação periódica com aparelho
+  real. E viram corte instantâneo sob movimento reduzido.
 - **SC-019**: Em conexão 4G de referência e cache frio, o primeiro quadro aparece
   em <2,5 s (p75).
 - **SC-020**: Com economia de dados ativa, cada quadro é servido com ≤150 KB e

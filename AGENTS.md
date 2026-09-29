@@ -21,11 +21,19 @@
 
 A second job, `macos-webkit-compositor`, runs `test:perf:webkit` on `macos-15`. It exists
 because Playwright's WebKit on a Linux runner is the WPE build with no GPU and software-
-composites, so the ratio measured there is a rasterizer fact, not a WebKit one. On macOS,
-headless WebKit creates a real `NSWindow` the window server composites. The spec proves that
-for itself by reading `WEBGL_debug_renderer_info` and failing on a software renderer, so the
-job cannot silently degrade to the number it was added to disprove. It is **$0** — standard
-runners are free for public repositories on every OS.
+composites, so a frame-rate number taken there is a rasterizer fact, not a WebKit one — the
+identical code reads 0.17–0.40 on Linux and 0.80–1.13 on macOS. On macOS, headless WebKit
+creates a real `NSWindow` the window server composites. The spec proves that for itself by
+reading `WEBGL_debug_renderer_info` and failing on a software renderer, so the job cannot
+silently degrade to the number it was added to disprove. It is **$0** — standard runners are
+free for public repositories on every OS.
+
+**SC-018 does not gate on frame rate.** It gates on a counter: how many animation frames the
+app schedules while a transition runs, which is 0 and must stay 0. Frame rate is measured and
+printed on every run as evidence for the real-device certification, because a frame-rate
+assertion on a Linux runner certifies the machine on 2 of 5 projects. A test that wants to
+assert on it must change `zz-ci-budgets.spec.js` first, which fails until someone explains
+the change in the failure message.
 
 ## Architecture
 

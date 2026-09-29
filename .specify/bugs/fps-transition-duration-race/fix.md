@@ -625,3 +625,101 @@ per-commit gate.
 | `tests/perf/fps.spec.js` local | fails on the unfit host with the intended self-explaining message |
 | CI `36513728294` | `macos-webkit-compositor` **success**; Linux `gate` fails only on the known WebKit ratio and the known `zz-ci-budgets:81` flake |
 
+
+## Round 5 — the gate now measures the app, not the machine
+
+Round 4 answered *why* the Linux WebKit ratio was 0.17-0.40: the WPE build software-
+composites. That left a gate that was still measuring the rasterizer on two of five
+projects, and a decision owed to the owner. The owner's instruction was to change the gate
+to measure something useful or remove it. The frame-rate assertion is **removed as a gate**;
+what replaces it is a count, and the reason it is a count is the whole finding.
+
+### What is gated now
+
+`APP_FRAME_BUDGET = 0`: **the app schedules no animation frames while a transition runs.**
+
+A CSS keyframe animation is composited. What competes with it on a phone is the main
+thread, not the compositor's fill rate. So "the app does no per-frame work" is the property
+that decides whether the transition is smooth on the ~4 GB device SC-018 names, and it is
+the same integer on every engine and on a software rasterizer as on a GPU. The player
+already satisfies it: its only `requestAnimationFrame` is the end-overlay's deferred
+control-bar height publish (`player.js:360`), which a frame transition never reaches, so
+the measured count is 0. A future rAF loop, progress ticker, or a listener that invalidates
+style per frame moves the counter and the gate fires — without a real device.
+
+The frame rate is still measured, still printed, and still annotated, as evidence for the
+real-device certification. It is simply not a gate.
+
+### Two bugs the counter had before it worked
+
+Both were found by testing the gate against a fault instead of trusting it, and both are
+worth recording because a gate that cannot fail reads exactly like a gate that can.
+
+1. **The probe was never armed.** It installed a counter that only recorded while `armed`,
+   and `armed` was initialised to `false` and never set. Every run read 0 and passed. A
+   vacuous gate would have shipped as coverage.
+2. **Attribution by stack was impossible.** The first version tried to tell the app's
+   frames from the sampler's by matching the module path in the stack. V8 does not walk the
+   stack past the boundary of the `eval` that installed the probe: every captured stack was a
+   single frame naming the probe itself, the filter matched nothing, and the count was
+   permanently 0. The `new Error('frame').stack` technique simply does not work from a
+   `page.evaluate`-installed patch.
+
+The working version counts every `requestAnimationFrame` while armed and has the sampler
+count its own, so the difference is exactly what the app scheduled. The first attempt at
+that subtracted wrongly — it incremented on the loop's *entry* rather than on its
+*continuation*, so it reported 6 of the sampler's 7 frames as the app's and the honest player
+looked like it was doing per-frame work. Fixed, the honest reading is 0.
+
+### Proof the gate can fail
+
+A per-frame `requestAnimationFrame` loop was added to `player.js` in `render()`:
+
+```
+DEBUG total=24 appFrames=19 samples=4 durationMs=120
+Error: the app scheduled 19 animation frame(s) while the transition ran; a CSS
+transition must be composited, and per-frame work from the app is what makes it
+stutter on a low-end device
+```
+
+With the loop reverted, `appFrames=0` and the gate passes. `player.js` is unmodified in this
+commit (`git diff src/scripts/player.js` is empty); the injection existed only to prove the
+gate bites.
+
+`zz-ci-budgets.spec.js` pins the budget's value, the named comparison, the sampler's
+self-subtraction, and the absence of any frame-rate floor — proven by reintroducing
+`SC018_MIN_RATIO` and watching it fail with *"a frame-rate floor must not return as a gate"*.
+
+### The host-can-certify guard went with the gate it protected
+
+`zz-ci-budgets.spec.js:137` — "host that cannot sample frames fails instead of skipping" —
+asserted a bare rAF loop produced more than one sample in 300 ms, so that a host unable to
+certify the frame budget would fail rather than pass silently. There is no frame budget left
+to certify, and it was failing intermittently on `mobile-webkit` for a reason that was a
+property of the WPE rasterizer. **Removed, with a comment recording why**, rather than left
+as a test that can only fail on the machine.
+
+### What the gate now does that the frame-rate gate could not
+
+On this development host, `desktop-firefox` measures a **0.340** transition/idle ratio — the
+figure that failed the previous gate. The new gate passes it, and prints the 0.340. The
+difference between the two outcomes is the whole point: the same number that would have
+failed a test now appears as evidence, and the property that is actually the player's
+responsibility is the one being enforced.
+
+### Local Verification (round 5)
+
+| Command | Result |
+|---|---|
+| `node --check` both perf specs | pass |
+| `npm run test:unit` | **122/122** |
+| `tests/perf/zz-ci-budgets.spec.js` | **5/5** (the rAF-sampling test is gone) |
+| guard negative: `SC018_MIN_RATIO` reintroduced | red — *"a frame-rate floor must not return as a gate"* |
+| gate negative: per-frame loop in `player.js` | red — 19 app frames; reverted |
+| gate positive: unmodified `player.js` | `appFrames=0`, passes |
+| `tests/perf/fps.spec.js` on mobile-chromium + desktop-firefox | **4/4**, `appFrames=0` on both arms of both projects |
+
+`AGENTS.md`, `spec.md` SC-018 and the `Session 2026-09-29` entry are aligned with this, and
+`plan.md`'s performance-goal line with them. The two job-level invariants from round 4 stand
+unchanged: the macOS job still reads the renderer, and `runs-on: macos-14` is still pinned
+absent.
