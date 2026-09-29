@@ -11,12 +11,21 @@
 | `npm run build:images` | Generate light variants & verify media (needs ffmpeg) |
 | `npm run build` | Full production build to `dist/` (minify, budgets, copy) |
 | `npm run test:e2e` | Playwright matrix (5 browsers, desktop+mobile) |
-| `npm run test:perf` | FPS + first-frame performance tests |
+| `npm run test:perf` | FPS + first-frame performance tests (all 5 projects) |
+| `npm run test:perf:webkit` | SC-018 transition ratio on the two WebKit projects; run by the macOS job only |
 | `npm run ci` | Full gate: preflight → validate → test:unit → build:images → build → test:e2e → test:perf |
 | `npm run serve` | Static dev server at `http://127.0.0.1:8080` (python3) |
 | `npm run lhci` | Lighthouse CI audit (needs Chrome/Chromium) |
 
 **Required order for CI:** `preflight && validate && test:unit && build:images && build && test:e2e && test:perf`
+
+A second job, `macos-webkit-compositor`, runs `test:perf:webkit` on `macos-14`. It exists
+because Playwright's WebKit on a Linux runner is the WPE build with no GPU and software-
+composites, so the ratio measured there is a rasterizer fact, not a WebKit one. On macOS,
+headless WebKit creates a real `NSWindow` the window server composites. The spec proves that
+for itself by reading `WEBGL_debug_renderer_info` and failing on a software renderer, so the
+job cannot silently degrade to the number it was added to disprove. It is **$0** — standard
+runners are free for public repositories on every OS.
 
 ## Architecture
 

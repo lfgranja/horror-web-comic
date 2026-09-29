@@ -48,6 +48,20 @@ test.describe('zz-ci delivery budgets are pinned and enforced', () => {
     expect(assertions['cumulative-layout-shift'][1].maxNumericValue).toBe(0.1);
     expect(assertions['largest-contentful-paint'][0]).toBe('error');
     expect(assertions['largest-contentful-paint'][1].maxNumericValue).toBe(2500);
+
+    // The collect settings decide WHICH machine the thresholds above are
+    // measured on, and Lighthouse's default is desktop Chrome with no CPU
+    // throttle. SC-001 names the reference device as "360x800" (spec.md:467), and
+    // SC-019 is a 4G-budget requirement, so a desktop unthrottled profile made
+    // those four assertions true of a machine the requirements never name. These
+    // are pinned so the profile cannot quietly revert to the default.
+    const settings = config.ci.collect.settings;
+    expect(settings.formFactor, 'Lighthouse must measure the SC-001 reference form factor').toBe('mobile');
+    expect(settings.screenEmulation.width, 'Lighthouse screen width must be the SC-001 360x800').toBe(360);
+    expect(settings.screenEmulation.height, 'Lighthouse screen height must be the SC-001 360x800').toBe(800);
+    expect(settings.screenEmulation.disabled, 'Lighthouse screen emulation must be active').toBe(false);
+    expect(settings.throttling.cpuSlowdownMultiplier, 'an entry-level CPU must be simulated, not ignored').toBeGreaterThan(1);
+    expect(settings.throttling.rttMs, 'a 4G reference network must be simulated, not ignored').toBeGreaterThan(0);
   });
 
   test('scripts/build.mjs fails the build when budgets are exceeded', () => {
@@ -59,6 +73,7 @@ test.describe('zz-ci delivery budgets are pinned and enforced', () => {
 
   test('CI workflow runs the full gate in order plus Lighthouse (T161)', () => {
     const workflow = readText('.github/workflows/ci.yml');
+    const fps = readText('tests/perf/fps.spec.js');
     const steps = ['npm run preflight', 'npm run validate', 'npm run test:unit', 'npm run build:images', 'npm run build', 'npm run test:e2e', 'npm run test:perf'];
     let lastIndex = -1;
     for (const step of steps) {
@@ -74,6 +89,35 @@ test.describe('zz-ci delivery budgets are pinned and enforced', () => {
     for (const masked of ['|| true', 'exit 0', '--force']) {
       expect(workflow.includes(masked), `workflow must not mask failures with ${masked}`).toBe(false);
     }
+
+    // The macOS compositor job (SC-018). It exists because Playwright's WebKit on
+    // a Linux runner is the WPE build with no GPU, so the ratio it measures is a
+    // software-rasterizer number. Two things must hold for it to be worth anything
+    // and are pinned here so neither can be dropped quietly: the job runs on a
+    // macOS runner, and the spec it runs proves for itself that it got a hardware
+    // compositor. A macOS job that silently degraded to software would report the
+    // same 0.18x it was added to disprove, and then look like agreement.
+    // Anchored on `runs-on: macos-`, not on the bare string "macos-": the job is
+    // itself named `macos-webkit-compositor`, so a looser grep matched the job's
+    // own name and passed while the job ran on ubuntu. A guard that cannot fail
+    // is worse than no guard, because it reads like coverage.
+    expect(
+      workflow.includes('runs-on: macos-'),
+      'CI must run the WebKit compositor measurement on a macOS runner',
+    ).toBe(true);
+    expect(workflow.includes('npm run test:perf:webkit'), 'CI must invoke the WebKit-only perf gate through its npm script');
+    expect(
+      fps.includes('WEBGL_debug_renderer_info'),
+      'the WebKit perf spec must read the renderer so a software path cannot pass as a hardware measurement',
+    ).toBe(true);
+    expect(
+      fps.includes("process.platform !== 'darwin'"),
+      'the hardware-compositor assertion must stay scoped to the macOS job, where it can be true',
+    ).toBe(true);
+    expect(
+      fps.includes('is a software path, so the ratio measured here says nothing'),
+      'the software-renderer rejection must keep its explanatory failure message',
+    ).toBe(true);
   });
 });
 

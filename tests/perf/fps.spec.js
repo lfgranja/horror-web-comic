@@ -88,6 +88,52 @@ function fpsOf(result) {
   return result.samples.length * 1000 / Math.max(1, elapsed);
 }
 
+// What the compositor actually is, read from the page rather than assumed.
+//
+// This exists because the whole measurement is only as meaningful as the
+// substrate it was taken on. On a Linux runner, Playwright's WebKit is the WPE
+// build and has no GPU: it software-composites, and a composited opacity
+// animation then measures at ~0.18x the host's own idle rate. That number is a
+// fact about a software rasterizer, not about WebKit and not about this player.
+// The macOS job exists to take the same measurement against a hardware
+// compositor — but a job that silently degraded back to software would report the
+// same 0.18 and look like agreement, so the test reads the renderer and says so.
+//
+// Read via WEBGL_debug_renderer_info, the only cross-engine handle on this: it
+// reports "Apple GPU" behind Core Animation/Metal and "SwiftShader"/"llvmpipe"
+// behind a software path.
+const SOFTWARE_RENDERER = /swiftshader|llvmpipe|software|basic render|mesa offscreen|generic renderer/i;
+
+async function readCompositor(page) {
+  return page.evaluate(() => {
+    const canvas = document.createElement('canvas');
+    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+    if (!gl) return { available: false, renderer: null };
+    const info = gl.getExtension('WEBGL_debug_renderer_info');
+    const renderer = info ? gl.getParameter(info.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER);
+    return { available: true, renderer: String(renderer || '') };
+  });
+}
+
+function recordCompositor(page, testInfo, label) {
+  return readCompositor(page).then((compositor) => {
+    const shown = compositor.available ? compositor.renderer : 'unavailable';
+    testInfo.annotations.push({ type: 'compositor', description: `${label} renderer: ${shown}` });
+    // Linux runners have no GPU, so the software path is expected there and
+    // asserting against it would fail the whole matrix for the wrong reason.
+    // The macOS job is the one whose number must be a hardware number.
+    if (process.platform !== 'darwin') return;
+    expect(
+      compositor.available,
+      `${label}: the compositor probe found no WebGL context, so this run cannot prove it measured a hardware compositor — treating that as a failure rather than reading the number as valid`,
+    ).toBe(true);
+    expect(
+      SOFTWARE_RENDERER.test(compositor.renderer),
+      `${label}: renderer "${compositor.renderer}" is a software path, so the ratio measured here says nothing about WebKit's real compositing and must not be read as agreement`,
+    ).toBe(false);
+  });
+}
+
 // SC-018 reads (spec.md:526): "As transições mantêm ≥60 fps NO DISPOSITIVO DE
 // REFERÊNCIA DE SC-001" — and SC-001 (spec.md:467) defines that device as
 // "um smartphone de médio porte (referência: ~4 GB de RAM, tela 360×800, CPU de
@@ -133,6 +179,7 @@ test('SC-018 keeps transitions at the host frame rate during an actual transitio
     baseline.fps,
     `host idle ${baseline.fps.toFixed(2)} fps is too low for a transition/idle ratio to mean anything`,
   ).toBeGreaterThan(SC018_MIN_HOST_FPS);
+  await recordCompositor(page, testInfo, 'SC-018');
 
   const result = await measureTransition(page);
   expect(result.active).toBe(true);
@@ -227,6 +274,7 @@ test('SC-018 records the fixture-versus-production transition comparison', async
       baseline.fps,
       `${arm.label}: host idle baseline ${baseline.fps.toFixed(2)} fps is too low for a transition/baseline ratio to mean anything`,
     ).toBeGreaterThan(SC018_MIN_HOST_FPS);
+    await recordCompositor(page, testInfo, arm.label);
     const result = await measureTransition(page);
     // Measurement validity, not performance: the transition must have been live
     // and must be the one the manifest declares.

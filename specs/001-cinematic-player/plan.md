@@ -38,7 +38,9 @@ Chrome/Safari móveis; hospedagem estática de qualquer provedor.
 **Performance Goals** (fonte única: SC-008, SC-014, SC-015, SC-018, SC-019,
 SC-020): primeiro quadro em < 2,5 s em 4G de referência (p75, cache frio —
 SC-019) e < 1,5 s em cache aquecido; cada quadro visível em < 3 s (SC-008);
-transições a ≥ 60 fps (SC-018); cena inicial ≤ 1,5 MB, cada quadro ≤ 300 KB e
+transições que não custam o compositor — ≥ 90% da taxa de quadros do próprio
+host, com a variante literal ≥ 60 fps no aparelho de referência fora do alcance do
+CI (SC-018); cena inicial ≤ 1,5 MB, cada quadro ≤ 300 KB e
 total ≤ 30 MB (SC-014); orçamento de código comprimido ≤ 65 KB (≤ 50 KB de script
 e ≤ 15 KB de estilo), verificado no build (Delivery Standards); estabilidade de
 layout < 0,1 (SC-015). Medição em laboratório
