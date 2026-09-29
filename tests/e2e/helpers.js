@@ -230,15 +230,66 @@ export async function getHwcKeys(page) {
  * the moment it arrives at `id` to the moment it leaves. Both edges are read
  * from the DOM attribute the player publishes, not from a test-side clock.
  */
+export async function installFrameWatcher(page) {
+  // Must be installed before navigation. Both dwell edges are stamped from inside
+  // the page by a MutationObserver, so neither carries the test process's polling
+  // interval or the round trip of a page.evaluate() around it. Measuring the
+  // edges from the test side instead made every dwell read late by an unknown
+  // amount — which is exactly what the recovered ±10% assertions were tripping over.
+  await page.addInitScript(() => {
+    window.__frameMarks = [];
+    let lastId = null;
+    const record = () => {
+      const id = document.querySelector('#player')?.dataset.frameId;
+      if (!id || id === lastId) return;
+      lastId = id;
+      window.__frameMarks.push({ id, at: performance.now() });
+    };
+    // document, not documentElement: an init script runs before the parser has
+    // created <html>, and observing a null root throws, which silently kills
+    // every later measurement in the spec.
+    new MutationObserver(record).observe(document, {
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['data-frame-id']
+    });
+  });
+}
+
+/** How long the player dwells on `id`, measured between two in-page stamps. */
 export async function measureDwellMs(page, id, timeout = 8000) {
-  await expectFrameId(page, id);
-  const startedAt = await page.evaluate(() => performance.now());
+  // Wait for BOTH edges, not just the arrival: the player may not have left the
+  // frame yet when the caller asks, and reading the marks synchronously would
+  // report an unbounded dwell rather than a pending one.
   await page.waitForFunction(
-    (target) => document.querySelector('#player')?.dataset.frameId !== target,
+    (target) => {
+      const marks = window.__frameMarks || [];
+      const enter = marks.findIndex((mark) => mark.id === target);
+      return enter >= 0 && marks.slice(enter + 1).some((mark) => mark.id !== target);
+    },
     id,
     { timeout }
   );
-  return page.evaluate((start) => performance.now() - start, startedAt);
+  return page.evaluate((target) => {
+    const marks = window.__frameMarks || [];
+    const enter = marks.findIndex((mark) => mark.id === target);
+    if (enter < 0) return null;
+    // The first frame is painted before playback starts: the player arms a 250 ms
+    // auto-start timer (player.js:86) and only then begins the dwell. Timing it
+    // from the attribute write charges that dead time to the frame — 1000 ms
+    // authored measured as 1256 ms, and 500 ms at 2x measured as 776 ms. Start
+    // the first frame's clock when the player actually starts playing.
+    // typeof, not !== null: an uninitialised value is undefined, and
+    // Math.max(at, undefined) is NaN, which the tolerance then reports as a
+    // failed measurement rather than an unavailable one.
+    const from = enter === 0 && typeof window.__playingAt === 'number'
+      ? Math.max(marks[enter].at, window.__playingAt)
+      : marks[enter].at;
+    for (let index = enter + 1; index < marks.length; index += 1) {
+      if (marks[index].id !== target) return marks[index].at - from;
+    }
+    return null;
+  }, id);
 }
 
 /** Assert a measured dwell sits within ±tolerance of the authored duration. */
