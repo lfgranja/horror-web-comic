@@ -138,11 +138,19 @@ jobs:
   # certifies is that the transition costs the compositor essentially nothing on a
   # real GPU compositor, which is the part of the requirement that is decidable.
   #
+  # The label is macos-15 and not macos-14, for a reason that is not obvious and
+  # looks like a cleanup waiting to happen. Playwright's browsers.json pins
+  # webkit's revision to 2251 for mac14 and mac14-arm64 while the default is 2359,
+  # and its client since 1.62.0 sends Page.overrideSetting(PushAPIEnabled) at page
+  # setup — a setting WebKit 2251 does not implement. On macos-14 every page fails
+  # with "Protocol error (Page.overrideSetting): Unknown setting:
+  # PushAPIEnabled" before a test body runs. macos-15 takes the default 2359 build.
+  #
   # Cost: $0. This repository is public, and GitHub-hosted *standard* runners are
   # free for public repositories on every OS including macOS; only *larger* runners
   # bill. See the Actions runner pricing reference.
   macos-webkit-compositor:
-    runs-on: macos-14
+    runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
 

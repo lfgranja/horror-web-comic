@@ -105,6 +105,18 @@ test.describe('zz-ci delivery budgets are pinned and enforced', () => {
       workflow.includes('runs-on: macos-'),
       'CI must run the WebKit compositor measurement on a macOS runner',
     ).toBe(true);
+    // Pinned to macos-15 specifically, because macos-14 is broken here and the
+    // fix reads like a cleanup. Playwright pins webkit's revision to 2251 for
+    // mac14-arm64 (default 2359) and its client has sent
+    // Page.overrideSetting(PushAPIEnabled) since 1.62.0, which 2251 does not
+    // implement — so on macos-14 all four tests die during page setup with
+    // "Unknown setting: PushAPIEnabled" and measure nothing. This job did exactly
+    // that on its first run. Pinning the label keeps a well-meaning bump from
+    // turning the compositor measurement into a no-op that looks green.
+    expect(
+      workflow.includes('runs-on: macos-14'),
+      'the WebKit compositor job must not run on macos-14: Playwright pins webkit 2251 there, which cannot start a page',
+    ).toBe(false);
     expect(workflow.includes('npm run test:perf:webkit'), 'CI must invoke the WebKit-only perf gate through its npm script');
     expect(
       fps.includes('WEBGL_debug_renderer_info'),

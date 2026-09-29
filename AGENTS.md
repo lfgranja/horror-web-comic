@@ -19,7 +19,7 @@
 
 **Required order for CI:** `preflight && validate && test:unit && build:images && build && test:e2e && test:perf`
 
-A second job, `macos-webkit-compositor`, runs `test:perf:webkit` on `macos-14`. It exists
+A second job, `macos-webkit-compositor`, runs `test:perf:webkit` on `macos-15`. It exists
 because Playwright's WebKit on a Linux runner is the WPE build with no GPU and software-
 composites, so the ratio measured there is a rasterizer fact, not a WebKit one. On macOS,
 headless WebKit creates a real `NSWindow` the window server composites. The spec proves that
