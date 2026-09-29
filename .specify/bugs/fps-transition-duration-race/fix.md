@@ -152,3 +152,191 @@ engine-specific.
 Making that comparison automatic — asserting the transition against the host baseline
 the test already measures, rather than against a flat 60 — would answer it on every run
 instead of leaving it to be reconstructed from failure messages.
+
+---
+
+# Round 2 — 2026-09-28: the open question is answered, and the fixture hypothesis is refuted
+
+The section above is the record of PR #18 and is left unedited. This round ran against
+`dev` at `d083b33` and answers the question that section left open. **It does not make
+`dev` green, and it is recorded here rather than folded into the PR #18 narrative because
+the finding is about a different root cause than the one this bug described.**
+
+## The baseline was captured; the conclusion was wrong
+
+`fix.md:144` above states the baseline is unavailable because it does not surface in the job
+log. The first half is right and the second half is wrong in a way that mattered: the number
+was in the uploaded `playwright-report` artifact the whole time, and this round read it out
+of the embedded report zip in run `36476299144`:
+
+| engine | host idle baseline | transition | ratio |
+|---|---|---|---|
+| `mobile-chromium` | 60.01 | 67.42 | 1.12 |
+| `desktop-chromium` | 60.01 | 65.74 | 1.10 |
+| `desktop-firefox` | 60.28 | 67.24 | 1.12 |
+| `mobile-webkit` | 35.26 / 63.33 / 64.52 | 14.29 / 10.20 / — | 0.40 / 0.16 |
+| `desktop-webkit` | 64.94 / 62.71 / 62.09 | 22.73 / 22.73 / 22.39 | 0.35 / 0.36 / 0.36 |
+
+**WebKit's idle baseline is ~62–65 fps.** It renders at full rate when idle, so the open
+question resolves against the "the host is simply slow" reading: the transition cost is real
+and engine-specific, at roughly a third of the frame budget.
+
+It also disposes of the remediation proposed in the section above. Asserting the transition
+against the host baseline would **not** turn the gate green — WebKit fails at 0.35× its own
+baseline just as it fails a flat 60. That proposal would have bought a better error message
+and a red gate. It was not adopted.
+
+## The fixture hypothesis, tested and refuted
+
+The most promising explanation for a WebKit-only cost was the media itself. `fps.spec.js`
+drives `tests/fixtures/story.json`, whose frames are ~1 KB vector SVGs, while
+`src/data/story.json` ships delivery-encoded rasters (`assets/frames/generated/*.{avif,webp,jpg}`)
+of the identical 1200×800 geometry. If WebKit re-rasterizes a live SVG per frame and caches a
+decoded raster, the fixture would be measuring something the product never ships. That is
+already a documented concern in this repo: `first-frame.spec.js:63` records it as **T212** —
+"the fixture's frames are ~1 KB SVGs, so the <2.5 s and <10 s headline budgets were being
+verified against assets that never ship" — and migrated SC-001/SC-019 to the production
+manifest for exactly that reason. `fps.spec.js` never received the same migration.
+
+Measured directly on this host, 5 reps per cell, same geometry, format the only variable:
+
+| engine (360×800) | baseline | SVG | PNG raster |
+|---|---|---|---|
+| chromium | 60.0 | **67.8** | **41.2** |
+| firefox | 59.9 | **24.1** | **15.6** |
+
+**The raster is not faster than the SVG — it is slower in both engines.** The re-rasterization
+theory is not supported. A `will-change` on `.frame-image` was *not* applied: it would have
+degraded the real product's transitions to satisfy a number measured on a test double, on the
+strength of a hypothesis that the measurement refutes.
+
+## This host cannot certify this gate
+
+The probe is also what settled whether the numbers above mean anything locally. They do not:
+
+- Idle rAF baselines collapse to **12–22 fps** on the desktop viewports, where an idle loop
+  should hold 60.
+- Directly contradicting CI: local `firefox` + SVG measures a **0.40** transition/baseline
+  ratio, while CI certifies the same engine on the same fixture at **1.12**, both from a
+  ~60 fps baseline. Same engine, same fixture, same baseline, three times the cost per frame.
+- The production-raster arm reported idle baselines of **1.50, 8.28 and 12.63 fps** across
+  runs, and once timed out at the 30 s test limit inside the 300 ms baseline sampler.
+
+`AGENTS.md` already records that WebKit cannot launch on this host (ICU 74 vs 77). This round
+adds the harsher fact: **this host cannot certify the performance gate at all**, so SC-018's
+real question is only answerable in CI, which has no raster comparison arm.
+
+## Changes
+
+| File | Change | Notes |
+|------|--------|-------|
+| `tests/perf/fps.spec.js` | modified | extracted `measureTransition`/`fpsOf`; added the comparison arm; added a host-capability guard. Threshold untouched. |
+
+No production change. `src/scripts/player.js` and `src/styles/player.css` are untouched, as
+the assessment required.
+
+## Tests Added or Updated
+
+- `tests/perf/fps.spec.js::SC-018 measures at least 60 fps during an actual transition` —
+  **behaviour unchanged.** The diff touches no assertion in it; the only changes are the
+  extraction of the `page.evaluate` body into `measureTransition` and of the fps arithmetic
+  into `fpsOf`, so the two tests measure identically. `toBeGreaterThanOrEqual(60)`,
+  `toBeCloseTo(120, 0)` and the `raf_baseline_fps` / `transition_fps` annotation types are all
+  preserved verbatim, which keeps this run's numbers comparable with PR #18's.
+- `tests/perf/fps.spec.js::SC-018 records the fixture-versus-production transition
+  comparison` — **added.** Measures the same transition on both stories in one run and emits
+  one `SC-018-COMPARISON` line to stdout plus a `transition_fps_comparison` annotation. It
+  asserts **measurement validity only** — that each arm saw a live transition, that it was the
+  one the manifest declares, and that the host can render well enough for a ratio to mean
+  anything. It asserts **no delivery number**, because SC-018's delivery number is an open
+  question for its owner and inventing one inside a measurement would settle it by accident.
+- `tests/perf/zz-ci-budgets.spec.js::existing perf specs assert hard thresholds with no
+  silent passes` — re-run, still passes (6/6). This is the guard that greps `fps.spec.js` for
+  the literal `toBeGreaterThanOrEqual(60)` and for `test.fixme` / `|| true` / `exit 0` /
+  `--pass-with-no-tests` / `test.skip`; the new test introduces none of them.
+
+## A second measurement race, found by the new assertion
+
+Writing the comparison arm immediately exposed a defect in the shared measurement that the
+fixture had been hiding. `settle()` was called once before the click, and its only guard was
+`stage.dataset.transition === 'cut'`. That is a proxy for "no transition is in flight", and it
+holds only while the first frame happens to be a cut. The fixture's frame-01 *is* a cut, so
+`settle()` correctly waited for the click. **Production frame-01 is a `fade`/600 ms**, so
+`settle()` fired immediately on the already-settled first frame and then measured the click's
+transition against it, reading the CSS fallback `var(--transition-duration, 600ms)` where the
+manifest declares 700 ms.
+
+Fixed by arming the observer only across the click (`armed`), so the measurement is
+unambiguously about the transition the click triggers regardless of the first frame's type.
+The `toBeCloseTo(declaredDurationMs, 0)` assertion is what caught it — a test that only
+asserted "a transition was observed" would have reported a confidently wrong number.
+
+This is the same class as the original bug in this slug: measuring before the thing being
+measured exists. It survived in the PR #18 fix because the fixture's cut frame satisfied the
+guard by coincidence.
+
+## Local Verification
+
+| Command | Result |
+|---|---|
+| `node --check tests/perf/fps.spec.js` | pass |
+| masked-string / threshold-literal check against `zz-ci-budgets.spec.js` | pass — no masks, `toBeGreaterThanOrEqual(60)` intact |
+| `npm run test:unit` | **122/122** |
+| `npx playwright test tests/perf/zz-ci-budgets.spec.js --project=mobile-chromium` | **6/6** |
+| `npx playwright test tests/perf --project={mobile,desktop}-chromium --project=desktop-firefox` | 27 passed, 4 skipped, **5 failed** |
+
+The 5 local failures, and why none of them is a regression:
+
+- `fps.spec.js` SC-018 on all three projects — the host limitation above. CI certifies both
+  chromium projects and firefox at ≥60 on this same code.
+- `fps.spec.js` comparison on `desktop-chromium` — the host-capability guard, firing exactly
+  as designed (`host idle baseline 9.48 fps is too low for a transition/baseline ratio to
+  mean anything`).
+- `first-frame.spec.js:76` SC-019 on `mobile-chromium` — host-related, and in a file this
+  round does not touch. `first-frame.spec.js` does not read `fps.spec.js`, so no shared state
+  exists between them; this is an argument from isolation, not a measurement on the original
+  code.
+
+`zz-ci-budgets.spec.js:81` also failed once under multi-worker load and passed in isolation on
+the unmodified tree — the instability already recorded in the section above, not a change.
+
+**The comparison test has never been observed green on a capable host.** It passed twice
+before the capability guard was added, which is what proves the measurement path, the 700 ms
+production duration and the stdout logging all work; the guard then correctly began rejecting
+this host. Its green run has to come from CI.
+
+## Deviations from Assessment
+
+The assessment scoped this slug to one file and one defect — fix the measurement race, change
+nothing else — and `fix.md` from PR #18 explicitly deferred the 60 fps question. This round
+went past that boundary, deliberately and with the owner's decision at each step:
+
+1. **Scope expanded from remediation to evidence-gathering.** The assessment's
+   "Risks & Considerations" says a post-fix failure on `fps >= 60` "should be triaged on its
+   own rather than folded into this bug." This round did not fold it in — it stopped at
+   measurement, changed no threshold, and left the delivery decision open.
+2. **The proposed baseline-relative assertion was rejected**, on the artifact data above. It
+   would not have turned the gate green.
+3. **A `will-change` CSS fix was considered and dropped** after the probe refuted the
+   mechanism that motivated it.
+4. `first-frame.spec.js:63` (T212) is cited as the project's own prior decision on this class
+   of defect, and is the strongest argument for eventually migrating SC-018 to the production
+   manifest. It is not yet actioned — that migration is a delivery decision, and one CI run of
+   the comparison arm is what should inform it.
+
+## Follow-ups
+
+- **One CI run settles the open question.** Read the `SC-018-COMPARISON` line from
+  `mobile-webkit` and `desktop-webkit`. If the raster arm reaches ≥60 while the SVG arm stays
+  near 22, the fixture is the cause and SC-018 should be migrated to the production manifest
+  under T212. If both stay near 22, the cost is the player's and belongs in
+  `src/styles/player.css`. Nothing else needs to be guessed.
+- **The 60 fps threshold is still uncertified for shared CI runners** — the assessment's first
+  `[NEEDS CLARIFICATION]`, still open, and still a delivery decision. `zz-ci-budgets.spec.js:108`
+  pins the literal `toBeGreaterThanOrEqual(60)` and must be updated in the same change if the
+  threshold ever moves.
+- `zz-ci-budgets.spec.js:81` on WebKit remains open and unaddressed, as the assessment decided.
+- Once the comparison has run in CI, decide whether the arm stays permanently. It is
+  diagnostic; if it stays, it is the only perf spec that measures two delivery paths, and that
+  is worth keeping in mind when it next fails on a loaded runner.
+
