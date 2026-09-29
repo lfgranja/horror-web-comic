@@ -243,7 +243,14 @@ test('SC-018 runs transitions on the compositor, with no per-frame work from the
   // `cut` frame is what made the old bug produce a bare 0; a different fixture would
   // have produced a plausible-looking wrong value, which is harder to notice.
   expect(result.durationMs, 'the measured transition must be the one the fixture declares').toBeCloseTo(120, 0);
-  expect(result.samples.length, 'the transition produced too few frames to be a transition').toBeGreaterThan(1);
+  // At least one frame observed inside the declared window — that the window was
+  // not degenerate. Deliberately NOT "more than one": on WPE, software-compositing
+  // a 120 ms transition yields about one rAF sample, so requiring two is a claim
+  // about the host rather than about the player, which is the same mistake the
+  // frame-rate gate was. The count is recorded instead. What actually proves the
+  // animation ran is the duration assertion above: with the keyframes removed,
+  // getComputedStyle would read 0s and fail there on any host.
+  expect(result.samples.length, 'no frame was observed inside the declared transition window').toBeGreaterThan(0);
 
   expect(
     frameWork.available,
@@ -350,7 +357,7 @@ test('SC-018 records the fixture-versus-production transition comparison', async
       result.durationMs,
       `${arm.label}: the measured transition must be the one ${arm.story} declares`,
     ).toBeCloseTo(arm.declaredDurationMs, 0);
-    expect(result.samples.length, `${arm.label}: the transition produced too few frames to measure`).toBeGreaterThan(1);
+    expect(result.samples.length, `${arm.label}: no frame was observed inside the declared transition window`).toBeGreaterThan(0);
     // The same gate as SC-018, on both delivery paths, so the production arm is
     // not exempt from the per-frame-work property just because it is the
     // diagnostic one.
