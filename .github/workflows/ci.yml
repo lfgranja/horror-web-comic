@@ -115,3 +115,73 @@ jobs:
           name: lighthouseci
           path: .lighthouseci/
           if-no-files-found: ignore
+
+  # SC-018 on a real compositor.
+  #
+  # The Linux job above runs Playwright's WebKit as the WPE build, which has no
+  # GPU and software-composites. A composited opacity animation then measures at
+  # ~0.18x the host's own idle frame rate there, while chromium and firefox on the
+  # same runner measure ~1.1x. That number is a property of a software rasterizer,
+  # not of WebKit and not of this player, and it is the reason the Linux WebKit
+  # projects fail SC-018. Playwright's docs are explicit that the closest-to-Safari
+  # experience is WebKit on macOS.
+  #
+  # On macOS, headless WebKit creates a real borderless NSWindow that the window
+  # server composites (Core Animation -> Metal), so the same measurement here is
+  # taken against a hardware compositor. The test proves that for itself: it reads
+  # WEBGL_debug_renderer_info and fails if the renderer is a software path, so this
+  # job cannot silently degrade back to the number it was added to disprove and
+  # then appear to confirm it.
+  #
+  # This does NOT certify SC-018's literal requirement, which names a ~4 GB
+  # entry-level phone (spec.md:467). No CI substrate is that device. What it
+  # certifies is that the transition costs the compositor essentially nothing on a
+  # real GPU compositor, which is the part of the requirement that is decidable.
+  #
+  # The label is macos-15 and not macos-14, for a reason that is not obvious and
+  # looks like a cleanup waiting to happen. Playwright's browsers.json pins
+  # webkit's revision to 2251 for mac14 and mac14-arm64 while the default is 2359,
+  # and its client since 1.62.0 sends Page.overrideSetting(PushAPIEnabled) at page
+  # setup — a setting WebKit 2251 does not implement. On macos-14 every page fails
+  # with "Protocol error (Page.overrideSetting): Unknown setting:
+  # PushAPIEnabled" before a test body runs. macos-15 takes the default 2359 build.
+  #
+  # Cost: $0. This repository is public, and GitHub-hosted *standard* runners are
+  # free for public repositories on every OS including macOS; only *larger* runners
+  # bill. See the Actions runner pricing reference.
+  macos-webkit-compositor:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # No --with-deps: there is no apt on macOS, and the browser ships with its
+      # own dependencies. No null audio sink step either — the fps measurement
+      # never plays audio, and macOS has no PulseAudio to load.
+      - name: Install Playwright WebKit
+        run: npx playwright install webkit
+
+      # The perf specs drive tests/fixtures/story.json and src/data/story.json
+      # directly, and index.html loads src/scripts/main.js unbundled, so this
+      # needs neither `build:images` nor `build` — every asset involved is
+      # tracked in the repository.
+      - name: SC-018 transition ratio on a hardware compositor
+        run: npm run test:perf:webkit
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-macos
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
