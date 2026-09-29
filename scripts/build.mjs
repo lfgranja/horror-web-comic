@@ -6,7 +6,7 @@ import { execFileSync } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import sharp from 'sharp';
 import * as esbuild from 'esbuild';
-import { LIGHT_MAX_SIDE } from '../src/scripts/light-variants.js';
+import { LIGHT_MAX_SIDE, resolveImageSources } from '../src/scripts/light-variants.js';
 
 const STANDARD_MAX_SIDE = 2560;
 const LIGHT_MAX_BYTES = 150 * 1024;
@@ -574,6 +574,79 @@ async function loadBudget(root) {
   }
 }
 
+function escapeAttribute(value) {
+  return String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function setAttribute(tag, name, value) {
+  if (value === undefined || value === null || value === '') return tag;
+  const escaped = escapeAttribute(value);
+  const existing = new RegExp(`(\\s${name}=")[^"]*(")`);
+  if (existing.test(tag)) return tag.replace(existing, `$1${escaped}$2`);
+  return tag.replace(/\s*(\/?>)$/, ` ${name}="${escaped}"$1`);
+}
+
+/**
+ * The first frame the reader waits on, resolved from the manifest — the same
+ * source the player uses at runtime, via the same resolveImageSources(), so the
+ * two cannot disagree about candidates or the -light-* convention.
+ */
+export function firstFramePicture(manifest) {
+  const frame = manifest?.scenes?.[0]?.frames?.[0];
+  if (!frame?.image) return null;
+  const sources = resolveImageSources(frame.image).standard;
+  if (!sources.fallback) return null;
+  return {
+    id: frame.id,
+    alt: frame.alt ?? '',
+    sizes: frame.image.sizes || '100vw',
+    width: frame.image.width ?? '',
+    height: frame.image.height ?? '',
+    src: frame.image.fallback,
+    avifSrcset: sources.avif || '',
+    webpSrcset: sources.webp || '',
+    fallbackSrcset: sources.fallback
+  };
+}
+
+/**
+ * Write the first frame's <picture> into the static HTML so the preload scanner
+ * can fetch it during the initial parse, in parallel with the CSS and the
+ * bundle, instead of three serialized round trips later (bundle -> story.json ->
+ * this.image.src).
+ *
+ * Deliberately no `<link rel="preload" as="image">`: one link can only name a
+ * single tier, and naming the wrong one is discarded and re-fetched by the
+ * <picture> that actually paints — a double download on exactly the engines
+ * that support the cheaper tier. A populated <picture> is discovered by the
+ * scanner on its own and lets the browser pick the tier it supports.
+ *
+ * `fetchpriority` carries the intent without guessing a tier.
+ *
+ * Throws rather than silently no-oping: a restyled shell that no longer matches
+ * these anchors is a build failure, not a quiet return to a 2.9 s LCP.
+ */
+export function injectFirstFramePicture(html, manifest) {
+  const picture = firstFramePicture(manifest);
+  if (!picture) throw mediaError('the manifest has no first frame to preload into index.html', 'build-invalid');
+  const avifTag = /<source\b[^>]*\bid="frame-avif"[^>]*>/i.exec(html);
+  const webpTag = /<source\b[^>]*\bid="frame-webp"[^>]*>/i.exec(html);
+  const imgTag = /<img\b[^>]*\bid="frame-image"[^>]*>/i.exec(html);
+  for (const [name, match] of [['frame-avif', avifTag], ['frame-webp', webpTag], ['frame-image', imgTag]]) {
+    if (!match) throw mediaError(`index.html no longer has a #${name} anchor for the first-frame preload`, 'build-invalid');
+  }
+  let result = html;
+  result = result.replace(avifTag[0], setAttribute(setAttribute(avifTag[0], 'srcset', picture.avifSrcset), 'sizes', picture.sizes));
+  result = result.replace(webpTag[0], setAttribute(setAttribute(webpTag[0], 'srcset', picture.webpSrcset), 'sizes', picture.sizes));
+  let img = setAttribute(setAttribute(imgTag[0], 'srcset', picture.fallbackSrcset), 'sizes', picture.sizes);
+  img = setAttribute(img, 'src', picture.src);
+  img = setAttribute(img, 'alt', picture.alt);
+  img = setAttribute(img, 'width', picture.width);
+  img = setAttribute(img, 'height', picture.height);
+  img = setAttribute(img, 'fetchpriority', 'high');
+  return result.replace(imgTag[0], img);
+}
+
 async function copyPublishableFiles(root, story) {
   const dist = path.join(root, 'dist');
   await fs.rm(dist, { recursive: true, force: true });
@@ -601,7 +674,7 @@ async function buildBundles(root) {
   await esbuild.build({ entryPoints: [path.join(root, 'src/styles/tokens.css'), path.join(root, 'src/styles/base.css'), path.join(root, 'src/styles/player.css')], bundle: true, minify: true, outdir: path.join(root, 'dist/src/styles'), entryNames: '[name]-[hash]' });
 }
 
-async function writeIndex(root, dist) {
+async function writeIndex(root, dist, manifest) {
   const scriptDir = path.join(dist, 'src/scripts');
   const styleDir = path.join(dist, 'src/styles');
   const scriptFiles = (await fs.readdir(scriptDir)).filter((file) => file.endsWith('.js'));
@@ -620,6 +693,7 @@ async function writeIndex(root, dist) {
   if (compressedStyleSize > budget.compressedStyleBytes) throw mediaError(`compressed style budget exceeded: ${compressedStyleSize} > ${budget.compressedStyleBytes}`, 'code-budget-exceeded');
   if (compressedCodeSize > budget.compressedCodeBytes) throw mediaError(`compressed code budget exceeded: ${compressedCodeSize} > ${budget.compressedCodeBytes}`, 'code-budget-exceeded');
   let indexContent = await fs.readFile(path.join(root, 'index.html'), 'utf8');
+  indexContent = injectFirstFramePicture(indexContent, manifest);
   for (const file of styleFiles) {
     const baseName = file.replace(/-.*\.css$/, '.css');
     indexContent = indexContent.replaceAll(`src/styles/${path.basename(baseName, '.css')}.css`, `src/styles/${file}`);
@@ -643,7 +717,7 @@ export async function build(options = {}) {
   const assetSizes = await validateDeliveryBudgets(manifest, budget, root);
   const dist = await copyPublishableFiles(root, manifest);
   await buildBundles(root);
-  const codeSizes = await writeIndex(root, dist);
+  const codeSizes = await writeIndex(root, dist, manifest);
   return { ...assetSizes, ...codeSizes };
 }
 

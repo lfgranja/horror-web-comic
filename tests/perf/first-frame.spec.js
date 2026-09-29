@@ -128,4 +128,46 @@ test.describe('reference cold-cache frame arrival', () => {
       await context.close();
     }
   });
+
+  /**
+   * The wall-clock gates above cannot say WHY a budget is missed, only that it
+   * is. This pins the structural cause instead: the LCP image used to sit three
+   * serialized round trips deep — document, then the bundle, then
+   * `await loadStory()`, then `this.image.src` — because index.html shipped an
+   * empty <picture> that only JavaScript could fill. Under the Lighthouse
+   * mobile profile (562.5 ms simulated request latency) four dependent round
+   * trips cost ~2.25 s before a 3.6 KB image began transferring, and LCP
+   * measured 2.87 s against a 2.5 s budget.
+   *
+   * scripts/build.mjs now writes the first frame into the static shell, so the
+   * preload scanner fetches it during the initial parse, in the same batch as
+   * the CSS and the bundle. That ordering is the fix; the numbers are a
+   * consequence. Asserting it here means a future shell edit that empties the
+   * <picture> again fails on the cause rather than three months later on LCP.
+   *
+   * Runs against dist/ because that is the only build with the injection — the
+   * dev and e2e servers serve index.html verbatim.
+   */
+  test('the first frame image is requested in the initial batch, not after the manifest resolves', async ({ browser }) => {
+    const context = await browser.newContext({ viewport: { width: 360, height: 800 } });
+    try {
+      const page = await context.newPage();
+      await configureReferenceNetwork(page);
+      await page.goto('/dist/', { waitUntil: 'commit' });
+      // Wait for the manifest to have RESOLVED, not merely started: a resource
+      // timing entry only exists once the response has landed, and the whole
+      // point of the comparison is where the image started relative to that.
+      await expect(page.locator('#player')).toHaveAttribute('data-frame-id', /frame-01/);
+      const timeline = await page.evaluate(() => {
+        const startedAt = (name) => performance.getEntriesByType('resource').find((entry) => entry.name.includes(name))?.startTime ?? null;
+        return { image: startedAt('frame-01'), manifest: startedAt('story.json') };
+      });
+      expect(timeline.image).not.toBeNull();
+      expect(timeline.manifest).not.toBeNull();
+      // The image must not be waiting on the manifest it used to be derived from.
+      expect(timeline.image).toBeLessThan(timeline.manifest);
+    } finally {
+      await context.close();
+    }
+  });
 });
