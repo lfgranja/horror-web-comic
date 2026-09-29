@@ -337,3 +337,38 @@ test('closes the channel when listener removal throws', () => {
 });
 
 
+
+test('a valid progress record is discarded when it carries no schema version stamp', () => {
+  // ensureVersion() wipes every key when hwc.schemaVersion does not match, so a
+  // hand-written progress record without the stamp never reaches the player.
+  // This is the behaviour that made a recovered test look like a product defect:
+  // the payload parsed fine and the player still started on the first frame.
+  const values = new Map([
+    ['hwc.progress', JSON.stringify({
+      frameId: 'f-005',
+      updatedAt: new Date().toISOString(),
+      seq: 1,
+      tabId: 't'
+    })]
+  ]);
+  const fakeStorage = {
+    getItem: (key) => values.get(key) ?? null,
+    setItem: (key, value) => values.set(key, value),
+    removeItem: (key) => values.delete(key),
+    key: (index) => [...values.keys()][index] ?? null,
+    get length() { return values.size; }
+  };
+  const storage = new StorageManager(fakeStorage, globalThis);
+  assert.equal(storage.load().lastFrameId, null, 'unstamped progress must not survive boot');
+
+  // The same record, stamped, is honoured — the stamp is the whole difference.
+  values.set('hwc.schemaVersion', '1');
+  values.set('hwc.progress', JSON.stringify({
+    frameId: 'f-005',
+    updatedAt: new Date().toISOString(),
+    seq: 1,
+    tabId: 't'
+  }));
+  const stamped = new StorageManager(fakeStorage, globalThis);
+  assert.equal(stamped.load().lastFrameId, 'f-005');
+});
