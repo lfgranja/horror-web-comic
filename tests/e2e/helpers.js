@@ -238,12 +238,26 @@ export async function installFrameWatcher(page) {
   // amount — which is exactly what the recovered ±10% assertions were tripping over.
   await page.addInitScript(() => {
     window.__frameMarks = [];
+    window.__playingAt = null;
     let lastId = null;
+    let lastStatus = null;
     const record = () => {
-      const id = document.querySelector('#player')?.dataset.frameId;
-      if (!id || id === lastId) return;
-      lastId = id;
-      window.__frameMarks.push({ id, at: performance.now() });
+      const player = document.querySelector('#player');
+      if (!player) return;
+      const id = player.dataset.frameId;
+      if (id && id !== lastId) {
+        lastId = id;
+        window.__frameMarks.push({ id, at: performance.now() });
+      }
+      // The first frame is painted while the player is still idle; the dwell
+      // does not begin until the 250ms auto-start timer flips it to playing
+      // (player.js:86). Timing that frame from its attribute write charges the
+      // idle gap to it: 1000ms authored measured as 1252ms.
+      const status = player.dataset.status;
+      if (status === 'playing' && status !== lastStatus && window.__playingAt === null) {
+        window.__playingAt = performance.now();
+      }
+      lastStatus = status;
     };
     // document, not documentElement: an init script runs before the parser has
     // created <html>, and observing a null root throws, which silently kills
@@ -251,7 +265,7 @@ export async function installFrameWatcher(page) {
     new MutationObserver(record).observe(document, {
       subtree: true,
       attributes: true,
-      attributeFilter: ['data-frame-id']
+      attributeFilter: ['data-frame-id', 'data-status']
     });
   });
 }
