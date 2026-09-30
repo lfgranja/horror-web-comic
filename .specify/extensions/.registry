@@ -14,10 +14,17 @@
           "speckit.assess.define",
           "speckit.assess.shape",
           "speckit.assess.decide"
+        ],
+        "agy": [
+          "speckit.assess.intake",
+          "speckit.assess.research",
+          "speckit.assess.define",
+          "speckit.assess.shape",
+          "speckit.assess.decide"
         ]
       },
       "registered_skills": [],
-      "installed_at": "2026-09-25T14:04:25.556259+00:00"
+      "installed_at": "2026-09-30T13:12:09.008425+00:00"
     },
     "bug": {
       "version": "1.0.0",
@@ -30,10 +37,15 @@
           "speckit.bug.assess",
           "speckit.bug.fix",
           "speckit.bug.test"
+        ],
+        "agy": [
+          "speckit.bug.assess",
+          "speckit.bug.fix",
+          "speckit.bug.test"
         ]
       },
       "registered_skills": [],
-      "installed_at": "2026-09-27T18:02:20.902767+00:00"
+      "installed_at": "2026-09-30T13:12:14.636250+00:00"
     }
   }
 }
