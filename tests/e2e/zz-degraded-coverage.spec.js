@@ -241,7 +241,10 @@ for (const profile of PROFILES) {
     const audioPolicy = () => page.evaluate(() => window.__cinematicPlayer.audio.allElements().map((element) => ({
       key: element.dataset.trackKey,
       preload: element.preload,
-      src: element.src
+      // The resolved source is parked on the element until the first play attempt
+      // arms it (see AudioManager.assignSource), so `element.src` would read ''
+      // here and could no longer tell "light variant" apart from "not armed yet".
+      src: element.dataset.trackSource
     })));
 
     // FR-031: every audio track is the light variant.
@@ -382,7 +385,7 @@ test('absence of degradation signals falls back to standard media and authored m
   const policy = await page.evaluate(() => window.__cinematicPlayer.audio.allElements().map((element) => ({
     key: element.dataset.trackKey,
     preload: element.preload,
-    src: element.src
+    src: element.dataset.trackSource
   })));
   expect(policy.find((track) => track.key === 'scene-0').preload).toBe('auto');
   expect(policy.find((track) => track.key === 'scene-1').preload).toBe('auto');

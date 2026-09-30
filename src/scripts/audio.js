@@ -58,6 +58,7 @@ export class AudioManager {
     this.elementListeners = [];
     this.startRecord = null;
     this.unlockInProgress = false;
+    this.playbackGranted = false;
     this.destroyed = false;
     this.createElements();
     this.updatePreloadPolicy();
@@ -94,7 +95,20 @@ export class AudioManager {
 
   createElement(track, key, preloadValue) {
     const source = this.capabilities?.shouldDegrade ? lightAudioSource(track.src) : track.src;
-    const element = new Audio(source);
+    // `new Audio(source)` is what put 347 KB of unplayable audio on the critical
+    // path: assigning the source runs the resource selection algorithm, and by the
+    // time `preload` is consulted the fetch has already begun. Measured on the
+    // production story, `metadata` and `auto` transfer the identical 346,452 B, so
+    // no value of the attribute could ever gate it — the first attempt to fix this
+    // by narrowing `preload` was a measured no-op and had to be reverted.
+    //
+    // The element is therefore built source-less, with the resolved URL parked on
+    // `trackSource`, where it stays observable (and keeps honouring
+    // `lightAudioSource()` under shouldDegrade) without arming anything.
+    // assignSource() hands it to the media stack at the moment playback is
+    // actually attempted.
+    const element = new Audio();
+    element.dataset.trackSource = source;
     element.preload = preloadValue || 'auto';
     element.volume = 0;
     element.loop = track.loop ?? true;
@@ -105,6 +119,43 @@ export class AudioManager {
     this.listenToElement(element, 'pause', () => this.handleMediaPause(key, element));
     this.listenToElement(element, 'ended', () => this.handleMediaEnded(key, element));
     return element;
+  }
+
+  /**
+   * Hand the parked source to the media stack, at most once per element.
+   *
+   * The ordering here is load-bearing: play() on an element that has no source
+   * rejects with NotSupportedError, and handlePlayFailure() classifies every
+   * error that is not NotAllowedError as a broken track and latches it as failed
+   * for the whole session. Assigning the source after the play() attempt, or not
+   * at all, would therefore report "this file is broken" where the truth is "audio
+   * is blocked", and silence the story permanently. Every play — the scene bed,
+   * the frame layer and the per-element unlock probe — goes through
+   * requestPlay(), which arms the element immediately before calling play().
+   */
+  assignSource(element) {
+    if (element.src || !element.dataset.trackSource) return;
+    element.src = element.dataset.trackSource;
+  }
+
+  /**
+   * Arm the tracks the preload policy does not exclude, once playback is a fact.
+   *
+   * Deferring the source must cost a granted session nothing, and the off-screen
+   * tracks it used to fetch at construction are exactly the ones a reader reaches
+   * later, on the next scene. They cannot be armed at boot without recreating the
+   * bug — a boot-time fetch is precisely what a blocked session must not pay for —
+   * so the policy is re-applied here instead, after a play() has actually been
+   * granted, and exactly once. `preload === 'none'` remains the policy's own
+   * statement that a track is not wanted yet and stays honoured (FR-015).
+   */
+  warmDeferredTracks() {
+    if (this.playbackGranted || this.destroyed) return;
+    this.playbackGranted = true;
+    for (const element of this.allElements()) {
+      if (element.preload === 'none') continue;
+      this.assignSource(element);
+    }
   }
 
   listenToElement(element, eventName, handler) {
@@ -265,6 +316,9 @@ export class AudioManager {
     if (existing?.generation === generation) return existing.promise;
     if (!force && this.isElementPlaying(element)) return Promise.resolve();
     let result;
+    // Arm immediately before play(): a source-less element rejects with
+    // NotSupportedError, which handlePlayFailure() would latch as a broken track.
+    this.assignSource(element);
     try {
       result = element.play();
     } catch (error) {
@@ -276,6 +330,9 @@ export class AudioManager {
     promise.then(
       () => {
         if (this.playRequests.get(key) === record) this.playRequests.delete(key);
+        // A resolved play() is the only trustworthy evidence that the session can
+        // play audio, so this is where the deferred tracks are fetched.
+        this.warmDeferredTracks();
       },
       () => {
         if (this.playRequests.get(key) === record) this.playRequests.delete(key);
@@ -431,7 +488,10 @@ export class AudioManager {
       if (this.failed.has(element.dataset.trackKey)) continue;
       // T199: unlock also has to be a real autoplay decision, otherwise the
       // per-element unlock that Safari demands is satisfied by a muted grant
-      // that proves nothing.
+      // that proves nothing. requestPlay() arms each element's deferred source
+      // first, so the probe below is a decision about a real track rather than
+      // about an element that has nothing to play — and it is still per-element,
+      // which is what Safari requires.
       element.volume = AUTOPLAY_PROBE_VOLUME;
       const promise = this.requestPlay(element, generation, true);
       promise.catch(() => {});

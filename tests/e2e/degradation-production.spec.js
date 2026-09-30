@@ -74,7 +74,7 @@ for (const profile of degradationProfiles) {
           currentSrc: image.currentSrc,
           width: image.naturalWidth,
           height: image.naturalHeight,
-          audioSources: player.audio.allElements().map((element) => element.src),
+          audioSources: player.audio.allElements().map((element) => element.dataset.trackSource),
           audioPreloads: player.audio.allElements().map((element) => ({ key: element.dataset.trackKey, preload: element.preload })),
           currentScene,
           preloadedImageSources: window.__preloadedImages.map((preload) => preload.src)
