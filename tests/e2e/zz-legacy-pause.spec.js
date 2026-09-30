@@ -66,14 +66,14 @@ test.describe('US4 pause and resume', () => {
     await expectFrameId(page, 'f-004');
     await page.waitForTimeout(400);
     const before = await page.evaluate(() =>
-      [...document.querySelectorAll('audio')].map((a) => ({ paused: a.paused, t: a.currentTime })),
+      globalThis.__cinematicPlayer.audio.allElements().map((a) => ({ paused: a.paused, t: a.currentTime })),
     );
     await page.locator(selectors.playPause).click();
     const pauseStart = Date.now();
     await expect
       .poll(
         async () =>
-          page.evaluate(() => [...document.querySelectorAll('audio')].every((a) => a.paused)),
+          page.evaluate(() => globalThis.__cinematicPlayer.audio.allElements().every((a) => a.paused)),
         { timeout: 200, message: 'audio paused within 100ms' },
       )
       .toBeTruthy();
@@ -83,7 +83,7 @@ test.describe('US4 pause and resume', () => {
     await page.locator(selectors.playPause).click();
     await page.waitForTimeout(300);
     const after = await page.evaluate(() =>
-      [...document.querySelectorAll('audio')].map((a) => ({ paused: a.paused, t: a.currentTime })),
+      globalThis.__cinematicPlayer.audio.allElements().map((a) => ({ paused: a.paused, t: a.currentTime })),
     );
     await expectFrameId(page, 'f-004');
     const anyPlaying = after.some((a) => !a.paused);
@@ -101,7 +101,7 @@ test.describe('US4 pause and resume', () => {
       .poll(
         async () =>
           page.evaluate(() =>
-            [...document.querySelectorAll('audio')].every((a) => a.paused || a.muted),
+            globalThis.__cinematicPlayer.audio.allElements().every((a) => a.paused || a.muted),
           ),
         { timeout: 200 },
       )
