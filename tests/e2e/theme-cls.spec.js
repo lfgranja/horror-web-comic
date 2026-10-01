@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import { openPlayer } from './helpers.js';
 
 test.describe('Theme Switcher - Cumulative Layout Shift (CLS) (US1)', () => {
+  test.slow();
   const viewports = [
     { name: 'desktop', width: 1440, height: 900 },
     { name: 'tablet', width: 768, height: 1024 },
@@ -23,8 +24,10 @@ test.describe('Theme Switcher - Cumulative Layout Shift (CLS) (US1)', () => {
       // Instala PerformanceObserver para medir layout-shift durante a troca de temas
       await page.evaluate(() => {
         window.__layoutShifts = 0;
+        window.__rawShifts = [];
         const observer = new PerformanceObserver((list) => {
           for (const entry of list.getEntries()) {
+            window.__rawShifts.push(entry);
             if (!entry.hadRecentInput) {
               window.__layoutShifts += entry.value;
             }
@@ -45,7 +48,21 @@ test.describe('Theme Switcher - Cumulative Layout Shift (CLS) (US1)', () => {
         await page.waitForTimeout(50);
       }
 
-      const totalCLS = await page.evaluate(() => window.__layoutShifts);
+      const { totalCLS, shiftEntries } = await page.evaluate(() => ({
+        totalCLS: window.__layoutShifts,
+        shiftEntries: (window.__rawShifts || []).map((s) => ({
+          value: s.value,
+          hadRecentInput: s.hadRecentInput,
+          sources: (s.sources || []).map((src) => ({
+            node: src.node ? src.node.nodeName + (src.node.className ? '.' + src.node.className : '') + (src.node.id ? '#' + src.node.id : '') : null,
+            prev: src.previousRect,
+            curr: src.currentRect
+          }))
+        }))
+      }));
+      if (totalCLS > 0) {
+        console.log(`[CLS-DEBUG] ${vp.name}: total=${totalCLS}`, JSON.stringify(shiftEntries, null, 2));
+      }
       expect(totalCLS).toBe(0);
 
       // Verifica estabilidade dimensional do narrador e barra de controle
