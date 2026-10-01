@@ -331,7 +331,7 @@ export class StorageManager {
       const channel = this.themeChannel;
       if (channel) {
         try {
-          channel.postMessage({ theme: target });
+          channel.postMessage({ theme: target, timestamp: Date.now() });
         } catch {
           this.closeThemeChannel(channel);
         }
