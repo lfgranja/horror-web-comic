@@ -1,8 +1,11 @@
-const KEYS = ['hwc.audio', 'hwc.volume', 'hwc.speed', 'hwc.progress', 'hwc.schemaVersion'];
-const DEFAULTS = { audioEnabled: true, volume: 0.6, speed: 1, lastFrameId: null, schemaVersion: 1 };
+const KEYS = ['hwc.audio', 'hwc.volume', 'hwc.speed', 'hwc.progress', 'hwc.theme', 'hwc.schemaVersion'];
+const DEFAULTS = { audioEnabled: true, volume: 0.6, speed: 1, lastFrameId: null, theme: 'cinema', schemaVersion: 1 };
 const SCHEMA_VERSION = '1';
 const CHANNEL_NAME = 'progress';
+const THEME_CHANNEL_NAME = 'theme';
+const VALID_THEMES = new Set(['cinema', 'noir', 'eldritch', 'industrial', 'shadow-props']);
 let fallbackTabCounter = 0;
+
 
 function getBrowserStorage() {
   try {
@@ -95,27 +98,38 @@ export class StorageManager {
     this.seq = 0;
     this.tabId = createTabId();
     this.listeners = new Set();
+    this.themeListeners = new Set();
     this.channel = null;
     this.channelMessageHandler = null;
+    this.themeChannel = null;
+    this.themeChannelMessageHandler = null;
     this.storageListenerAttached = false;
     this.disposed = false;
     this.defaultsOnly = false;
     this.progress = null;
     this.handleStorage = (event) => {
       try {
-        if (event?.key !== 'hwc.progress') return;
-        const record = parseProgress(event?.newValue);
-        if (record) this.receiveProgress(record);
+        if (event?.key === 'hwc.progress') {
+          const record = parseProgress(event?.newValue);
+          if (record) this.receiveProgress(record);
+        } else if (event?.key === 'hwc.theme') {
+          const newTheme = event?.newValue;
+          if (VALID_THEMES.has(newTheme)) {
+            this.notifyTheme(newTheme);
+          }
+        }
       } catch {
         return;
       }
     };
     this.channel = this.createChannel();
+    this.themeChannel = this.createThemeChannel();
     this.ensureVersion();
     this.attachStorageListener();
     if (!this.defaultsOnly) this.progress = parseProgress(this.get('hwc.progress'));
     if (this.progress?.tabId === this.tabId && this.progress.seq > this.seq) this.seq = this.progress.seq;
   }
+
 
   createChannel() {
     try {
@@ -150,6 +164,42 @@ export class StorageManager {
     }
     return null;
   }
+
+  createThemeChannel() {
+    try {
+      if (typeof globalThis.BroadcastChannel !== 'function' || !hasWindow()) return null;
+      const channel = new globalThis.BroadcastChannel(THEME_CHANNEL_NAME);
+      const handler = (event) => {
+        try {
+          const theme = event?.data?.theme ?? event?.data;
+          if (typeof theme === 'string' && VALID_THEMES.has(theme)) {
+            this.notifyTheme(theme);
+          }
+        } catch {
+          return;
+        }
+      };
+      if (typeof channel.addEventListener === 'function') {
+        channel.addEventListener('message', handler);
+        this.themeChannelMessageHandler = handler;
+        return channel;
+      }
+      if (channel && (typeof channel === 'object' || typeof channel === 'function')) {
+        channel.onmessage = handler;
+        this.themeChannelMessageHandler = handler;
+        return channel;
+      }
+      try {
+        channel.close();
+      } catch {
+        return null;
+      }
+    } catch {
+      return null;
+    }
+    return null;
+  }
+
 
   attachStorageListener() {
     try {
@@ -229,8 +279,10 @@ export class StorageManager {
     const audio = this.get('hwc.audio');
     const storedVolume = this.get('hwc.volume');
     const storedSpeed = this.get('hwc.speed');
+    const storedTheme = this.get('hwc.theme');
     const volume = storedVolume === null || storedVolume === '' ? Number.NaN : toNumber(storedVolume);
     const speed = storedSpeed === null || storedSpeed === '' ? Number.NaN : toNumber(storedSpeed);
+    const theme = typeof storedTheme === 'string' && VALID_THEMES.has(storedTheme) ? storedTheme : DEFAULTS.theme;
     const progress = this.progress;
     return {
       ...DEFAULTS,
@@ -238,6 +290,7 @@ export class StorageManager {
       volume: Number.isFinite(volume) ? Math.min(1, Math.max(0, volume)) : DEFAULTS.volume,
       speed: [0.5, 1, 2].includes(speed) ? speed : DEFAULTS.speed,
       lastFrameId: progress?.frameId ?? null,
+      theme,
       progress,
       schemaVersion: 1
     };
@@ -262,6 +315,40 @@ export class StorageManager {
     this.defaultsOnly = false;
     this.set('hwc.speed', String(normalized));
     return normalized;
+  }
+
+  setTheme(themeId) {
+    const target = typeof themeId === 'string' && VALID_THEMES.has(themeId) ? themeId : DEFAULTS.theme;
+    this.defaultsOnly = false;
+    this.set('hwc.theme', target);
+    if (!this.disposed) {
+      const channel = this.themeChannel;
+      if (channel) {
+        try {
+          channel.postMessage({ theme: target });
+        } catch {
+          this.closeThemeChannel(channel);
+        }
+      }
+      this.notifyTheme(target);
+    }
+    return target;
+  }
+
+  notifyTheme(themeId) {
+    for (const listener of this.themeListeners) {
+      try {
+        listener(themeId);
+      } catch {
+        continue;
+      }
+    }
+  }
+
+  onTheme(listener) {
+    if (this.disposed || typeof listener !== 'function') return () => false;
+    this.themeListeners.add(listener);
+    return () => this.themeListeners.delete(listener);
   }
 
   saveProgress(frameId) {
@@ -335,13 +422,37 @@ export class StorageManager {
     }
   }
 
+  closeThemeChannel(channel) {
+    if (!channel) return;
+    const handler = this.themeChannelMessageHandler;
+    try {
+      if (handler && typeof channel.removeEventListener === 'function') channel.removeEventListener('message', handler);
+      else if (handler && channel.onmessage === handler) channel.onmessage = null;
+    } catch {
+    }
+    try {
+      if (typeof channel.close === 'function') channel.close();
+    } catch {
+      return;
+    } finally {
+      if (this.themeChannel === channel) {
+        this.themeChannel = null;
+        this.themeChannelMessageHandler = null;
+      }
+    }
+  }
+
   dispose() {
     if (this.disposed) return;
     this.disposed = true;
     this.listeners.clear();
+    this.themeListeners.clear();
     const channel = this.channel;
     this.channel = null;
     this.closeChannel(channel);
+    const themeChannel = this.themeChannel;
+    this.themeChannel = null;
+    this.closeThemeChannel(themeChannel);
     if (this.storageListenerAttached) {
       try {
         if (typeof globalThis.removeEventListener === 'function') globalThis.removeEventListener('storage', this.handleStorage);
@@ -352,7 +463,9 @@ export class StorageManager {
     }
     this.storageListenerAttached = false;
     this.channelMessageHandler = null;
+    this.themeChannelMessageHandler = null;
   }
+
 }
 
 export function createStorageManager() {
