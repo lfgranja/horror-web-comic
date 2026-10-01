@@ -14,6 +14,12 @@ test.describe('Theme Switcher - Cumulative Layout Shift (CLS) (US1)', () => {
       await page.setViewportSize({ width: vp.width, height: vp.height });
       await openPlayer(page, 'tests/fixtures/story.json', { pause: true });
 
+      const select = page.locator('#theme');
+      await expect(select).toBeVisible();
+
+      // Aguarda 600ms para estabilização completa do debounce do narrador inicial
+      await page.waitForTimeout(600);
+
       // Instala PerformanceObserver para medir layout-shift durante a troca de temas
       await page.evaluate(() => {
         window.__layoutShifts = 0;
@@ -28,8 +34,6 @@ test.describe('Theme Switcher - Cumulative Layout Shift (CLS) (US1)', () => {
       });
 
       const themes = ['noir', 'eldritch', 'industrial', 'shadow-props', 'cinema'];
-      const select = page.locator('#theme');
-      await expect(select).toBeVisible();
 
       // Guarda posição e dimensões de controle e narrador para checar spread = 0
       const initialControlBarBox = await page.locator('nav.control-bar').boundingBox();
