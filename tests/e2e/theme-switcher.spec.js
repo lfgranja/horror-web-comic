@@ -40,7 +40,7 @@ test.describe('Theme Switcher - Comutação visual, estabilidade e latência (US
   });
 
   test('comutação de tema durante reprodução com áudio ativo não interrompe áudio (US1-AC3)', async ({ page }) => {
-    await openPlayer(page, 'tests/fixtures/story.json', { pause: false });
+    await openPlayer(page);
     
     // Assegura que o áudio está ativo
     const toggle = page.locator('#audio-toggle');
