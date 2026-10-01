@@ -63,8 +63,19 @@
           <div class="control-group utility-controls">
             <label class="range-control" for="volume"><span>Volume</span><input id="volume" type="range" min="0" max="100" step="1" value="60"><output id="volume-value" for="volume">60%</output></label>
             <label class="select-control" for="speed"><span>Ritmo</span><select id="speed" aria-label="Velocidade de exibição"><option value="0.5">0,5×</option><option value="1" selected>1×</option><option value="2">2×</option></select></label>
+            <div class="theme-control">
+              <label class="sr-only" for="theme">Atmosfera visual da narrativa</label>
+              <select id="theme" class="theme-select" aria-label="Atmosfera visual da narrativa">
+                <option value="cinema" aria-label="Cinema Minimalista (A24 / MUBI)" selected>Cinema</option>
+                <option value="noir" aria-label="Graphic Novel Noir (HQ Clássica)">Noir</option>
+                <option value="eldritch" aria-label="Atmospheric Eldritch (Gótico / Penumbra)">Eldritch</option>
+                <option value="industrial" aria-label="Industrial Brutalist (Terminal / CRT)">Industrial</option>
+                <option value="shadow-props" aria-label="Shadow-Props Base (Tokens Puros)">Shadow</option>
+              </select>
+            </div>
             <button id="audio-toggle" class="control-button audio-toggle" type="button" aria-pressed="true" aria-describedby="audio-hint">Som</button>
           </div>
+
         </nav>
         <p id="audio-hint" class="audio-hint">O som pode ser desativado a qualquer momento.</p>
         <div id="audio-status" class="audio-status" role="status" aria-live="polite"></div>
