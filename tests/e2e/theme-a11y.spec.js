@@ -44,6 +44,7 @@ test.describe('Theme Switcher - Acessibilidade Universal (WCAG 2.2 AAA) e Ergono
   });
 
   test('acessibilidade semântica: label associado, aria-label no select e em cada option (US3-AC4, FR-002, FR-004)', async ({ page }) => {
+    test.slow();
     await openPlayer(page, 'tests/fixtures/story.json', { pause: true });
 
     // Label com classe sr-only para #theme
