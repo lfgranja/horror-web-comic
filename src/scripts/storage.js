@@ -115,9 +115,12 @@ export class StorageManager {
         } else if (event?.key === 'hwc.theme') {
           const newTheme = event?.newValue;
           if (VALID_THEMES.has(newTheme)) {
+            this.defaultsOnly = false;
+            this.set('hwc.theme', newTheme);
             this.notifyTheme(newTheme);
           }
         }
+
       } catch {
         return;
       }
@@ -173,12 +176,15 @@ export class StorageManager {
         try {
           const theme = event?.data?.theme ?? event?.data;
           if (typeof theme === 'string' && VALID_THEMES.has(theme)) {
+            this.defaultsOnly = false;
+            this.set('hwc.theme', theme);
             this.notifyTheme(theme);
           }
         } catch {
           return;
         }
       };
+
       if (typeof channel.addEventListener === 'function') {
         channel.addEventListener('message', handler);
         this.themeChannelMessageHandler = handler;
