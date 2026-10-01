@@ -64,3 +64,104 @@
     --description-min-height: 0px;
   }
 }
+
+/* 5 Dramatic Horror Themes (002-theme-switcher) */
+
+/* 1. Minimalist Cinema [Padrão] */
+html[data-theme="cinema"] {
+  --ink-950: #060608;
+  --ink-900: #0d0e14;
+  --ink-850: #13151f;
+  --ink-800: #1b1d2b;
+  --ink-700: #292d3f;
+  --mist-100: #ffffff;
+  --mist-300: #d6d9e0;
+  --mist-500: #a5abb8;
+  --amber-400: #ffffff;
+  --amber-300: #ffffff;
+  --focus: #ffffff;
+  --font-display: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.9rem;
+}
+
+/* 2. Graphic Novel Noir */
+html[data-theme="noir"] {
+  --ink-950: #050507;
+  --ink-900: #0b0b0e;
+  --ink-850: #121217;
+  --ink-800: #1a1a20;
+  --ink-700: #2a2a34;
+  --mist-100: #ffffff;
+  --mist-300: #dcdce2;
+  --mist-500: #a8a8b4;
+  --amber-400: #ff2a44;
+  --amber-300: #ff2a44;
+  --focus: #ff2a44;
+  --line: rgba(255, 255, 255, 0.28);
+  --font-display: Impact, 'Arial Black', sans-serif;
+  --radius-sm: 0.2rem;
+  --radius-md: 0.4rem;
+}
+
+/* 3. Atmospheric Eldritch */
+html[data-theme="eldritch"] {
+  --ink-950: #040507;
+  --ink-900: #080c10;
+  --ink-850: #0f161e;
+  --ink-800: #17212d;
+  --ink-700: #263546;
+  --mist-100: #fbf5e6;
+  --mist-300: #ddd4be;
+  --mist-500: #b8ad94;
+  --amber-400: #fdd677;
+  --amber-300: #fdd677;
+  --focus: #fdd677;
+  --font-display: 'Cinzel', Georgia, 'Times New Roman', serif;
+  --radius-sm: 0.6rem;
+  --radius-md: 1rem;
+}
+
+/* 4. Industrial Brutalist */
+html[data-theme="industrial"] {
+  --ink-950: #08090a;
+  --ink-900: #101214;
+  --ink-850: #181b1e;
+  --ink-800: #21252a;
+  --ink-700: #333940;
+  --mist-100: #f0f2f5;
+  --mist-300: #c2c7cf;
+  --mist-500: #9da3ad;
+  --amber-400: #ffb82e;
+  --amber-300: #ffb82e;
+  --focus: #ffb82e;
+  --font-display: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, monospace;
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+}
+
+/* 5. Shadow-Props Base */
+html[data-theme="shadow-props"] {
+  --ink-950: #07080d;
+  --ink-900: #0d1019;
+  --ink-850: #121827;
+  --ink-800: #1a2234;
+  --ink-700: #2b3850;
+  --mist-100: #f4f7fb;
+  --mist-300: #c7d1df;
+  --mist-500: #b7c4d7;
+  --amber-400: #ffe2a1;
+  --amber-300: #ffe2a1;
+  --focus: #ffe2a1;
+  --font-display: Georgia, 'Times New Roman', serif;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.9rem;
+}
+
+@media (forced-colors: active) {
+  html[data-theme] {
+    forced-color-adjust: auto;
+  }
+}
+
