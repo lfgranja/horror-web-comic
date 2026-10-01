@@ -2,8 +2,8 @@ import { test, expect } from '@playwright/test';
 import { openPlayer } from './helpers.js';
 
 test.describe('Theme Switcher - Persistência e Sincronização Multi-aba (US2)', () => {
+  test.slow();
   test('persiste e restaura o tema após reload sem FOUC (US2-AC1, SC-006, FR-007)', async ({ page }) => {
-    test.slow();
     await openPlayer(page, 'tests/fixtures/story.json', { pause: true });
     const select = page.locator('#theme');
     await select.selectOption('industrial');
