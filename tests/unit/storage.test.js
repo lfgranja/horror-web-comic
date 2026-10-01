@@ -9,6 +9,7 @@ test('uses safe defaults when browser storage is unavailable', () => {
     volume: 0.6,
     speed: 1,
     lastFrameId: null,
+    theme: 'cinema',
     progress: null,
     schemaVersion: 1
   });
@@ -228,10 +229,12 @@ test('resets defaults when incompatible storage cannot be removed', () => {
     volume: 0.6,
     speed: 1,
     lastFrameId: null,
+    theme: 'cinema',
     progress: null,
     schemaVersion: 1
   });
 });
+
 
 test('disposes channels and storage listeners exactly once', () => {
   const originalChannel = globalThis.BroadcastChannel;
@@ -258,8 +261,8 @@ test('disposes channels and storage listeners exactly once', () => {
     });
     storage.dispose();
     storage.dispose();
-    assert.equal(closed, 1);
-  assert.equal(removed, 1);
+    assert.equal(closed, 2);
+    assert.equal(removed, 1);
   } finally {
     if (originalChannel) Object.defineProperty(globalThis, 'BroadcastChannel', { configurable: true, value: originalChannel });
     else delete globalThis.BroadcastChannel;
@@ -327,7 +330,7 @@ test('closes the channel when listener removal throws', () => {
   try {
     const storage = new StorageManager(null);
     assert.doesNotThrow(() => storage.dispose());
-    assert.equal(closed, 1);
+    assert.equal(closed, 2);
   } finally {
     if (originalChannel) Object.defineProperty(globalThis, 'BroadcastChannel', { configurable: true, value: originalChannel });
     else delete globalThis.BroadcastChannel;
