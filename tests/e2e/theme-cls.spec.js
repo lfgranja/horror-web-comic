@@ -14,7 +14,7 @@ test.describe('Theme Switcher - Cumulative Layout Shift (CLS) (US1)', () => {
       await page.setViewportSize({ width: vp.width, height: vp.height });
       await openPlayer(page, 'tests/fixtures/story.json', { pause: true });
 
-      // Instala PerformanceObserver para medir layout-shift
+      // Instala PerformanceObserver para medir layout-shift durante a troca de temas
       await page.evaluate(() => {
         window.__layoutShifts = 0;
         const observer = new PerformanceObserver((list) => {
@@ -24,7 +24,7 @@ test.describe('Theme Switcher - Cumulative Layout Shift (CLS) (US1)', () => {
             }
           }
         });
-        observer.observe({ type: 'layout-shift', buffered: true });
+        observer.observe({ type: 'layout-shift', buffered: false });
       });
 
       const themes = ['noir', 'eldritch', 'industrial', 'shadow-props', 'cinema'];
