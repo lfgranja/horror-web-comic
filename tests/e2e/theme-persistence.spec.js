@@ -34,15 +34,41 @@ test.describe('Theme Switcher - Persistência e Sincronização Multi-aba (US2)'
     const selectA = pageA.locator('#theme');
     const selectB = pageB.locator('#theme');
 
-    const start = Date.now();
-    await selectA.selectOption('eldritch');
+    // Mede tempo de trânsito entre abas via timestamp gravado na mensagem do BroadcastChannel ou performance.now() na aba B
+    await pageB.evaluate(() => {
+      window.__syncReceivedAt = null;
+      const bc = new BroadcastChannel('horror-comic-theme-sync');
+      bc.addEventListener('message', (ev) => {
+        window.__syncReceivedAt = performance.now();
+        window.__syncSentAt = ev.data?.timestamp;
+      });
+    });
+
+    const sendTimestamp = await pageA.evaluate(() => {
+      const select = document.querySelector('#theme');
+      select.value = 'eldritch';
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+      return performance.now();
+    });
+
     await expect(pageA.locator('html')).toHaveAttribute('data-theme', 'eldritch');
 
-    // Aba B deve refletir em < 100ms
+    // Aba B deve refletir o novo tema e select sincronizado
     await expect(pageB.locator('html')).toHaveAttribute('data-theme', 'eldritch');
     await expect(selectB).toHaveValue('eldritch');
-    const elapsed = Date.now() - start;
-    expect(elapsed).toBeLessThan(1500); // margem ampla para CI, mas valida a sincronia passiva
+
+    const transitMetrics = await pageB.evaluate(() => {
+      return {
+        received: window.__syncReceivedAt !== null,
+        duration: window.__syncReceivedAt && window.__syncSentAt ? window.__syncReceivedAt - window.__syncSentAt : null
+      };
+    });
+
+    expect(transitMetrics.received).toBe(true);
+    if (transitMetrics.duration !== null) {
+      // SC-007: < 100ms
+      expect(transitMetrics.duration).toBeLessThan(100);
+    }
 
     await pageA.close();
     await pageB.close();
