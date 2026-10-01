@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import { openPlayer } from './helpers.js';
 
 test.describe('Theme Switcher - Acessibilidade Universal (WCAG 2.2 AAA) e Ergonomia (US3)', () => {
+  test.slow();
   test('alvo de toque do seletor #theme atende a dimensão mínima de 44x44px em desktop e mobile (US3-AC2, SC-004, FR-005)', async ({ page }) => {
     // Desktop
     await page.setViewportSize({ width: 1280, height: 720 });
@@ -44,7 +45,6 @@ test.describe('Theme Switcher - Acessibilidade Universal (WCAG 2.2 AAA) e Ergono
   });
 
   test('acessibilidade semântica: label associado, aria-label no select e em cada option (US3-AC4, FR-002, FR-004)', async ({ page }) => {
-    test.slow();
     await openPlayer(page, 'tests/fixtures/story.json', { pause: true });
 
     // Label com classe sr-only para #theme
