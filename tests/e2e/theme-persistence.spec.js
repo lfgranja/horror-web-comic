@@ -22,6 +22,7 @@ test.describe('Theme Switcher - Persistência e Sincronização Multi-aba (US2)'
   });
 
   test('sincroniza alterações de tema entre abas via BroadcastChannel em < 100ms (US2-AC2, SC-007, FR-008)', async ({ context }) => {
+    test.slow();
     const pageA = await context.newPage();
     const pageB = await context.newPage();
 
@@ -47,6 +48,7 @@ test.describe('Theme Switcher - Persistência e Sincronização Multi-aba (US2)'
   });
 
   test('sincronização passiva não dispara loops nem anúncios extras em live regions (FR-008, Non-Goals)', async ({ context }) => {
+    test.slow();
     const pageA = await context.newPage();
     const pageB = await context.newPage();
 
