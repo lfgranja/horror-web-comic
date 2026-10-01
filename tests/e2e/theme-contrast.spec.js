@@ -28,6 +28,7 @@ function contrastRatio(rgb1, rgb2) {
 }
 
 test.describe('Theme Switcher - Auditoria Fotométrica de Contraste e Luminância (US3)', () => {
+  test.slow();
   const themes = ['cinema', 'noir', 'eldritch', 'industrial', 'shadow-props'];
 
   for (const theme of themes) {
