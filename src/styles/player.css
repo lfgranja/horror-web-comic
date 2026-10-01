@@ -297,6 +297,7 @@
   background-color: var(--ink-800);
 }
 
+.theme-select:focus,
 .theme-select:focus-visible {
   outline: 3px solid var(--focus);
   outline-offset: 3px;
