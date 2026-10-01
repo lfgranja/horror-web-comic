@@ -34,12 +34,12 @@ test.describe('Theme Switcher - Persistência e Sincronização Multi-aba (US2)'
     const selectA = pageA.locator('#theme');
     const selectB = pageB.locator('#theme');
 
-    // Mede tempo de trânsito entre abas via timestamp gravado na mensagem do BroadcastChannel ou performance.now() na aba B
+    // Mede tempo de trânsito entre abas via timestamp gravado na mensagem do BroadcastChannel
     await pageB.evaluate(() => {
       window.__syncReceivedAt = null;
-      const bc = new BroadcastChannel('horror-comic-theme-sync');
+      const bc = new BroadcastChannel('theme');
       bc.addEventListener('message', (ev) => {
-        window.__syncReceivedAt = performance.now();
+        window.__syncReceivedAt = Date.now();
         window.__syncSentAt = ev.data?.timestamp;
       });
     });
