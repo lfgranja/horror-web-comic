@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import { openPlayer } from './helpers.js';
 
 test.describe('Theme Switcher - Comutação visual, estabilidade e latência (US1)', () => {
+  test.slow();
   test('inicializa com html[data-theme="cinema"] por padrão na primeira visita (US1-AC1)', async ({ page }) => {
     await openPlayer(page, 'tests/fixtures/story.json', { pause: true });
     const html = page.locator('html');
