@@ -270,6 +270,51 @@
   padding-inline: 0.5rem;
 }
 
+.theme-control {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.8rem;
+}
+
+.theme-select {
+  min-width: 2.8rem;
+  min-height: 2.8rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background-color: var(--ink-900);
+  color: var(--mist-100);
+  color-scheme: dark;
+  padding: 0.4rem 0.6rem;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.theme-select:hover {
+  border-color: var(--mist-300);
+  background-color: var(--ink-800);
+}
+
+.theme-select:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+.theme-select option {
+  background-color: var(--ink-900);
+  color: var(--mist-100);
+  color-scheme: dark;
+}
+
+@media (forced-colors: active) {
+  .theme-select {
+    forced-color-adjust: auto;
+    border: 1px solid ButtonBorder;
+  }
+}
+
+
 .audio-hint,
 .audio-status {
   min-height: 1.2em;
