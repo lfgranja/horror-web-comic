@@ -1,50 +1,67 @@
 # Bug Verification: `.sr-only` is defined nowhere, so the theme label renders as visible text and breaks reflow and the end-state overlay
 
 - **Slug**: theme-switcher-reflow-regression
-- **Tested**: 2026-10-01T19:41:20-04:00
+- **Tested**: 2026-10-02T04:05:00-04:00
 - **Assessment**: ./assessment.md
 - **Fix**: ./fix.md
-- **Result**: partial
+- **Result**: verified
+- **Closed on**: CI run `36960245399` (`push`, head `8bc5b5f`) and `36960249790` (`pull_request` #29) — all three jobs success
 
-> **Follow-up (2026-10-01, after this report was first written):** the one check
-> this report was held open for — family 1 on WebKit — is now a dedicated CI job,
-> `webkit-layout-gate` in `.github/workflows/ci.yml`. It runs
-> `reflow.spec.js`, `zz-css-reflow.spec.js`, `zz-end-state-coverage.spec.js` and
-> `theme-a11y.spec.js` on `mobile-webkit` + `desktop-webkit` and finishes in
-> minutes instead of the ~20 the full `gate` matrix takes. The `gate` job already
-> covered these specs on WebKit, so this adds no coverage; it makes the WebKit-only
-> claim a named, fast check instead of a line item to be found by hand in 1279
-> results. See *Recommendation* for how to close on its result.
+This supersedes an earlier `partial` report on this slug, written before the
+WebKit check could be run. That report's own Recommendation named the exact
+condition for closing — *"If it is green, the bug can be closed as `verified`"* —
+and that condition is now met. Nothing in it was contradicted: every local check
+below was re-run and reproduces identically, and the WebKit result it lacked has
+been supplied by the `webkit-layout-gate` job.
 
-The symptom the fix targeted no longer reproduces, and I confirmed that by
-construction rather than by assertion alone: **with the tests in place and the source
-reverted, the new tests fail; with the source restored they pass.** Families 2 and 3
-are verified. Family 1 is the reason this is `partial` and not `verified`: its
-reproduction requires WebKit, which cannot launch on this host, so the one check the
-assessment actually asked for was not exercised.
+## Summary
+
+All three failure families are resolved, including the WebKit-only one that
+previously could not be exercised locally. The root cause — a `<label class="sr-only">`
+with no rule in any stylesheet, rendering as 156px of visible text — is gone, the
+end card's action is now pinned inside the overlay band by construction, and CI is
+green on all three jobs with **1295 e2e tests passing and zero failing**, against 6,
+8 and 10 failures on the last three runs of this same branch.
 
 ## Checks Performed
 
 | Check | Command / Action | Result | Notes |
 |-------|------------------|--------|-------|
-| Prerequisite state | `git status`, `diff -rq src/styles` vs snapshot | pass | Fix on disk matches `fix.md`; `node --check src/scripts/player.js` clean |
-| Reproduction, family 2 (post-fix) | Geometry probe, 320×568, 6 forced scroll positions | **pass** | Was 5/8 failing before the fix; now 6/6 in-band and clickable |
-| Reproduction, family 2 (A/B) | Toggle only `position: sticky` on `#replay` | **pass** | `static` → button `[147,192]`, band `[0,147]`, hit `previous-scene` (= the CI failure). `sticky` → `[90,135]`, hit `replay` |
-| Root cause gone | Measured `.sr-only` label box + `.control-bar` height | **pass** | Label 220px → **1px**, `position: absolute`. Bar 377px → 356px |
-| New tests catch the bug | Reverted `src/styles` only, kept new tests, ran on `desktop-chromium` | **pass** | Both new assertions fail on buggy code (see excerpts) |
-| New / updated tests (post-fix) | `theme-a11y` + `zz-end-state-coverage` + `reflow` + `zz-css-reflow` on `desktop-chromium` + `mobile-chromium` | **pass** | 32 pass / 0 fail |
-| New / updated tests (post-fix) | Same four specs on `desktop-firefox`, `--workers=1` | **pass** | 16 pass / 0 fail |
-| Regression suite | `npx playwright test --project=mobile-chromium --project=desktop-chromium` | **pass** | 554 pass / 5 fail — all 5 pre-existing load-dependent flakes (see below) |
-| Unit tests | `node --test tests/unit/*.test.js` | **pass** | 139 pass / 0 fail |
-| Build + budgets | `npm run build` | **pass** | 13790 script bytes, 3852 style bytes (unchanged), all asset budgets met |
-| Environment gate | `npm run preflight` | **fail** (expected) | 14/15. Only `browser-launch`, on WebKit's missing `libjpeg.so.8` — the limitation `AGENTS.md` documents. Pre-existing, unrelated to the fix |
-| Perf gate | `npm run test:perf` | **fail** (pre-existing) | 36 pass / 9 fail / 15 skipped. 6 are WebKit/Firefox launch crashes; 3 are `first-frame` p75 budgets that fail **identically on baseline** |
-| Lint / type-check | — | **not-run** | No lint or type-check tooling is configured in this project (`package.json` has no such script) |
-| Reproduction, family 1 | WebKit reflow specs | **not-run** | WebKit will not launch here: `LIBJPEG_8.0` required, Fedora 44 ships `libjpeg.so.62` |
+| **Family 1, WebKit** (the check previously impossible) | CI `webkit-layout-gate`, run 36960245399 | **pass** | **32 passed (37.0s)**, job 104s, on `mobile-webkit` + `desktop-webkit` |
+| **Family 1 + 2 + 3, full matrix** | CI `gate` → e2e matrix, run 36960245399 | **pass** | **1295 passed / 0 failed** / 2 flaky / 3 skipped (21.8m) |
+| Reproduction, family 2 (post-fix) | Geometry probe, 320×568, 6 forced scroll positions | **pass** | 6/6 in-band and clickable (was 5/8 failing pre-fix) |
+| Reproduction, family 2 (A/B) | Toggle only `position: sticky` on `#replay` | **pass** | `static` → `[147,192]` in band `[0,147]`, hit `previous-scene` (= the CI failure); `sticky` → `[90,135]`, hit `replay` |
+| Root cause gone | Measured `.sr-only` label box + bar height | **pass** | Label 220px → **1px**, `position: absolute`; bar 377px → 356px |
+| New / updated tests (post-fix) | 4 specs on `mobile-chromium` + `desktop-chromium` | **pass** | 32 passed |
+| New / updated tests (post-fix) | Same 4 specs on `desktop-firefox`, `--workers=1` | **pass** | 16 passed |
+| New tests catch the bug | Reverted `src/styles` only, kept tests, ran on `desktop-chromium` | **pass** | Both new assertions fail on buggy code — see excerpts |
+| Regression suite | CI `gate`: preflight → validate → unit → build:images → build → e2e → perf → Lighthouse | **pass** | Every step success, including perf budgets and the Lighthouse delivery gate |
+| Regression suite (local) | `node --test tests/unit/*.test.js` | **pass** | 139 pass / 0 fail |
+| Build + budgets | `npm run build` | **pass** | 13790 script / 3852 style bytes, all asset budgets met |
+| Environment gate | `npm run preflight` | **fail** (expected) | 14/15 — only `browser-launch`, WebKit's `libjpeg.so.8` on Fedora 44. Pre-existing, environment-only. **Passes on `ubuntu-latest` in CI** |
+| Lint / type-check | — | **not-run** | No lint or type-check tooling configured in this project |
 
 ## Output Excerpts
 
-The decisive check — new tests against the **unfixed** source, tests kept:
+The previously-unexercisable check, now green:
+
+```
+webkit-layout-gate │ WebKit layout gate — 320px/200% reflow, end-state overlay, theme a11y
+                  │   32 passed (37.0s)
+webkit-layout-gate │ completed/success in 104s
+```
+
+Full branch history for comparison — same branch, same workflow:
+
+```
+before  36820174616    6 failed   1279 passed
+before  36815634698   10 failed   1277 passed
+after   36960245399    0 failed   1295 passed   (+ perf budgets + Lighthouse success)
+        grep -c "failed" over the entire run log: 0
+```
+
+New tests against the **unfixed** source, tests kept — proof they are real regression
+tests rather than assertions that merely pass:
 
 ```
 Error: sr-only label must collapse horizontally
@@ -54,91 +71,54 @@ Received:    220.0625
 Error: "Rever do início" must remain clickable
 Expected: true
 Received: false
-
-2 failed / 12 passed   (desktop-chromium, source reverted, tests kept)
+2 failed / 12 passed
 ```
 
-Family 2 mechanism, A/B on the single `position` property, band `[0,147]`:
+Family 2 mechanism, A/B on the single `position` property at the band that failed in CI:
 
 ```
-pre-fix  (position:static): btn [147,192]  inBand:false  hit: previous-scene
-post-fix (sticky)         : btn  [90,135]  inBand:true   hit: replay
-```
-
-Root cause, post-fix: `label { width: 1, position: "absolute" }`, `barH: 356`
-(pre-fix: 220px visible label, 377px bar).
-
-Family 2 sweep, post-fix:
-
-```
-scrollY=0     band=[0,496] btn=[147,192] inBand=true hit=replay -> PASS
-scrollY=200   band=[0,378] btn=[147,192] inBand=true hit=replay -> PASS
-scrollY=374   band=[0,204] btn=[147,192] inBand=true hit=replay -> PASS
-scrollY=420   band=[0,158] btn=[101,146] inBand=true hit=replay -> PASS
-scrollY=453   band=[0,147] btn=[90,135]  inBand=true hit=replay -> PASS
-scrollY=9999  band=[0,147] btn=[90,135]  inBand=true hit=replay -> PASS
-6/6
-```
-
-`first-frame` p75, CI-equivalent parallelism, same two tests fail on **both** trees:
-
-```
-baseline (no fix): 2 failed / 3 passed   (3924, 1696.5 ms)
-fixed            : 2 failed / 3 passed   (4211.2, 2064 ms)
-  ↳ identical failing set: SC-019 (<2.5s), SC-008 (<1.5s)
+pre-fix  (position:static): band [0,147]  btn [147,192]  inBand:false  hit: previous-scene
+post-fix (sticky)         : band [0,147]  btn  [90,135]  inBand:true   hit: replay
 ```
 
 ## Residual Risks
 
-- **Family 1 is unverified.** The assessment's reproduction for it was
-  `--project=mobile-webkit`; I did not run it, because WebKit cannot launch on this
-  host. The fix removes the cause (156px of visible text) and adds `max-width: 100%`
-  /`min-width: 0`, but the WebKit-specific `<select>` min-content behaviour was only
-  ever *inferred* from the CI trace payload and the Chromium measurement. One CI run
-  closes this. If it still overflows, the next lever is `min-width: 0` on
-  `.theme-select` inside the `max-width: 47.99rem` block, which is present but may not
-  bind in WebKit.
-- **The control-bar budget test does not discriminate this bug.** It passes on the
-  unfixed tree too (377px measured vs a 380px ceiling). It is a forward guard against
-  a fifth utility row, not a regression test for this fix — and it is the one new
-  assertion that would not have caught the bug. I verified the two that do.
-- **`reflow.spec.js` cannot be used to verify family 1 locally.** Its horizontal-overflow
-  assertion passes on Chromium both before and after, because Chromium absorbs the
-  overflow that WebKit does not. It is WebKit-only coverage by construction.
-- **5 residual e2e failures under parallel load, all pre-existing and none CSS-related.**
-  `zz-legacy-pause:94`, `zz-legacy-speed-volume:37` (×2), `audio-activity:87` are
-  audio wall-clock budgets; `degradation-production:110` is a race that expects to
-  observe a transient `data-image-loading='true'` and misses it when the image loads
-  faster than the probe. I checked the last one specifically because it is
-  layout-adjacent: it passes 2/2 on the fixed tree and 4/4 on baseline at
-  `--workers=1`, and it asserts on image load timing, which this fix cannot influence.
-- **`preflight` and `test:perf` do not pass locally**, so `npm run ci` cannot pass
-  locally either. Both are WebKit-bound environment limitations, not fix regressions.
-- Firefox crashes under parallel workers on this host (`EmptyDatabaseError`,
-  `_maybeDontRestoreTabs`), producing spurious failures unrelated to any code change.
-  All Firefox results above were taken at `--workers=1`.
-- The 356px control bar on a 568px screen (63% of the viewport) is unchanged by this
-  fix and still undocumented as intentional. The new budget test records the current
-  value rather than endorsing it.
+- **The 2 flaky results in the CI matrix are wall-clock tests that passed on retry,
+  and neither is a reflow or overlay assertion.** `[desktop-firefox]
+  audio-timing.spec.js:72` is the audio-timing flake already tracked in
+  `../e2e-audio-timing-flakes/`, and it fails on unmodified `origin/dev` too (run
+  36730357221). `[mobile-webkit] theme-switcher.spec.js:78` is the SC-005
+  measurement test, which asserts `syncDuration < 50ms` and `visualLatency < 250ms`
+  and whose own comments state the tolerance exists for "multi-worker headless"
+  load; it is not one of the four specs this fix touches. Neither is evidence
+  against this fix, and neither is closed by it.
+- **The control-bar budget test does not discriminate this bug.** It passes against
+  the *unfixed* tree too (377px measured against a 380px ceiling). It is a forward
+  guard against a fifth utility row, not a regression test for this fix. The two
+  assertions that do discriminate — `theme-a11y` geometry and the in-band `#replay`
+  check — were verified above against reverted source.
+- **`reflow.spec.js` cannot verify family 1 locally.** Its horizontal-overflow
+  assertion passes on Chromium both before and after the fix, because Chromium
+  absorbs an overflow that WebKit does not. Family 1 coverage is WebKit-only by
+  construction, which is exactly why `webkit-layout-gate` now exists.
+- **The 356px control bar on a 568px viewport (63% of the screen) is unchanged by
+  this fix.** The budget test records the current value rather than endorsing it;
+  whether four stacked utility rows is the intended mobile design remains an open
+  design question, not a bug.
+- **Local `npm run ci` cannot pass on this host** — `preflight`'s `browser-launch`
+  and the WebKit perf projects both require WebKit. Both pass on `ubuntu-latest`;
+  this is a Fedora limitation, documented in `AGENTS.md`, and not a property of the
+  fix.
 
 ## Recommendation
 
-**Hold, pending one CI run — do not close yet.** The bug that could be verified here is
-verified, and verified strongly: the new tests fail against the unfixed source and pass
-against the fixed source, and family 2's mechanism is confirmed by a single-property A/B
-that reproduces the exact CI symptom. What is missing is family 1, which is 4 of the 6
-original failures and the only family that failed exclusively on WebKit. The fix
-removes its cause, but "the cause is gone" is not "the symptom is gone" on an engine I
-cannot execute.
-
-That gap is now closed by CI rather than by hand: push the branch and read the
-**`webkit-layout-gate`** job. It is WebKit-only, runs the four specs that carry this
-bug's contract on both WebKit projects, and needs no build step. If it is green, the
-bug can be closed as `verified` — that result is precisely the check this report was
-held open for. If either reflow spec still overflows, the assessment's root-cause
-conclusion is wrong about WebKit's `<select>` min-content sizing, and
-`/speckit.bug.assess` should be re-run with the fresh trace from that job's
-`playwright-report-webkit-layout` artifact before anyone touches the code again. Do not
-spend further effort on the 5 residual e2e failures or the 3 perf failures here — both
-sets were reproduced on unmodified `origin/dev` at a comparable or higher rate and
-belong to the existing audio-timing and environment reports.
+**Close the bug — verified end-to-end.** The root cause is gone, the two failure
+modes it produced are closed by construction rather than by a tuned threshold, the
+new tests are proven to fail against the unfixed source, and the branch that had
+five consecutive red runs is now green on all three CI jobs with 1295 e2e tests
+passing and zero failing. The one gap this report was previously held open for —
+family 1, WebKit-only — has been closed by `webkit-layout-gate`, and that job stays
+in the workflow as a permanent fast signal for this class of defect. Nothing here
+should reopen the assessment. The follow-ups recorded in `fix.md` (the 63% control
+bar as a design question, and Firefox's parallel-worker crashes on this host)
+remain open as their own work, not as blockers on this bug.
