@@ -9,6 +9,7 @@ test('uses safe defaults when browser storage is unavailable', () => {
     volume: 0.6,
     speed: 1,
     lastFrameId: null,
+    theme: 'cinema',
     progress: null,
     schemaVersion: 1
   });
@@ -228,10 +229,12 @@ test('resets defaults when incompatible storage cannot be removed', () => {
     volume: 0.6,
     speed: 1,
     lastFrameId: null,
+    theme: 'cinema',
     progress: null,
     schemaVersion: 1
   });
 });
+
 
 test('disposes channels and storage listeners exactly once', () => {
   const originalChannel = globalThis.BroadcastChannel;
@@ -258,8 +261,8 @@ test('disposes channels and storage listeners exactly once', () => {
     });
     storage.dispose();
     storage.dispose();
-    assert.equal(closed, 1);
-  assert.equal(removed, 1);
+    assert.equal(closed, 2);
+    assert.equal(removed, 1);
   } finally {
     if (originalChannel) Object.defineProperty(globalThis, 'BroadcastChannel', { configurable: true, value: originalChannel });
     else delete globalThis.BroadcastChannel;
@@ -327,7 +330,7 @@ test('closes the channel when listener removal throws', () => {
   try {
     const storage = new StorageManager(null);
     assert.doesNotThrow(() => storage.dispose());
-    assert.equal(closed, 1);
+    assert.equal(closed, 2);
   } finally {
     if (originalChannel) Object.defineProperty(globalThis, 'BroadcastChannel', { configurable: true, value: originalChannel });
     else delete globalThis.BroadcastChannel;
@@ -372,3 +375,151 @@ test('a valid progress record is discarded when it carries no schema version sta
   const stamped = new StorageManager(fakeStorage, globalThis);
   assert.equal(stamped.load().lastFrameId, 'f-005');
 });
+
+test('storage.load().theme defaults to cinema for null, undefined, or missing key', () => {
+  const storage = new StorageManager(null);
+  assert.equal(storage.load().theme, 'cinema');
+});
+
+test('storage.load().theme strictly validates and falls back to cinema for invalid themes', () => {
+  const values = new Map([
+    ['hwc.schemaVersion', '1'],
+    ['hwc.theme', 'invalid-theme']
+  ]);
+  const storage = new StorageManager({
+    getItem: (key) => values.get(key) ?? null,
+    setItem: (key, value) => values.set(key, value),
+    removeItem: (key) => values.delete(key)
+  });
+  assert.equal(storage.load().theme, 'cinema');
+
+  values.set('hwc.theme', 'noir');
+  assert.equal(storage.load().theme, 'noir');
+
+  values.set('hwc.theme', 'dark');
+  assert.equal(storage.load().theme, 'cinema');
+});
+
+test('setTheme persists hwc.theme and supports all allowed themes', () => {
+  const values = new Map([['hwc.schemaVersion', '1']]);
+  const storage = new StorageManager({
+    getItem: (key) => values.get(key) ?? null,
+    setItem: (key, value) => values.set(key, value),
+    removeItem: (key) => values.delete(key)
+  });
+
+  const validThemes = ['cinema', 'noir', 'eldritch', 'industrial', 'shadow-props'];
+  for (const theme of validThemes) {
+    storage.setTheme(theme);
+    assert.equal(values.get('hwc.theme'), theme);
+    assert.equal(storage.load().theme, theme);
+  }
+});
+
+test('setTheme falls back silently to memory on QuotaExceededError or SecurityError', () => {
+  const storage = new StorageManager({
+    getItem: () => '1',
+    setItem: () => { throw new Error('QuotaExceededError'); },
+    removeItem: () => { throw new Error('SecurityError'); }
+  });
+  assert.doesNotThrow(() => storage.setTheme('eldritch'));
+  assert.equal(storage.load().theme, 'eldritch');
+});
+
+test('setTheme emits BroadcastChannel("theme") message and onTheme receives it', () => {
+  const originalChannel = globalThis.BroadcastChannel;
+  const windowDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'window');
+  const channels = new Set();
+  class TestChannel {
+    constructor(name) {
+      this.name = name;
+      this.listeners = new Set();
+      channels.add(this);
+    }
+    addEventListener(type, listener) {
+      if (type === 'message') this.listeners.add(listener);
+    }
+    postMessage(data) {
+      for (const channel of channels) {
+        if (channel === this || channel.closed || channel.name !== this.name) continue;
+        for (const listener of channel.listeners) listener({ data });
+      }
+    }
+    close() {
+      this.closed = true;
+      channels.delete(this);
+    }
+  }
+  Object.defineProperty(globalThis, 'BroadcastChannel', { configurable: true, value: TestChannel });
+  Object.defineProperty(globalThis, 'window', { configurable: true, value: {} });
+
+  try {
+    const first = new StorageManager(null);
+    const second = new StorageManager(null);
+    const received = [];
+    second.onTheme((themeId) => received.push(themeId));
+
+    first.setTheme('industrial');
+    assert.equal(second.load().theme, 'industrial');
+    assert.deepEqual(received, ['industrial']);
+
+    first.dispose();
+    second.dispose();
+  } finally {
+    if (originalChannel) Object.defineProperty(globalThis, 'BroadcastChannel', { configurable: true, value: originalChannel });
+    else delete globalThis.BroadcastChannel;
+    if (windowDescriptor) Object.defineProperty(globalThis, 'window', windowDescriptor);
+    else delete globalThis.window;
+  }
+});
+
+test('onTheme receives changes via storage event when BroadcastChannel is unavailable', () => {
+  const originalChannel = globalThis.BroadcastChannel;
+  const originalAddEventListener = globalThis.addEventListener;
+  const originalRemoveEventListener = globalThis.removeEventListener;
+  const listeners = new Set();
+
+  Object.defineProperty(globalThis, 'BroadcastChannel', { configurable: true, value: undefined });
+  Object.defineProperty(globalThis, 'addEventListener', {
+    configurable: true,
+    value: (type, listener) => {
+      if (type === 'storage') listeners.add(listener);
+    }
+  });
+  Object.defineProperty(globalThis, 'removeEventListener', {
+    configurable: true,
+    value: (type, listener) => {
+      if (type === 'storage') listeners.delete(listener);
+    }
+  });
+
+  try {
+    const values = new Map([
+      ['hwc.schemaVersion', '1'],
+      ['hwc.theme', 'cinema']
+    ]);
+    const storage = new StorageManager({
+      getItem: (key) => values.get(key) ?? null,
+      setItem: (key, value) => values.set(key, value),
+      removeItem: (key) => values.delete(key)
+    });
+    const received = [];
+    storage.onTheme((theme) => received.push(theme));
+
+    values.set('hwc.theme', 'shadow-props');
+    for (const listener of listeners) {
+      listener({ key: 'hwc.theme', newValue: 'shadow-props' });
+    }
+    assert.equal(storage.load().theme, 'shadow-props');
+    assert.deepEqual(received, ['shadow-props']);
+    storage.dispose();
+  } finally {
+    if (originalChannel) Object.defineProperty(globalThis, 'BroadcastChannel', { configurable: true, value: originalChannel });
+    else delete globalThis.BroadcastChannel;
+    if (originalAddEventListener) Object.defineProperty(globalThis, 'addEventListener', { configurable: true, value: originalAddEventListener });
+    else delete globalThis.addEventListener;
+    if (originalRemoveEventListener) Object.defineProperty(globalThis, 'removeEventListener', { configurable: true, value: originalRemoveEventListener });
+    else delete globalThis.removeEventListener;
+  }
+});
+

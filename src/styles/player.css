@@ -17,23 +17,24 @@
 .player-header {
   display: flex;
   min-width: 0;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: end;
   justify-content: space-between;
   gap: var(--space-3);
 }
 
 .player-header > div {
+  flex: 1 1 auto;
   min-width: 0;
 }
 
 .player-header h1 {
-  max-width: 20ch;
+  max-width: 100%;
   min-width: 0;
   margin: 0.25rem 0 0;
   overflow-wrap: anywhere;
   color: var(--mist-100);
-  font-family: var(--font-display);
+  font-family: inherit;
   font-size: clamp(1.65rem, 4vw, 3.6rem);
   font-weight: 400;
   /* Must stay generous: a tight line-height lets the glyph box exceed the line
@@ -270,6 +271,59 @@
   padding-inline: 0.5rem;
 }
 
+.theme-control {
+  display: inline-flex;
+  align-items: center;
+  /* Without this the control's min-content width wins over the grid track and
+     the control bar overflows horizontally at the minimum viewport. */
+  min-width: 0;
+  min-height: 2.8rem;
+}
+
+.theme-select {
+  min-width: 2.8rem;
+  /* The five options carry long accessible names, so the element's min-content
+     width is far wider than its largest visible label. Capping the box at the
+     track's width lets the track, not the option text, decide the size. */
+  max-width: 100%;
+  min-height: 2.8rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background-color: var(--ink-900);
+  color: var(--mist-100);
+  color-scheme: dark;
+  padding: 0.4rem 0.6rem;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.theme-select:hover {
+  border-color: var(--mist-300);
+  background-color: var(--ink-800);
+}
+
+.theme-select:focus,
+.theme-select:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+.theme-select option {
+  background-color: var(--ink-900);
+  color: var(--mist-100);
+  color-scheme: dark;
+}
+
+@media (forced-colors: active) {
+  .theme-select {
+    forced-color-adjust: auto;
+    border: 1px solid ButtonBorder;
+  }
+}
+
+
 .audio-hint,
 .audio-status {
   min-height: 1.2em;
@@ -332,8 +386,16 @@
      expressed in viewport units: a percentage in `bottom` resolves against the
      containing block, not the viewport, which made the band far taller than
      intended. Clamped so a bar at (or above) the viewport top degrades to a
-     minimal band instead of a negative one. */
-  bottom: max(3rem, calc(100dvh - var(--control-bar-top, 100dvh)));
+     minimal band instead of a negative one.
+
+     That floor is `max(4.5rem, …)` and not `3rem`, and it can only ever make the
+     band SHORTER, never longer: `bottom` is the distance from the viewport's
+     bottom edge, so the floor wins only when the bar's top edge is already below
+     `100dvh - 4.5rem`, in which case the band ends above the bar regardless. It
+     never reaches the controls. What the floor buys is a band tall enough to hold
+     the card's own action, so the hazard stays one-directional — a band that is
+     too SHORT, never one that overlaps. */
+  bottom: max(4.5rem, calc(100dvh - var(--control-bar-top, 100dvh)));
   padding: max(var(--space-4), var(--safe-top)) max(var(--space-4), var(--safe-right)) 0 max(var(--space-4), var(--safe-left));
 }
 
@@ -368,6 +430,16 @@
 
 #end-overlay .overlay-card button {
   pointer-events: auto;
+  /* Pinned to the bottom of the card's scrollport. The card is the scroll
+     container above, so `sticky` + `bottom: 0` keeps the action inside the
+     PAINTED band however short that band is — the failure the 320x568 run hit,
+     where a 125px band against a 178px card scrolled the button 22px out of
+     reach and the hit test landed on the control bar underneath. An opaque
+     background is required: sticky does not move the box out of the text flow,
+     so scrolled copy would otherwise show through it. */
+  position: sticky;
+  bottom: 0;
+  background-color: var(--ink-900);
 }
 
 .frame-stage:not([data-image-loading='true'])[data-transition='fade'] .frame-image,
@@ -500,7 +572,7 @@
   .player-header h1 {
     max-width: 100%;
     font-size: clamp(1.45rem, 8vw, 2.2rem);
-    line-height: 1.2;
+    line-height: 1.35;
   }
 
   .frame-counter {
@@ -598,6 +670,16 @@
   }
 
   .select-control select {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .theme-control {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .theme-select {
     width: 100%;
     min-width: 0;
   }

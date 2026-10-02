@@ -1,0 +1,82 @@
+import { test, expect } from '@playwright/test';
+import { openPlayer } from './helpers.js';
+
+test.describe('Theme Switcher - Cumulative Layout Shift (CLS) (US1)', () => {
+  test.slow();
+  const viewports = [
+    { name: 'desktop', width: 1440, height: 900 },
+    { name: 'tablet', width: 768, height: 1024 },
+    { name: 'mobile', width: 360, height: 800 },
+    { name: 'ultra-narrow', width: 320, height: 568 }
+  ];
+
+  for (const vp of viewports) {
+    test(`mantém CLS estritamente 0.00 ao alternar todos os 5 temas em ${vp.name} (${vp.width}x${vp.height})`, async ({ page }) => {
+      await page.setViewportSize({ width: vp.width, height: vp.height });
+      await openPlayer(page, 'tests/fixtures/story.json', { pause: true });
+
+      const select = page.locator('#theme');
+      await expect(select).toBeVisible();
+
+      // Aguarda 600ms para estabilização completa do debounce do narrador inicial
+      await page.waitForTimeout(600);
+
+      // Instala PerformanceObserver para medir layout-shift durante a troca de temas
+      await page.evaluate(() => {
+        window.__layoutShifts = 0;
+        window.__rawShifts = [];
+        const observer = new PerformanceObserver((list) => {
+          for (const entry of list.getEntries()) {
+            window.__rawShifts.push(entry);
+            if (!entry.hadRecentInput) {
+              window.__layoutShifts += entry.value;
+            }
+          }
+        });
+        observer.observe({ type: 'layout-shift', buffered: false });
+      });
+
+      const themes = ['noir', 'eldritch', 'industrial', 'shadow-props', 'cinema'];
+
+      // Guarda posição e dimensões de controle e narrador para checar spread = 0
+      const initialControlBarBox = await page.locator('nav.control-bar').boundingBox();
+      const initialDescBox = await page.locator('#frame-description').boundingBox();
+
+      for (const theme of themes) {
+        await select.selectOption(theme);
+        // Aguarda estabilização
+        await page.waitForTimeout(50);
+      }
+
+      const { totalCLS, shiftEntries } = await page.evaluate(() => ({
+        totalCLS: window.__layoutShifts,
+        shiftEntries: (window.__rawShifts || []).map((s) => ({
+          value: s.value,
+          hadRecentInput: s.hadRecentInput,
+          sources: (s.sources || []).map((src) => ({
+            node: src.node ? src.node.nodeName + (src.node.className ? '.' + src.node.className : '') + (src.node.id ? '#' + src.node.id : '') : null,
+            prev: src.previousRect,
+            curr: src.currentRect
+          }))
+        }))
+      }));
+      if (totalCLS > 0) {
+        console.log(`[CLS-DEBUG] ${vp.name}: total=${totalCLS}`, JSON.stringify(shiftEntries, null, 2));
+      }
+      expect(totalCLS).toBe(0);
+
+      // Verifica estabilidade dimensional do narrador e barra de controle
+      const finalControlBarBox = await page.locator('nav.control-bar').boundingBox();
+      const finalDescBox = await page.locator('#frame-description').boundingBox();
+
+      if (initialControlBarBox && finalControlBarBox) {
+        expect(Math.abs(finalControlBarBox.y - initialControlBarBox.y)).toBeLessThanOrEqual(1);
+        expect(Math.abs(finalControlBarBox.height - initialControlBarBox.height)).toBeLessThanOrEqual(1);
+      }
+
+      if (initialDescBox && finalDescBox) {
+        expect(Math.abs(finalDescBox.width - initialDescBox.width)).toBeLessThanOrEqual(1);
+      }
+    });
+  }
+});

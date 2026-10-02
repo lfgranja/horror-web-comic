@@ -47,12 +47,20 @@ function showError(message) {
   errorScreen.hidden = false;
 }
 
+const VALID_THEMES = new Set(['cinema', 'noir', 'eldritch', 'industrial', 'shadow-props']);
+
 async function boot() {
   let storage;
   let audio;
   let player;
   try {
     storage = createStorageManager();
+    const initialSaved = storage.load();
+    const activeTheme = initialSaved.theme || 'cinema';
+    document.documentElement.setAttribute('data-theme', activeTheme);
+    const themeSelect = document.querySelector('#theme');
+    if (themeSelect) themeSelect.value = activeTheme;
+
     const story = await loadStory(storyUrl);
     const capabilities = detectCapabilities();
     const a11y = new AccessibilityController();
@@ -72,6 +80,36 @@ async function boot() {
       document.querySelector('#volume-value').textContent = `${volume.value}%`;
     }
     if (speed) speed.value = String(saved.speed);
+    if (themeSelect) {
+      themeSelect.value = saved.theme;
+      themeSelect.addEventListener('change', (event) => {
+        const selectedTheme = event?.target?.value;
+        if (VALID_THEMES.has(selectedTheme)) {
+          document.documentElement.setAttribute('data-theme', selectedTheme);
+          storage.setTheme(selectedTheme);
+        }
+      });
+    }
+
+    storage.onTheme((newTheme) => {
+      if (VALID_THEMES.has(newTheme)) {
+        document.documentElement.setAttribute('data-theme', newTheme);
+        if (themeSelect && themeSelect.value !== newTheme) {
+          themeSelect.value = newTheme;
+        }
+      }
+    });
+
+    globalThis.addEventListener('pageshow', (event) => {
+      if (event?.persisted) {
+        const reloaded = storage.load();
+        if (VALID_THEMES.has(reloaded.theme)) {
+          document.documentElement.setAttribute('data-theme', reloaded.theme);
+          if (themeSelect) themeSelect.value = reloaded.theme;
+        }
+      }
+    });
+
     player.schedule();
     document.title = story.title;
     document.querySelector('#story-title').textContent = story.title;
@@ -80,7 +118,10 @@ async function boot() {
     // globalThis.__CINEMATIC_PRODUCTION__ define. Over 40 browser specs read
     // this, so gating it at build time is what keeps them working while the
     // published bundle stays free of it.
-    if (!globalThis.__CINEMATIC_PRODUCTION__) globalThis.__cinematicPlayer = player;
+    if (!globalThis.__CINEMATIC_PRODUCTION__) {
+      globalThis.__cinematicPlayer = player;
+      globalThis.__audioManager = audio;
+    }
     document.querySelector('#retry-button').addEventListener('click', () => globalThis.location.reload());
   } catch (error) {
     player?.destroy();
@@ -92,3 +133,4 @@ async function boot() {
 }
 
 void boot();
+
