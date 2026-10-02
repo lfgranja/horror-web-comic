@@ -53,6 +53,24 @@ test.describe('Theme Switcher - Acessibilidade Universal (WCAG 2.2 AAA) e Ergono
     await expect(label).toHaveClass(/sr-only/);
     await expect(label).toHaveText('Atmosfera visual da narrativa');
 
+    // The class name alone is not the contract: `sr-only` must actually collapse
+    // the label out of the rendered layout. Asserting only `toHaveClass` is what
+    // let a label with NO css rule anywhere in the repo ship as visible text —
+    // 156px of live copy inside the control bar, which overflowed the bar at
+    // 320px and broke the reflow specs. Assert rendered geometry instead.
+    const labelBox = await label.boundingBox();
+    expect(labelBox, 'sr-only label must render').not.toBeNull();
+    expect(labelBox.width, 'sr-only label must collapse horizontally').toBeLessThanOrEqual(1);
+    expect(labelBox.height, 'sr-only label must collapse vertically').toBeLessThanOrEqual(1);
+    // It must also be taken out of flow, or a flex parent still reserves its
+    // min-content width even at 1px of painted size.
+    const labelPosition = await label.evaluate((el) => getComputedStyle(el).position);
+    expect(labelPosition).toBe('absolute');
+
+    // And it must still be exposed to assistive technology.
+    const accessibleName = await label.evaluate((el) => el.textContent.trim());
+    expect(accessibleName).toBe('Atmosfera visual da narrativa');
+
     // Select
     const select = page.locator('#theme');
     await expect(select).toHaveAttribute('aria-label', 'Atmosfera visual da narrativa');

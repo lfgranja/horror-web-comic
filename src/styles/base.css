@@ -52,6 +52,24 @@ button:disabled {
   display: none !important;
 }
 
+/* Visually hidden but still exposed to assistive technology. Used by labels
+   that name a control whose own accessible name is otherwise only an
+   aria-label (the theme picker). `position: absolute` also removes it from
+   flex flow, so a label inside a flex row cannot claim layout width — the
+   failure mode when this rule is absent. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
 .app-shell {
   min-height: 100dvh;
   padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);
