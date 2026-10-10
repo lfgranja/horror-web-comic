@@ -116,6 +116,82 @@ jobs:
           path: .lighthouseci/
           if-no-files-found: ignore
 
+  # WebKit LAYOUT gate — the narrow, fast signal for bugs that only WebKit shows.
+  #
+  # The `gate` job above already runs the full five-project matrix, WebKit
+  # included, so nothing here adds coverage it lacks. This job exists for two
+  # reasons that are about feedback, not detection:
+  #
+  #   1. Speed and legibility. The full matrix is ~20 minutes and 1279 tests. A
+  #      defect that reproduces on WebKit and nowhere else — as the 320px /
+  #      200%-text horizontal overflow did, failing 4 tests on two WebKit
+  #      projects while Chromium and Firefox were green — should fail in about
+  #      two minutes under a job whose name says what it checks, instead of
+  #      hiding among 1279 results a reviewer has to diff by hand.
+  #
+  #   2. A claim that can be reviewed. The bug this was added for shipped a
+  #      label whose class existed in the markup and in no stylesheet, and the
+  #      assertion guarding it (`toHaveClass(/sr-only/)`) was green throughout.
+  #      What let that stand is that no single check stated "the theme label must
+  #      not be visible, and the control bar must not overflow at 320px". A named
+  #      job makes that statement explicit and gives it a check to hang on.
+  #
+  # WHY LINUX WEBKIT IS VALID HERE, unlike the macOS job below: that job exists
+  # because the WPE build has no GPU and software-composites, which makes a
+  # FRAME-RATE number a fact about a rasterizer. This gate is LAYOUT — overflow,
+  # reflow, hit-testing, computed geometry — and WPE runs WebKit's real layout
+  # engine. The missing GPU cannot change whether an element's scrollWidth exceeds
+  # its track. Do not add a frame-rate or compositor assertion to this job; that
+  # is what the macOS job is for.
+  #
+  # No null-audio-sink step: none of these specs assert that audio plays, and per
+  # the `gate` job's own note WebKit degrades silently without an output device —
+  # it is Firefox that raises OnMediaSinkAudioError. No `build` or `build:images`
+  # either: these specs drive tests/fixtures/story.json directly and index.html
+  # loads src/scripts/main.js unbundled, so every asset involved is tracked in
+  # the repository.
+  #
+  # Scope: the four specs that carry the theme switcher's layout contract. Keep
+  # this list explicit rather than globbing — a glob would quietly grow the job
+  # into a second full matrix and reintroduce the 20-minute wait.
+  webkit-layout-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # WebKit only. `--with-deps` because ubuntu needs the system libraries.
+      - name: Install Playwright WebKit
+        run: npx playwright install --with-deps webkit
+
+      - name: WebKit layout gate — 320px/200% reflow, end-state overlay, theme a11y
+        run: |
+          npx playwright test \
+            tests/e2e/reflow.spec.js \
+            tests/e2e/zz-css-reflow.spec.js \
+            tests/e2e/zz-end-state-coverage.spec.js \
+            tests/e2e/theme-a11y.spec.js \
+            --project=mobile-webkit \
+            --project=desktop-webkit
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-webkit-layout
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
+
   # SC-018 on a real compositor.
   #
   # The Linux job above runs Playwright's WebKit as the WPE build, which has no

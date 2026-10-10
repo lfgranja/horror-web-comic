@@ -25,11 +25,23 @@ for (const viewport of viewports) {
         return style.display !== 'none' && style.visibility !== 'hidden' && Number(style.opacity) > 0 && rect.width > 0 && rect.height > 0;
       };
       const elements = [...document.querySelectorAll('#app *')].filter(visible);
+      // Visually-hidden content is clipped ON PURPOSE. An `.sr-only` label paints
+      // into a 1x1 box, so its scrollWidth/scrollHeight necessarily exceed its
+      // client box — reporting that as "text clipping" would flag the correct
+      // rendering of every screen-reader-only string in the app. The signature is
+      // the standard one: out of flow (absolute) and painted no larger than 1px
+      // on both axes. Anything larger is real clipping and still reported.
+      const visuallyHidden = (element) => {
+        if (getComputedStyle(element).position !== 'absolute') return false;
+        const rect = element.getBoundingClientRect();
+        return rect.width <= 1 && rect.height <= 1;
+      };
       const outOfBounds = elements.filter((element) => {
         const rect = element.getBoundingClientRect();
         return rect.left < -1 || rect.right > viewportWidth + 1;
       }).map((element) => ({ tag: element.tagName.toLowerCase(), id: element.id, className: element.className }));
       const textClipping = elements.filter((element) => {
+        if (visuallyHidden(element)) return false;
         if (!Array.from(element.childNodes).some((node) => node.nodeType === Node.TEXT_NODE && node.textContent.trim())) return false;
         return element.scrollWidth > element.clientWidth + 1 || element.scrollHeight > element.clientHeight + 1;
       }).map((element) => ({ tag: element.tagName.toLowerCase(), id: element.id, className: element.className, clientWidth: element.clientWidth, scrollWidth: element.scrollWidth, clientHeight: element.clientHeight, scrollHeight: element.scrollHeight }));
