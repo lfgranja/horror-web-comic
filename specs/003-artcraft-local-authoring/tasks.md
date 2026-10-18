@@ -160,7 +160,7 @@ description: "Task list for the Adoção Local de Ferramentas ArtCraft para Auto
 
 ### Implementation Tasks for User Story 1
 
-- [ ] T022a [US1] (migrado para **T011b** em Phase 2) — validação de vocabulário SVG concluída antes da implementação e do portão TDD. (allow-list em `plan.md`) contra um export real do vectorcraft antes de implementar o gate; **bloqueante para T023**. (evidência: export real + diff registrado em `docs/authoring.md`) Critério de saída: (a) export real passa sem rejeição indevida, ou (b) allow-list ajustada com diff registrado em `docs/authoring.md` (seção "SVG allow-list validation"). Registrar resultado (pass/fail + diff) em `docs/authoring.md`. (A1).
+- [ ] T022a [US1] (migrado para **T011b** em Phase 2) — validação de vocabulário SVG concluída antes da implementação e do portão TDD.
 - [ ] T023 [US1] Implementar `scripts/svg-sanitize.mjs` conforme o contrato do stub (reject-list piso + allow-list fail-closed sobre o vocabulário vectorcraft, caps de DoS, `url(#…)` permitido, referências externas/`data:` rejeitadas) — depende de T011b
 
 - [ ] T024 [P] [US1] Implementar `scripts/sidecar.mjs` conforme o contrato do stub (validação strict do schema, recomputação e comparação de SHA-256, staleness de `subject.name`, detecção de sidecar órfão, no-op quando ausente)
