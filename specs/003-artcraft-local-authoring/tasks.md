@@ -103,6 +103,7 @@ Nota de mapeamento: tarefas de setup/scaffold/polish/verificação (T001–T005b
   - (Confirmar que os testes em `tests/unit/svg-sanitize.test.js` falham)
 
   **Vocabulário provisório (G2):** os casos de allow-list dependem de T011b; se T011b ajustar a allow-list, revisar T012 antes de declarar o Red Phase completo.
+  Nota: tests devem ser escritos contra o vocabulary draft do plan.md; podem necessitar atualização após T011b.
 
 - [ ] T013 [P] Escrever testes unitários para `scripts/sidecar.mjs` em `tests/unit/sidecar.test.js`:
   - sidecar válido passa; digest mismatch lança; `subject.name` stale lança; JSON inválido lança; campo desconhecido lança (strict); `sha256` não-hex-64 lança; timestamp não-UTC lança; `inputs[].uri` inseguro lança; sidecar ausente é no-op; sidecar órfão lança; dois masters com o mesmo stem (extensões diferentes) no mesmo diretório lançam `invalid-master-stem-collision` (FR-008)
@@ -219,7 +220,7 @@ Nota de mapeamento: tarefas de setup/scaffold/polish/verificação (T001–T005b
 
 ### Implementation & Verification Tasks for User Story 2
 
-- [ ] T031a [P] [US2] Executar `node --test tests/unit/artcraft-absence.test.js` (redigido em **T022b**, portão TDD) e confirmar passagem; verificar ausência de binários ArtCraft em `git ls-files`, `PATH` e `node_modules` (fail-closed; SC-005/FR-013 (g)) (U1). (T031 historical consolidation — remediação analyze F4) **Run gate only (A2)**: nenhuma nova asserção; apenas reexecução do teste de T022b. (FR-004)
+- [ ] T031a [P] [US2] Executar `node --test tests/unit/artcraft-absence.test.js` (redigido em **T022b**, portão TDD) e confirmar passagem; verificar ausência de binários ArtCraft em `git ls-files`, `PATH` e `node_modules` (fail-closed; SC-005/FR-013 (g)) (U1). (T031 historical consolidation — remediação analyze F4) **Run gate only (A2)**: nenhuma nova asserção; apenas reexecução do teste de T022b. (FR-004) (T022b escreve o teste na Fase 3; T031a é o run-gate de evidência na Fase 5 — não é duplicação)
 
 - [ ] T032 [P] [US2] Verificar que `npm run ci` executa e passa sem a suíte ArtCraft instalada no PATH (remediação A1/I2: em host Fedora o preflight falha no check `browser-launch` (WebKit); atestar no runner ubuntu do CI ou no subconjunto de 3 projetos, conforme T044).
 
