@@ -101,6 +101,8 @@ Nota de mapeamento: tarefas de setup/scaffold/polish/verificação (T001–T005b
   - Property-based: gerar SVGs aleatórios determinísticos (PRNG com seed fixa) a partir de uma gramática e assertar que o veredito do gate corresponde a um oráculo explícito (allow-list/reject-list definido no cabeçalho do teste via `// OWNS:`)
   - (Confirmar que os testes em `tests/unit/svg-sanitize.test.js` falham)
 
+  **Vocabulário provisório (G2):** os casos de allow-list dependem de T011b; se T011b ajustar a allow-list, revisar T012 antes de declarar o Red Phase completo.
+
 - [ ] T013 [P] Escrever testes unitários para `scripts/sidecar.mjs` em `tests/unit/sidecar.test.js`:
   - sidecar válido passa; digest mismatch lança; `subject.name` stale lança; JSON inválido lança; campo desconhecido lança (strict); `sha256` não-hex-64 lança; timestamp não-UTC lança; `inputs[].uri` inseguro lança; sidecar ausente é no-op; sidecar órfão lança; dois masters com o mesmo stem (extensões diferentes) no mesmo diretório lançam `invalid-master-stem-collision` (FR-008)
   - Property-based: gerar docs de sidecar válidos/inválidos e assertar o veredito contra o contrato JSON Schema (remediação I1: usar ajv (devDep, draft 2020-12 via `ajv/dist/2020`) como oráculo, para detectar drift entre o validador hand-rolled e o contrato JSON Schema)
@@ -112,10 +114,10 @@ Nota de mapeamento: tarefas de setup/scaffold/polish/verificação (T001–T005b
   - (Confirmar que os testes em `tests/unit/delivery-fidelity.test.js` falham)
 
 - [ ] T015 [P] Escrever testes unitários para os gates de `scripts/build-images.mjs` em `tests/unit/build-images-gates.test.js` (FR-011 fail-fast):
-  - master sob `media-src/` com lado > 1200 px rejeitado (`invalid-master-geometry`); master sob `tests/fixtures/` aceito até o teto rígido ≤ 2560 px (detecção por raiz de caminho, não por sidecar) e rejeitado acima com código `exceeds-pipeline-ceiling`; sem upscaling (`withoutEnlargement: true`)
+  - master sob `media-src/frames/` com lado > 1200 px rejeitado (`invalid-master-geometry`); master sob `tests/fixtures/` aceito até o teto rígido ≤ 2560 px (detecção por raiz de caminho, não por sidecar) e rejeitado acima com código `exceeds-pipeline-ceiling`; sem upscaling (`withoutEnlargement: true`)
   - pisos de qualidade: standard AVIF ≥30/WebP ≥45/JPEG ≥45 e light AVIF ≥20/WebP ≥30/JPEG ≥30 lançam erro nomeando o frame
   - srcset do manifesto lista apenas larguras que o master preenche (320/640/960/1200 para masters de 1200 px)
-  - smoke de rasterização SVG por sharp (FR-006): master SVG válido gera variantes raster sem erro
+  - smoke de rasterização SVG por sharp (FR-006; verificação dedicada de FR-006 — smoke test): master SVG válido gera variantes raster sem erro
   - asserção de que `marketing/` não é referenciado pelo manifesto nem contado em `budget.json` (G3) (remediação U1/A4: incluir asserção de ordem — sanitização antes de `sourceWidth()` — e notar que o smoke de rasterização SVG requer librsvg no host; em Fedora o teste pode falhar por ambiente, não por código).
   - Tier D: fixtures sintéticos sob `tests/fixtures/` **não** recebem portão perceptual (SSIM/PSNR); apenas estrutural/byte/integridade (FR-007, remediação analyze C3)
   - (Confirmar que os testes em `tests/unit/build-images-gates.test.js` falham)
@@ -221,7 +223,7 @@ Nota de mapeamento: tarefas de setup/scaffold/polish/verificação (T001–T005b
 - [ ] T032 [P] [US2] Verificar que `npm run ci` executa e passa sem a suíte ArtCraft instalada no PATH (remediação A1/I2: em host Fedora o preflight falha no check `browser-launch` (WebKit); atestar no runner ubuntu do CI ou no subconjunto de 3 projetos, conforme T044).
 
 - [ ] T033 [P] [US2] Verificar orçamentos via `npm run report`: por frame ≤ 300 000 B (soma do maior AVIF + maior WebP + maior JPEG) e total ≤ 30 000 000 B. A asserção de que `marketing/` não é referenciado pelo manifesto nem contado em `budget.json` (G3) já vive em `tests/unit/build-images-gates.test.js` (T015) — apenas reexecutar/confirmar passagem, sem nova edição de teste. (FR-003) (SC-002)
-- [ ] T034 [P] [US2] Verificar a cobertura DPR>1 executando `npx playwright test tests/e2e/artcraft-dpr.spec.js --project=desktop-chromium` (G1: depende da matriz Playwright existente; sem teste dedicado além do DPR>1). **Remediação F3**: registrar em T045 se a cobertura DPR>1 permanece restrita ao Chromium por decisão (documentar a justificativa) ou estender T021/T034 aos projetos WebKit/Firefox.
+- [ ] T034 [P] [US2] Verificar a cobertura DPR>1 executando `npx playwright test tests/e2e/artcraft-dpr.spec.js --project=desktop-chromium` (G1: depende da matriz Playwright existente; sem teste dedicado além do DPR>1). **Remediação F3**: registrar em T045 se a cobertura DPR>1 permanece restrita ao Chromium por decisão (documentar a justificativa) ou estender T021/T034 aos projetos WebKit/Firefox. **Escopo:** DPR>1 é verificado no projeto `desktop-chromium`; ampliação para os demais projetos é follow-up registrado (F3), não bloqueante.
 
 ### Deterministic Verification for User Story 2
 
@@ -291,6 +293,7 @@ Nota de mapeamento: tarefas de setup/scaffold/polish/verificação (T001–T005b
   - **G1 (MEDIUM) — fallback de YAML**: registrar qual caminho de validação de YAML foi efetivamente usado em T037 (`js-yaml` disponível vs. revisão manual documentada em `docs/authoring.md`) e o resultado do probe opcional.
   - **C1 (MEDIUM) — bloqueador T028**: atestar mecanicamente que o diretório `media-src/frames/` contém exatamente `frame-01..frame-04` com extensões aceitas e sidecars correspondentes, cada um com `review.decision: approve` e commit com trailers `Authored-With`/`Reviewed-By`; SC-001/SC-003 não podem ser fechados antes disso.
   - Status de aprovação de todos os portões (unit, build, e2e matrix, ci completo)
+  - **Principle V (coerência visual):** registre que a verificação de estilo/resolução/paleta é protocolo humano Tier A documentado, sem portão numérico — lacuna aceita e documentada (D2).
   - Orçamentos medidos (per-frame e total) vs `budget.json` e vs baseline registrado em T005a
   - Confirmação de 4/4 quadros autorais e ausência de fixtures sintéticos publicados (verificação mecânica: cada `media-src/frames/frame-0X.<ext>` possui sidecar com `review.decision: approve` e commit correspondente com trailers `Authored-With`/`Reviewed-By`; U8)
   - Evidência Tier A por master (A2): commit diff do master + sidecar, notas lado-a-lado (tamanho, formato, impressão qualitativa, paleta/intervalo tonal) e `review.decision: approve` — auto-revisão aceitável para mantenedor único, mas a evidência deve ser registrada, não apenas o booleano
@@ -346,6 +349,35 @@ flowchart TD
 4. **Hook de Commit**: Cada tarefa que edita arquivos termina com um commit atômico convencional detalhado; um commit por tarefa.
 
 ---
+
+## FR/SC → Task Coverage
+
+| Requirement | Task IDs |
+|---|---|
+| FR-001 | T003, T004, T028, T038, T039, T045 |
+| FR-002 | T007, T012, T023, T027 |
+| FR-003 | T015, T027, T030, T035, T044 |
+| FR-004 | T022b, T031a, T032, T039a |
+| FR-005 | T003, T039 |
+| FR-006 | T015 (smoke test) |
+| FR-007 | T009, T014, T020, T025, T038, T045 |
+| FR-008 | T006, T008, T013, T019, T022, T024, T029, T036 |
+| FR-009 | T021, T022c, T028a, T039a |
+| FR-010 | T039a |
+| FR-011 | T015, T027 |
+| FR-012 | T015, T027, T027b |
+| FR-013 | T007, T008, T009, T010, T011, T023, T024, T025, T026, T027, T036, T037 |
+| FR-014 | T028, T029, T045 |
+| SC-001 | T028, T030, T035, T044, T045 |
+| SC-002 | T033, T042 |
+| SC-003 | T032, T035, T044 |
+| SC-004 | T004, T038, T041 |
+| SC-005 | T022b, T031a |
+| SC-006 | T005a, T044a |
+| SC-007a | T014, T020, T025 |
+| SC-007b | T028, T038, T041, T045 |
+
+Infra/verification tasks not mapped to a single FR/SC: T001, T002, T005, T005a, T005b, T011a, T011b, T011c, T015b, T027a, T027b, T037a, T038a, T040, T040a, T041–T045 (by design — see mapping note).
 
 ## Parallel Execution Opportunities
 
