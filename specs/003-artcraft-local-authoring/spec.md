@@ -169,6 +169,9 @@ Para que a produção de arte seja reproduzível e auditável, mesmo sem integra
 - **master** — ativo autoral (authored asset). Nota (remediação E1): o termo também aparece para fixtures sintéticos de teste, mas esses não são "masters autorais" no sentido de FR-014; a distinção é feita pela localização (`media-src/frames/` = autoral; `tests/fixtures/` = sintético/regressão).
 - **SC-018** (externo — ver tests/perf/zz-ci-budgets.spec.js) — critério de performance pré-existente/externo (transição 120 ms fixture / 700 ms produção), definido em `tests/perf/zz-ci-budgets.spec.js`; não é definido por esta feature.
 
+### Remediation note (A1 — LOW, resolved)
+- A geometria (canvas 1200×800, teto rígido ≤ 2560 px, no upscaling) é definida **exclusivamente** em FR-012 (fonte autoritativa); FR-002 remete a ela e não restata os números. A1 confirma que a referência cruzada é intencional e não é duplicação.
+
 ## Functional Requirements *(mandatory)*
 
 > **Note**: FR-IDs are stable keys assigned during clarification batches, not sequential by appearance. References by ID are unambiguous regardless of position in this document.
