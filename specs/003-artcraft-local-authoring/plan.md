@@ -117,11 +117,11 @@ scripts/
 ├── compatibility-report.mjs  # Relatório permissivo (inalterado)
 ├── build-images.mjs          # MODIFICADO: + sanitização SVG (+ caps DoS), + digest sidecar (+ `orphan-sidecar`), + Tier B, + piso de qualidade, + escrita atômica
 ├── build.mjs                 # inalterado neste feature quanto a OG/social copy (nenhum passo de cópia de imagem OG/social é adicionado — fora de escopo per clarificação batch 2); trailers/review vivem no step de `ci.yml`, nunca aqui. Consolidação de `isSafeLocalReference` (import-only reexport) já aplicada em T011c (concluída; `npm run test:unit` verde); sem mudança de comportamento.
-├── svg-sanitize.mjs        # NOVO (planned — scaffold pending T007): gate de sanitização/validação SVG (FR-002)
-├── sidecar.mjs             # NOVO (planned — scaffold pending T008): verificação de digest do sidecar (FR-008)
-├── delivery-fidelity.mjs   # NOVO (planned — scaffold pending T009): portão Tier B SSIM/PSNR (FR-007)
-├── atomic-write.mjs        # NOVO (planned — scaffold pending T010): escrita atômica write-temp→rename (FR-013d)
-├── ci-trailers.mjs        # NOVO (planned — scaffold pending T011): validação fail-closed de trailers/review (FR-013)
+├── svg-sanitize.mjs        # NOVO (scaffold complete — T007 [x]; implementação pendente T023): gate de sanitização/validação SVG (FR-002)
+├── sidecar.mjs             # NOVO (scaffold complete — T008 [x]; implementação pendente T024): verificação de digest do sidecar (FR-008)
+├── delivery-fidelity.mjs   # NOVO (scaffold complete — T009 [x]; implementação pendente T025): portão Tier B SSIM/PSNR (FR-007)
+├── atomic-write.mjs        # NOVO (scaffold complete — T010 [x]; implementação pendente T026): escrita atômica write-temp→rename (FR-013d)
+├── ci-trailers.mjs        # NOVO (scaffold complete — T011 [x]; implementação pendente T036): validação fail-closed de trailers/review (FR-013)
 └── serve-e2e.mjs             # Servidor HTTP Range (inalterado)
 
 media-src/
