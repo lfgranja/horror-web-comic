@@ -7,6 +7,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import sharp from 'sharp';
 import * as esbuild from 'esbuild';
 import { LIGHT_MAX_SIDE, resolveImageSources } from '../src/scripts/light-variants.js';
+import { isSafeLocalReference as _isSafeLocalReference } from '../src/scripts/safe-reference.js';
 
 const STANDARD_MAX_SIDE = 2560;
 const LIGHT_MAX_BYTES = 150 * 1024;
@@ -131,23 +132,7 @@ export async function scanPublishableResources(root = process.cwd()) {
   return findings;
 }
 
-export function isSafeLocalReference(reference) {
-  if (typeof reference !== 'string' || reference.length === 0 || reference.trim() !== reference) return false;
-  if (/\0|\\|[\r\n\t]/.test(reference)) return false;
-  if (/^(?:[a-z][a-z\d+.-]*:|\/\/)/i.test(reference)) return false;
-  if (reference.startsWith('/') || /^[A-Za-z]:/.test(reference)) return false;
-  if (reference.includes('?') || reference.includes('#')) return false;
-  let decoded;
-  try {
-    decoded = decodeURIComponent(reference);
-  } catch {
-    return false;
-  }
-  if (decoded.includes('\\') || decoded.startsWith('/') || /^[A-Za-z]:/.test(decoded)) return false;
-  const segments = decoded.split('/');
-  if (segments.some((segment) => segment === '' || segment === '.' || segment === '..')) return false;
-  return path.posix.normalize(decoded) === decoded;
-}
+export const isSafeLocalReference = _isSafeLocalReference;
 
 export function assertSafeLocalReference(reference, field = 'reference') {
   if (!isSafeLocalReference(reference)) throw mediaError(`${field} must be a safe local file reference`, 'unsafe-reference');

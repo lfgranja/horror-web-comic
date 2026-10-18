@@ -1,3 +1,5 @@
+import { isSafeLocalReference as _isSafeLocalReference } from './safe-reference.js';
+
 const TRANSITION_TYPES = new Set(['cut', 'fade', 'zoom-in', 'zoom-out', 'dissolve', 'slide-left', 'slide-right', 'none']);
 const EASINGS = new Set(['linear', 'ease-in', 'ease-out', 'ease-in-out']);
 const STORY_KEYS = new Set(['schemaVersion', 'id', 'title', 'defaultFrameDurationMs', 'defaultTransition', 'scenes']);
@@ -36,21 +38,7 @@ function transition(value, field) {
   if (value.easing !== undefined && !EASINGS.has(value.easing)) fail(`${field}.easing is invalid`);
 }
 
-export function isSafeLocalReference(value) {
-  if (typeof value !== 'string' || value.length === 0 || value.trim() !== value) return false;
-  if (/[\u0000\\]/.test(value) || /^(?:[a-z][a-z\d+.-]*:|\/\/)/i.test(value)) return false;
-  if (value.startsWith('/') || /^[A-Za-z]:/.test(value) || value.includes('?') || value.includes('#')) return false;
-  let decoded;
-  try {
-    decoded = decodeURIComponent(value);
-  } catch {
-    return false;
-  }
-  if (decoded.startsWith('/') || /^[A-Za-z]:/.test(decoded) || decoded.includes('\\')) return false;
-  if (/^(?:[a-z][a-z\d+.-]*:|\/\/)/i.test(decoded)) return false;
-  const segments = decoded.split('/');
-  return segments.every((segment) => segment !== '' && segment !== '.' && segment !== '..') && decoded.split('/').join('/') === decoded;
-}
+export const isSafeLocalReference = _isSafeLocalReference;
 
 export function validateReference(value, field = 'reference') {
   if (!isSafeLocalReference(value)) fail(`${field} must be a safe local file reference`);
