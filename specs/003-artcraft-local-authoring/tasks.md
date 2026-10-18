@@ -363,10 +363,10 @@ Esta tabela é autoritativa. Menções inline em tasks devem refletir esta tabel
 | FR-003 | T015, T027, T030, T033, T035, T044 |
 | FR-004 | T022b, T031a, T032, T039a |
 | FR-005 | T003, T039 |
-| FR-006 | T015 (smoke test) |
+| FR-006 | T015 (smoke test), T037a |
 | FR-007 | T009, T014, T015, T020, T025, T030, T038, T045 |
 | FR-008 | T006, T008, T013, T019, T022, T024, T029, T036 |
-| FR-009 | T021, T022c, T028a, T038a, T039a |
+| FR-009 | T021, T022c, T028a, T034, T038a, T039a |
 | FR-010 | T039a |
 | FR-011 | T015, T027 |
 | FR-012 | T015, T027, T027-verification-2 |
@@ -374,7 +374,7 @@ Esta tabela é autoritativa. Menções inline em tasks devem refletir esta tabel
 | FR-014 | T028, T029, T045 |
 | SC-001 | T028, T030, T035, T044, T045 |
 | SC-002 | T033, T042 |
-| SC-003 | T032, T035, T044 |
+| SC-003 | T032, T035, T043, T044 |
 | SC-004 | T004, T038, T041 |
 | SC-005 | T022b, T023, T031a |
 | SC-006 | T005a, T044a |
