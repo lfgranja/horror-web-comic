@@ -12,6 +12,8 @@ description: "Task list for the Adoção Local de Ferramentas ArtCraft para Auto
 
 ## Execution Rules & Governance
 
+Note: spec-kit uses phases 0–2 (scaffold, TDD gate, implementation); all execution/task references below use the implementation-phase numbering (1–7) exclusively.
+
 0. **Scaffold/Template Primeiro**: Todo código que pode ser gerado por template/scaffold (contrato JSON Schema, stubs de módulos, arquivos de teste) DEVE ser gerado ANTES de qualquer escrita manual. As tarefas de scaffold rodam nas Fases 1–2; a implementação manual roda nas Fases 4–6. Gerar o scaffold via template/código (por ex., code action do editor/LSP) antes de escrever implementação à mão.
 1. **TDD Obrigatório (Fase de Testes Inicial)**: As tarefas de testes (unitários Node + integração Node + E2E Playwright) são as primeiras da suíte, BLOQUEANDO integralmente todas as tarefas de implementação subsequentes até que todos os testes estejam redigidos e falhem comprovadamente (*Red Phase*). Usar testes baseados em propriedades (property-based) sempre que aplicável, testando invariantes.
 2. **Separação Estrita de Agentes / Modelos**:
@@ -303,6 +305,7 @@ Nota de mapeamento: tarefas de setup/scaffold/polish/verificação (T001–T005b
   - Confirmação de revisão Tier A (SC-007b) por master: sidecar `review` com `decision: approve` + trailer `Reviewed-By` (CG3)
   - Registro **obrigatório** da exceção documentada warn-only light vs Princípio IV, com justificativa (CC1) — ausência reprova o fechamento
   - **Constituição (remediação C1)**: emenda SemVer-MINOR aplicada — constituição v2.1.0 (2026-10-18), exceção Tier B light (warn-only) agora normativa no Princípio IV (`.specify/memory/constitution.md`). Atestação deve registrar a versão da constituição (2.1.0) como evidência de fechamento; nenhum desvio aberto remanescente.
+  - **D1 (CRITICAL — resolved)**: confirmar explicitamente no relatório de atestação que a constituição referenciada é v2.1.0 e que a exceção Tier B (SC-007a, warn-only light) é o único desvio documentado — ausência deste registro reprova o fechamento.
   - Confirmação de pré-requisito de host `librsvg` (U2/CC2)
   - Registro de qualquer lacuna de ferramenta (Chrome para T044a, actionlint para T037) com justificativa
   - Bloqueador externo T028 (autoria humana dos 4 quadros) deve estar concluído antes da atestação de SC-001
