@@ -215,6 +215,7 @@ export async function buildImages(root = process.cwd()) {
   const generatedDirectory = path.join(root, 'assets/frames/generated');
   await fs.mkdir(frameSourceDirectory, { recursive: true });
   await fs.mkdir(generatedDirectory, { recursive: true });
+  await fs.mkdir(path.join(root, 'build'), { recursive: true }); // scratch for Tier B refs + atomic writes (T002)
   for (const file of await fs.readdir(generatedDirectory)) {
     if (file.includes('-light-light.')) await fs.rm(path.join(generatedDirectory, file), { force: true });
   }
