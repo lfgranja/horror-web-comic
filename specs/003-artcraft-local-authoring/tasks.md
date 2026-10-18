@@ -282,6 +282,7 @@ Nota de terminologia: headings em PT usam 'quadro'; identificadores, caminhos e 
 
 - [ ] T045 **Atestação Final de Sucesso**: Registrar relatório determinístico de fechamento contendo:
   - **T011b fallback risk**: se a validação da allow-list SVG usou o fixture sintético (fallback), registrar a lacuna como risco obrigatório e o plano de revalidação no primeiro export real disponível (remediação analyze B2).
+  - **Re-validation trigger (U2)**: quando o primeiro export real do vectorcraft estiver disponível, reexecutar T011b contra ele, registrar o diff da allow-list em `docs/authoring.md` (seção 'SVG allow-list validation') e atualizar o risco acima (removendo-o se a validação passar sem ajuste).
   - **Gaps de ferramenta rastreados**: Chrome indisponível para T044a (SC-006 não atendido até reexecução) e WebKit não executado localmente (cobertura DPR>1 e perf em WebKit atestada apenas via CI em ubuntu) — registrar como bloqueadores, não como passes silenciosos (remediação analyze G1/G2).
   - Status de aprovação de todos os portões (unit, build, e2e matrix, ci completo)
   - Orçamentos medidos (per-frame e total) vs `budget.json` e vs baseline registrado em T005a

@@ -9,7 +9,7 @@
 
 **Decision**: Hybrid posture — reject-list floor **plus** an allow-list over the minimal SVG vocabulary that `vectorcraft` emits (fail-closed). Reject-list as minimum baseline: `<script>`, `on*` handlers, `foreignObject`, external `href`/`xlink:href`, CSS vectors (`url()`, `@import`, `image-set()`, `expression()`, `-moz-binding`, `behavior:`), all `data:` URIs in URL-valued attributes, SMIL animation elements mutating `href`/`xlink:href` (`animate`, `set`, `animateMotion`, `animateTransform`, `discard`), dangerous elements DOMPurify forbids (`iframe`, `object`, `embed`, `base`, `meta`, `link`, `form`, `template`, `noscript`, `style`, `handler`, `listener`), `xml:base`, `externalResourcesRequired`, processing instructions, XInclude, all DOCTYPE (XXE/billion-laughs), DoS caps (file size, element count, nesting depth). Prefer rejecting `<style>` element and `style` attribute entirely for authored masters. Internal `url(#…)` refs remain allowed. **DoS caps (measurable, batch 8)**: ver constante `SVG_DOS_CAPS` em `scripts/svg-sanitize.mjs` — violation → throw. A byte cap alone is insufficient (billion-laughs explodes from <1 KB).
 
-**Rationale**: Sharp rasterizes SVG but is **not** a sanitizer — it protects the encoder, not the build host from SSRF/XXE. The reject-list is the floor; the allow-list is the fail-closed guarantee. Since vectorcraft emits a known minimal vocabulary, the allow-list is tractable. No new dependency: sanitization is implemented as a pure JS function over the SVG text (regex-based scanning and validation, since DOMParser is a browser API unavailable in Node), applied before `sourceWidth()`/`encodeImage()`.
+**Rationale**: Sharp rasterizes SVG but is **not** a sanitizer — it protects the encoder, not the build host from SSRF/XXE. The reject-list is the floor; the allow-list is the fail-closed guarantee. Since vectorcraft emits a known minimal vocabulary, the allow-list is tractable. No new dependency: sanitization is implemented as a hand-rolled fail-closed tokenizer over the SVG text (a real parser/tokenizer is required; regex-only scanning is explicitly rejected due to mXSS/parser disagreement), applied before `sourceWidth()`/`encodeImage()`. librsvg/sharp remain rasterization backstops only.
 
 **Alternatives considered**:
 - *DOMPurify (npm)*: rejected — adds a dependency to `package.json` (violates "sem dependências novas"); DOMPurify targets HTML/DOM, not standalone SVG files.
@@ -17,7 +17,7 @@
 - *librsvg hardening flags*: insufficient — librsvg does not sanitize; it rasterizes. Dangerous content still reaches the host.
 - *Allow-list only* (no reject-list): rejected — too restrictive for photocraft PNG/JPG masters (gate applies only to SVG, but the *vocabulary* constraint is vectorcraft-specific; allow-list-only would need to be format-aware and adds complexity for no gain over hybrid).
 
-**Placement**: `scripts/build-images.mjs`, before `sourceWidth()`/`encodeImage()` (build-images.mjs:68-98). Sharp `failOn: 'error'` + `limitInputPixels` remain backstops.
+**Placement**: `scripts/build-images.mjs`, before `sourceWidth()`/`encodeImage()` (build-images.mjs: sourceWidth L68, encodeImage L79, ensureImage L100). Sharp `failOn: 'error'` + `limitInputPixels` remain backstops.
 
 ---
 
@@ -42,7 +42,7 @@
   "review": {
     "reviewer": "string (required within block)",
     "reviewedAt": "ISO-8601 UTC (required)",
-    "oversight": "fully_autonomous | prompt_guided | human_validated (required)",
+    "oversight": "human_authored | human_assisted | human_reviewed (required)",
     "notes": "string (required)",
     "decision": "approve | reject (required)",
     "measuredSSIM": "number (optional)"
@@ -57,7 +57,7 @@ Validation (fail-fast): parse must succeed; required fields present with correct
 **Alternatives considered**:
 - *Manifest fields*: rejected — schema v1 frozen (FR-003/FR-009).
 - *Separate provenance directory* (e.g. `media-src/.sidecars/`): rejected — breaks the "same basename" invariant, harder lookup, and `discoverSources` would need to filter it out.
-- *C2PA assertions*: rejected for build; C2PA `humanOversightLevel` vocabulary is reused in `review.oversight` but no full C2PA ceremony (SLSA Build L1-analogous at most; C2PA §18.28 defines oversight only for AI-generated content).
+- *C2PA assertions*: rejected for build; the C2PA `humanOversightLevel` vocabulary (fully_autonomous/prompt_guided/human_validated, §18.28, AI-generated content only) was considered and then substituted by project-defined values (human_authored/human_assisted/human_reviewed) for human-authored masters, to avoid misreading AI-disclosure semantics; no full C2PA ceremony (SLSA Build L1-analogous at most).
 
 ---
 
@@ -77,7 +77,7 @@ Validation (fail-fast): parse must succeed; required fields present with correct
 
 ## 4. Decision: Tier A Human Review Gate
 
-**Decision**: Two-part enforcement — (1) **sidecar `review` block** (optional in schema, validated when present, `reviewer` + `reviewedAt` + `oversight` + `notes` + `decision: approve` required); (2) **commit trailer** `Reviewed-By: <name>`. Both required for any master-integration commit touching `media-src/`, enforced **fail-closed in a new CI step** (`fetch-depth: 0`), **never** in `npm run ci` (preserves offline/tarball). Self-review acceptable (solo maintainer); second reviewer encouraged but not mandatory. `oversight` vocabulary is project-defined for human-authored masters but **reuses C2PA 2.4's `humanOversightLevel` enum values** (`fully_autonomous`, `prompt_guided`, `human_validated` — §18.28, defined by C2PA only for AI-generated content).
+**Decision**: Two-part enforcement — (1) **sidecar `review` block** (optional in schema, validated when present, `reviewer` + `reviewedAt` + `oversight` + `notes` + `decision: approve` required); (2) **commit trailer** `Reviewed-By: <name>`. Both required for any master-integration commit touching `media-src/`, enforced **fail-closed in a new CI step** (`fetch-depth: 0`), **never** in `npm run ci` (preserves offline/tarball). Self-review acceptable (solo maintainer); second reviewer encouraged but not mandatory. `oversight` vocabulary is **project-defined for human-authored masters** (`human_authored`/`human_assisted`/`human_reviewed`); the C2PA 2.4 `humanOversightLevel` enum (`fully_autonomous`/`prompt_guided`/`human_validated`, §18.28) applies only to AI-generated content and was deliberately NOT reused, to avoid misreading AI-disclosure semantics. No SLSA/in-toto ceremony is introduced.
 
 **Rationale**: The sidecar is effectively mandatory for commits touching `media-src/` but remains optional for isolated builds (offline/tarball). The CI step is the enforcement point. C2PA vocabulary reuse provides standard alignment without imposing AI-specific ceremony.
 

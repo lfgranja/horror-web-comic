@@ -16,6 +16,7 @@
 - [x] CHK001 — Is the sidecar naming convention explicitly specified as **extension-swap** (master path with extension replaced by `.json`)? [Clarity, Spec §FR-008]
 - [x] CHK002 — Is the requirement that the sidecar stem matches the master stem exactly explicitly stated? [Clarity, Spec §FR-008]
 - [x] CHK003 — Is the sidecar placement explicitly restricted to `media-src/` (never in `assets/` or `src/`)? [Completeness, Spec §FR-008]
+  - **Resolved (this review, 2026-10-17)**: Q2 decided — asset-adjacent, outside the publishable tree; raízes permitidas `media-src/` e `marketing/`; verificador cobre todas as raízes. Spec updated in FR-008.
 - [x] CHK004 — Is the consequence of a `.json` file in `src/data/` (would be published by `copyPublishableFiles`) explicitly documented as a placement invariant? [Completeness, Spec §FR-013]
 - [x] CHK005 — Is the sidecar explicitly characterized as **one per master, format-agnostic** (regardless of svg/png/jpg)? [Clarity, Spec §FR-008]
 
@@ -34,10 +35,10 @@
 ## Review Block (Tier A) Requirements
 
 - [x] CHK015 — Are all required fields within the `review` block explicitly enumerated: `reviewer`, `reviewedAt`, `oversight`, `notes`, `decision`? [Completeness, Spec §FR-008]
-- [x] CHK016 — Is the `oversight` enum explicitly specified: `fully_autonomous`, `prompt_guided`, `human_validated`? [Clarity, Spec §FR-008]
+- [x] CHK016 — Is the `oversight` enum explicitly specified: `human_authored`, `human_assisted`, `human_reviewed` (project-defined for human-authored masters; C2PA's `fully_autonomous`/`prompt_guided`/`human_validated` apply only to AI-generated content and are deliberately not reused)? [Clarity, Spec §FR-008]
 - [x] CHK017 — Is the `decision` enum explicitly specified: `approve`, `reject`? [Clarity, Spec §FR-008]
 - [x] CHK018 — Is `measuredSSIM` explicitly specified as optional within the review block? [Clarity, Spec §FR-008]
-- [x] CHK019 — Is the `oversight` vocabulary explicitly characterized as **project-defined for human-authored masters** while reusing C2PA 2.4 §18.28 `humanOversightLevel` enum values? [Clarity, Spec §FR-008]
+- [x] CHK019 — Is the `oversight` vocabulary explicitly characterized as **project-defined for human-authored masters** (`human_authored`/`human_assisted`/`human_reviewed`), and is it stated that C2PA 2.4 §18.28 `humanOversightLevel` values (`fully_autonomous`/`prompt_guided`/`human_validated`) apply only to AI-generated content and are deliberately NOT reused? [Clarity, Spec §FR-008]
 - [x] CHK020 — Is it explicitly stated that C2PA defines `humanOversightLevel` **only for AI-generated content** and that no SLSA/in-toto ceremony is introduced? [Clarity, Spec §FR-008]
 
 ## Digest Verification (Build-Time)
