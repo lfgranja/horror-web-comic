@@ -12,7 +12,7 @@ Adotar a suíte ArtCraft (vectorcraft, photocraft, designcraft e outros válidos
 
 **Language/Version**: JavaScript (ES2022), Node.js ≥20
 
-**Primary Dependencies**: sharp (pinned), ffmpeg/ffprobe (system, ≥5), esbuild (pinned). **Nenhuma dependência nova** (FR-004/SC-005): sidecar digest via `crypto` (Node builtin), Tier B via filtros `ssim`/`psnr` nativos do ffmpeg. **Dependência de host**: `librsvg` é necessária para rasterização SVG por sharp (pré-requisito de host, não dependência de repo; ver U2/CC2 e T037a). Detecção no preflight: `pkg-config --exists librsvg-2.0` (fallback: probe de decode SVG via sharp). A sanitização SVG (allow-list/reject-list sobre o vocabulário vectorcraft; librsvg/sharp rasterizam) **exige um parser XML real ou um tokenizer fail-closed verificável** — regex-only é inaceitável (mXSS/parser disagreement). **Decisão (C1)**: o tokenizer fail-closed é implementado em JavaScript puro (sem nova dependência); se isso se provar inviável, a exceção de segurança deverá ser aprovada explicitamente via emenda à constituição (Princípio II) e T031/SC-005 atualizados antes da implementação. Nenhuma dependência nova entra em `package.json` neste feature.
+**Primary Dependencies**: sharp (pinned), ffmpeg/ffprobe (system, ≥5), esbuild (pinned). **Nenhuma dependência nova** (FR-004/SC-005): sidecar digest via `crypto` (Node builtin), Tier B via filtros `ssim`/`psnr` nativos do ffmpeg. **Dependência de host**: `librsvg` é necessária para rasterização SVG por sharp (pré-requisito de host, não dependência de repo; ver U2/CC2 e T037a). Detecção no preflight: `pkg-config --exists librsvg-2.0` (fallback: probe de decode SVG via sharp). A sanitização SVG (allow-list/reject-list sobre o vocabulário vectorcraft; librsvg/sharp rasterizam) **exige um parser XML real ou um tokenizer fail-closed verificável** — regex-only é inaceitável (mXSS/parser disagreement). **Decisão (C1)**: o tokenizer fail-closed é implementado em JavaScript puro (sem nova dependência); se isso se provar inviável, a exceção de segurança deverá ser aprovada explicitamente via emenda à constituição (Princípio II) e T022b/SC-005 atualizados antes da implementação. (remediação analyze F4) Nenhuma dependência nova entra em `package.json` neste feature.
 
 **SVG allow-list (vocabulário mínimo vectorcraft — fail-closed)**: O gate FR-002 é fail-closed sobre o seguinte vocabulário. Qualquer elemento/atributo fora desta lista é rejeitado.
 
@@ -93,7 +93,7 @@ src/
 └── styles/                   # CSS (inalterado)
 
 scripts/
-├── preflight.mjs             # Gate de ambiente (inalterado)
+├── preflight.mjs             # MODIFICADO: + check de host librsvg (pkg-config), T037a (remediação analyze C1)
 ├── validate-manifest.mjs     # Schema + refs (inalterado)
 ├── compatibility-report.mjs  # Relatório permissivo (inalterado)
 ├── build-images.mjs          # MODIFICADO: + sanitização SVG (+ caps DoS), + digest sidecar (+ órfão), + Tier B, + piso de qualidade, + escrita atômica
@@ -113,6 +113,7 @@ build/                        # Scratch Tier B (git-ignored, NUNCA em assets/)
 docs/
 ├── delivery.md               # Contrato de saída (inalterado)
 ├── authoring.md              # NOVO: fluxo de autoria ArtCraft
+├── authoring-accessibility.md # Companheiro: regra F20 de alt/description/durationMs (existente, remediação analyze F3)
 └── image-quality-assessment.md  # Referência de qualidade (existe)
 
 marketing/                    # NOVO: arte promocional (designcraft), fora do pipeline
@@ -126,7 +127,7 @@ tests/
 └── fixtures/                 # Fixtures sintéticos (permanecem válidos para regressão)
 
 budget.json                   # Congelado
-package.json                  # Deps pinadas inalteradas
+package.json                  # Deps pinadas inalteradas; scripts npm opcionais (ex.: clean:assets, T005) permitidos (remediação analyze B3)
 ```
 
 **Structure Decision**: Estrutura existente preservada. Três portões de build-time e a escrita atômica são adicionados a `scripts/build-images.mjs` (único módulo que enxerga masters e variantes simultaneamente). O passo de trailers/review é adicionado como step separado em `ci.yml` (nunca em `npm run ci`). `docs/authoring.md` é criado como documentação do fluxo. `marketing/` é criado fora de `assets/` e `media-src/`. `build/` é criado como scratch Tier B (já em `.gitignore`). A tarefa opcional T005 (`clean:assets`) é um script npm opcional de manutenção, fora do pipeline e fora de `budget.json`; pode ser omitida sem impacto (não requerido por nenhum FR/SC).
