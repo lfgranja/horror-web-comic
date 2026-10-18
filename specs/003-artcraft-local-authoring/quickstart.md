@@ -40,7 +40,7 @@
      "review": {
        "reviewer": "Your Name",
        "reviewedAt": "2026-10-17T12:05:00Z",
-       "oversight": "human_validated",
+       "oversight": "human_authored",
        "notes": "Side-by-side: 1200x800 SVG, ~22 KB, detailed illustration replacing synthetic fixture. Palette verified: dark horror tones, consistent with scene.",
        "decision": "approve"
      }

@@ -62,7 +62,7 @@
 
 - [x] CHK032 — Is the per-frame budget explicitly defined as the **sum of largest AVIF + largest WebP + largest JPEG** (light variants excluded from per-frame but included in total)? [Clarity, Spec §SC-002]
 - [x] CHK033 — Is the total assets budget explicitly specified as ≤ 30 000 000 bytes? [Measurability, Spec §SC-002]
-- [x] CHK034 — Is the baseline headroom explicitly noted (~35–45 KB per frame) as a measured value? [Clarity, Spec §SC-002]
+- [x] CHK034 — Is the baseline headroom explicitly noted (44 768 B per frame, ~255 KB headroom, measured 2026-10-17) as a measured value? [Clarity, Spec §SC-002]
 - [x] CHK035 — Is the budget check explicitly placed in `build.mjs` (not in `build-images.mjs`)? [Consistency, Spec §FR-013]
 
 ## Atomic Write & Recovery (FR-013)

@@ -122,7 +122,9 @@
 
 - [x] CHK061 — Are the constitutional compliance claims consistent between the spec, the plan's Constitution Check table, and this checklist? [Consistency]
 - [x] CHK062 — Are the budget constraints consistent across FR-003 (output contract), FR-012 (quality floors), and SC-002 (budget limits)? [Consistency]
+  - **Resolved (this review, 2026-10-17)**: headroom figures reconciled — baseline measured 44 768 B (frame-03), folga ≈ 255 232 B. See spec.md:61 and SC-002.
 - [x] CHK063 — Are there pipeline touchpoints not covered by the three build-time gates (sanitization, digest, Tier B) that should be explicitly addressed? [Coverage, Gap]
+  - **Resolved (this review, 2026-10-17)**: CI fail-closed rule now covers master deletion/rename (trailers required; sidecar removed with the master; renames treated as delete+add). See spec.md:174 (FR-013e) and `research/clarifications/ci-enforcement-deletion-rename.md`.
 - [x] CHK064 — Is the ArtCraft version policy consistent across FR-004, the Assumptions section, and the research decisions? [Consistency]
 
 ---

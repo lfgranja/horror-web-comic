@@ -65,6 +65,7 @@
 - [x] CHK031 — Is the `isSafeLocalReference` rule (used for manifest references) explicitly distinguished from the SVG href/xlink:href rejection rule (different validation, different scope)? [Consistency, Spec §FR-002]
   - **Resolved (2026-10-17, batch 9)**: `isSafeLocalReference` is a file-path rule (manifest/sidecar) and does NOT apply to SVG attributes; the SVG gate allows fragment-only `#…` and rejects absolute/protocol-relative/relative-path/`data:`. FR-002 and `data-model.md` corrected.
 - [x] CHK032 — Are there SVG attack vectors not covered by the enumerated reject-list or allow-list posture that should be explicitly addressed? [Coverage, Gap]
+  - **Resolved (this review, 2026-10-17)**: Q1 decided — hand-rolled fail-closed tokenizer (preserving no-new-deps) with a real-parser fallback, plus a `<use>`/`<pattern>` reference-expansion budget (`maxExpandedReferences` ≈ 100 000, `maxReferenceDepth` ≈ 20, circular references rejected). Spec updated in FR-002.
 - [x] CHK033 — Is the relationship between this gate and the existing safe-local-reference / external-origin checks in `build.mjs` explicitly defined (complementary, not overlapping)? [Consistency, Spec §FR-002]
 
 ---
