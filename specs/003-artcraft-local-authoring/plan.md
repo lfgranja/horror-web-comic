@@ -15,7 +15,7 @@ Dois esquemas de numeração de fases coexistem nesta feature; não os confunda:
 - **Fases do fluxo spec-kit** (usadas pelos comandos `/speckit.*`): Phase 0 = pesquisa (`research.md`), Phase 1 = design (`data-model.md`, `quickstart.md`, `contracts/`), Phase 2 = tarefas (`tasks.md`).
 - **Fases de implementação** (autoritativas, em `tasks.md`): Phase 1 Setup & Environment; Phase 2 Foundational (contracts & scaffolds); Phase 3 TDD Gate (testes primeiro, bloqueante); Phase 4 US1 (implementação); Phase 5 US2 (verificação); Phase 6 US3 (documentação & rastreabilidade); Phase 7 Polish, Quality Gates & Certificação Final.
 
-Referências inline do plano (ex.: "Fase 6" no Technical Context) referem-se às fases de implementação em `tasks.md`.
+Referências inline do plano (ex.: "Fase 6" no Technical Context) referem-se às fases de implementação em `tasks.md`. (Remediação B1: fase de implementação é autoritativa para execução; fase spec-kit é apenas para rastreabilidade de comando.)
 
 ## Technical Context
 
