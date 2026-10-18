@@ -84,6 +84,7 @@ src/
 │   ├── player.js             # CinematicPlayer (inalterado)
 │   ├── audio.js              # AudioManager (inalterado)
 │   ├── story-loader.js       # Validação do manifesto (inalterado)
+│   ├── safe-reference.js     # Fonte canônica de isSafeLocalReference (consolidada em T011c)
 │   ├── light-variants.js     # Nomenclatura -light-* (inalterado)
 │   ├── storage.js            # localStorage + BroadcastChannel (inalterado)
 │   ├── capabilities.js       # Detecção de degradação (inalterado)
