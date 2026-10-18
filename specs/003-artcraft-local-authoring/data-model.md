@@ -22,7 +22,7 @@ A master file in `media-src/frames/` or `media-src/audio/` produced by an ArtCra
 
 ### Validation Rules
 
-- **Geometry**: larger side > 1200 px → `invalid-master-geometry` throw (fail-fast). Larger side > 2560 px → `invalid-master-geometry` throw (rigid ceiling, FR-002). No upscaling (`withoutEnlargement: true`).
+- **Geometry**: **Authored masters**: larger side > 1200 px → `invalid-master-geometry` throw (fail-fast). **Rigid pipeline ceiling for any master (including fixtures/test masters)**: larger side > 2560 px → `invalid-master-geometry` throw (FR-002). The 2560 px ceiling is therefore the guard for fixture/test masters, while authored masters already fail-fast at 1200 px. No upscaling (`withoutEnlargement: true`).
 - **Format**: frames accept `svg|png|jpg`; audio accepts `wav`. No other formats.
 - **SVG content**: must pass sanitization gate (reject-list floor + allow-list over vectorcraft vocabulary) before rasterization. Internal `url(#…)` allowed. **DoS caps (measurable)**: ver constante `SVG_DOS_CAPS` em `scripts/svg-sanitize.mjs` — violation → throw.
 - **References**: manifest/sidecar references use `isSafeLocalReference` (a file-path rule; it rejects `#`). SVG URL attributes (`href`, `xlink:href`, `url(...)`) have a **separate** rule: allow fragment-only `#…`; reject absolute, protocol-relative, relative-path, and `data:`.
@@ -71,7 +71,7 @@ JSON sidecar tracking the provenance of a master. Path = master path with extens
 | `review.oversight` | enum | within block | `fully_autonomous` \| `prompt_guided` \| `human_validated` (project-defined; reuses C2PA 2.4 §18.28 enum values) |
 | `review.notes` | string | within block | Side-by-side: size, format, qualitative impression |
 | `review.decision` | enum | within block | `approve` \| `reject` |
-| `review.measuredSSIM` | number | optional | Tier B measured fidelity |
+| `review.measuredSSIM` | number | optional | Tier B fidelity measurement (SSIM value; PSNR reported separately when available) |
 
 ### Validation Rules (fail-fast)
 
@@ -146,7 +146,7 @@ Human visual review recorded per master. Stored in sidecar `review` block + comm
 | `oversight` | enum | `fully_autonomous` \| `prompt_guided` \| `human_validated` |
 | `notes` | string | Side-by-side: size, format, qualitative impression + palette/tonal-range verification |
 | `decision` | enum | `approve` \| `reject` |
-| `measuredSSIM` | number (optional) | Tier B measured value |
+| `measuredSSIM` | number (optional) | Tier B fidelity measurement (SSIM value; PSNR reported separately when available) |
 
 ---
 

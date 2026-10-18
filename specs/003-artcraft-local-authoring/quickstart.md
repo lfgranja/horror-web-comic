@@ -59,7 +59,7 @@
 
    ```bash
    ls assets/frames/generated/ | grep frame-01
-   # Expect: frame-01-*.avif, frame-01-*.webp, frame-01-*.jpeg (+ -light-* variants)
+   # Expect: frame-01-*.avif, frame-01-*.webp, frame-01-*.jpg (+ -light-* variants)
    ```
 
 6. **Check budgets**:
