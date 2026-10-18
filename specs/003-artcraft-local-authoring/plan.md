@@ -48,7 +48,7 @@ YAML parsing in the CI trailer step (T037) uses `js-yaml` when available (transi
 
 **Performance Goals**: LCP ≤ 2500 ms, CLS ≤ 0.1, frame budget ≤ 300 000 B, total assets ≤ 30 000 000 B, Lighthouse perf ≥ 0.9, a11y ≥ 0.95. Nenhum gate é alterado por esta feature.
 
-**Constraints**: Sem dependências novas em `package.json`; nenhum binário ArtCraft no repo/CI; `npm run ci` deve rodar sem a suíte instalada; `budget.json` congelado; schema v1 do manifesto congelado; `media-src/` e `assets/` continuam separação rígida (masters nunca publicados, `findUnreferencedAssets === []`).
+**Constraints**: Sem dependências novas em `package.json`; nenhum binário ArtCraft no repo/CI; `npm run ci` deve rodar sem a suíte instalada; `budget.json` congelado (fonte única dos orçamentos — remediação D1); schema v1 do manifesto congelado; `media-src/` e `assets/` continuam separação rígida (masters nunca publicados, `findUnreferencedAssets === []`).
 
 **Scale/Scope**: 4 frames (frame-01…frame-04) autoralizados. Escopo de autoria: `media-src/frames/`. A produção de masters de áudio (WAV) está documentada mas fica **fora do escopo das tarefas desta feature** (follow-up). Arte promocional (designcraft) vive em `marketing/`, fora do pipeline.
 
