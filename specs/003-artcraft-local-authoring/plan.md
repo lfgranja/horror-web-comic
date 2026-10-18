@@ -1,6 +1,6 @@
 # Implementation Plan: Adoção Local de Ferramentas ArtCraft para Autoria de Ativos
 
-**Branch**: `003-artcraft-local-authoring` (feature dir) — working branch at analysis time: `feature/002-theme-switcher` | **Date**: 2026-10-17 | **Spec**: [spec.md](./spec.md)
+**Branch**: `feature/003-artcraft-local-authoring` | **Date**: 2026-10-17 | **Spec**: [spec.md](./spec.md)
 
 **Input**: Feature specification from `/specs/003-artcraft-local-authoring/spec.md`
 
