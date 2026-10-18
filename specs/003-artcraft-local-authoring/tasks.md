@@ -320,3 +320,81 @@ flowchart TD
 4. **Passo 4 (Continuity - User Story 2)**: Verifica ausência de dependências novas, `npm run ci` sem ArtCraft, orçamentos e DPR>1 (T031–T034). Executa T035.
 5. **Passo 5 (Perfection - User Story 3)**: Implementa o validador de trailers (T036), o passo de CI (T037), a documentação (T038) e a verificação de licença (T039). Executa T040.
 6. **Passo 6 (Gate Check - Fase 7)**: Agente de Verificação roda o gate determinístico (`npm run test:unit`, `npm run build`, matriz Playwright, `npm run ci`). Apenas evidências com código de saída 0 validam o fechamento (T041–T045).
+
+---
+
+## Phase 8: Convergence
+
+> **Origem**: anexado por `/speckit.converge` em 2026-10-17. Fonte de intenção: `spec.md` (FR-001…FR-014, SC-001…SC-007b), `plan.md`, `data-model.md`, `contracts/sidecar.schema.json`, `.specify/memory/constitution.md` (Princípios I–VI). Cada item é rastreável a um `source-ref` e classificado por `gap-type` (`missing` / `partial` / `contradicts` / `unrequested`).
+>
+> **Estado avaliado (HEAD `a7d7e25`)**: já **conformes** — o contrato de saída do pipeline, o `srcset` (320/640/960/1200), o schema v1 congelado, os orçamentos (`budget.json`), a ausência de dependências novas e de binários ArtCraft, `.gitignore` (`build/`) e o contrato `contracts/sidecar.schema.json` (válido). Permanecem **não implementados**: os 5 módulos de portão, os pisos de qualidade, a rejeição de geometria 1200 px, a escrita atômica, o passo de CI de trailers/review, os 11 arquivos de teste, `docs/authoring.md`, `marketing/`, `build/` e os 4 masters autorais (os atuais são fixtures sintéticas 1200×800).
+>
+> **Regras de execução** (herdadas do cabeçalho deste arquivo): (0) scaffolds antes da escrita manual; (1) **TDD bloqueante** — os testes da subseção 8.2 DEVEM ser escritos e falhar (*Red Phase*) ANTES de qualquer implementação (8.3+); (2) testes baseados em propriedades (PRNG determinístico semeado, sem dependência nova) para invariantes; (3) `[P]` = onda paralela via subagent-driven development; (4) as tarefas de verificação (8.8) são as **únicas** que atestam a conclusão; (5) um commit atômico convencional por tarefa.
+>
+> **Ordenação**: o *listing* segue severidade (CRITICAL → HIGH → MEDIUM → LOW → verificação); a *execução* segue a dependência (scaffold → testes → implementação → autoria → docs → verificação), conforme as seções.
+
+### 8.1 CRITICAL — Estado final: 4 quadros autorais (bloqueia US1/P1)
+
+- [ ] T046 [US1] Autorar os 4 quadros como masters autorais 1200×800 (3:2) em `media-src/frames/frame-01…04.svg|png`, substituindo integralmente as fixtures sintéticas atuais (`frame-0X.jpg`); o estado misto sintético+autoral não deve ser publicado per FR-014/SC-001/Constitution V (missing)
+- [ ] T047 [US1] Escrever os sidecars `media-src/frames/frame-0X.json` (extension-swap) com `subject.digest.sha256` correto e bloco `review` (`decision: approve`, `notes` com tamanho/formato/impressão qualitativa + verificação de paleta/intervalo tonal) per FR-008/SC-007b/FR-014 (missing)
+- [ ] T048 [US1] Registrar os trailers `Authored-With: vectorcraft-cli <versão>` e `Reviewed-By: <nome>` nos commits de integração dos masters per FR-008/FR-007 (missing)
+
+### 8.2 HIGH — TDD Gate (BLOQUEANTE; escrever e falhar antes de 8.3+)
+
+- [ ] T049 [P] Criar helper de teste baseado em propriedades (PRNG determinístico semeado, sem dependência nova) em `tests/unit/` para reuso pelos testes de invariante per plan Testing/FR-002 (missing)
+- [ ] T050 [P] Escrever `tests/unit/svg-sanitize.test.js` (allow-list vectorcraft passa; cada vetor perigoso lança nomeando o vetor; `url(#…)` permitido; caps DoS 1 MB/10 000/100/256; property-based com gramática + oráculo allow/reject) per FR-002 (missing)
+- [ ] T051 [P] Escrever `tests/unit/sidecar.test.js` (digest mismatch / stale / JSON inválido / campo desconhecido / hex não-64 / timestamp não-UTC / `inputs[].uri` inseguro / órfão lançam; ausente no-op; property-based contra o JSON Schema) per FR-008 (missing)
+- [ ] T052 [P] Escrever `tests/unit/delivery-fidelity.test.js` (idênticas → SSIM≈1 e PSNR alto; `assertFidelity` lança em standard e apenas avisa em light; property-based de monotonicidade SSIM/PSNR) per FR-007/SC-007a (missing)
+- [ ] T053 [P] Escrever `tests/unit/build-images-gates.test.js` (rejeição >1200 px com `invalid-master-geometry`; teto ≤2560; sem upscaling; pisos standard/light lançando nomeando o frame; srcset só com larguras preenchíveis) per FR-012 (missing)
+- [ ] T054 [P] Escrever `tests/unit/atomic-write.test.js` (temp no mesmo diretório do alvo; `rename()` atômico; interrupção não deixa saída parcial; reexecução segura) per FR-013d (missing)
+- [ ] T055 [P] Escrever `tests/unit/artcraft-authoring.test.js` (integração: master em `media-src/frames/` temporário → variantes em `assets/` → orçamento respeitado → nenhum asset não referenciado) per FR-001 (missing)
+- [ ] T056 [P] Escrever `tests/unit/artcraft-svg-gate.test.js` (integração: SVG perigoso → `buildImages()` lança nomeando o frame; nenhuma variante gerada) per FR-002/FR-011 (missing)
+- [ ] T057 [P] Escrever `tests/unit/artcraft-sidecar.test.js` (integração: digest errado lança; órfão lança `orphan-sidecar`; correto passa) per FR-008 (missing)
+- [ ] T058 [P] Escrever `tests/unit/artcraft-fidelity.test.js` (integração: standard abaixo do SSIM lança; light abaixo apenas avisa; referência PNG gravada sob `build/`) per FR-007 (missing)
+- [ ] T059 [P] Escrever `tests/unit/artcraft-trailers.test.js` (integração: commit tocando `media-src/` sem trailers/review falha fail-closed; completo passa) per FR-013e (missing)
+- [ ] T060 [P] Escrever `tests/e2e/artcraft-dpr.spec.js` (cobertura DPR>1: `deviceScaleFactor: 2`; candidato do `srcset` ≤ 1200 px; sem imagem quebrada; `naturalWidth` coerente) per FR-009 (missing)
+- [ ] T061 Confirmar a *Red Phase*: `npm run test:unit` falha em todos os novos specs antes de qualquer implementação per plan TDD rule (missing)
+
+### 8.3 HIGH — Scaffolds (antes da escrita manual)
+
+- [ ] T062 [P] Scaffold `scripts/svg-sanitize.mjs` (exports `sanitizeSvg`, `isSafeSvgReference`, `SVG_DOS_CAPS`) per FR-013a (missing)
+- [ ] T063 [P] Scaffold `scripts/sidecar.mjs` (exports `verifySidecar`, `findOrphanSidecars`, `validateSidecarSchema`) per FR-013b (missing)
+- [ ] T064 [P] Scaffold `scripts/delivery-fidelity.mjs` (exports `measureFidelity`, `assertFidelity`, `FIDELITY_THRESHOLDS`) per FR-013c (missing)
+- [ ] T065 [P] Scaffold `scripts/atomic-write.mjs` (export `writeFileAtomic`) per FR-013d (missing)
+- [ ] T066 [P] Scaffold `scripts/ci-trailers.mjs` (exports `validateCommitTrailers`, `validateReviewBlock`) per FR-013e (missing)
+
+### 8.4 HIGH — Implementação dos portões e integração
+
+- [ ] T067 [P] [US1] Implementar `scripts/svg-sanitize.mjs` (reject-list piso + allow-list fail-closed sobre o vocabulário vectorcraft, caps DoS, `url(#…)` permitido, referências externas/`data:` rejeitadas) per FR-002/FR-013a (missing)
+- [ ] T068 [P] [US1] Implementar `scripts/sidecar.mjs` (validação strict, SHA-256 recomputado, staleness de `subject.name`, órfão `orphan-sidecar`, `inputs[].uri` via `isSafeLocalReference`, no-op quando ausente) per FR-008/FR-013b (missing)
+- [ ] T069 [P] [US1] Implementar `scripts/delivery-fidelity.mjs` (SSIM/PSNR via filtros nativos do ffmpeg; referência PNG lossless por largura sob `build/`; thresholds standard/light; fail-fast standard, warn-only light) per FR-007/SC-007a/FR-013c (missing)
+- [ ] T070 [P] [US1] Implementar `scripts/atomic-write.mjs` (arquivo temporário no mesmo diretório + `rename()`; sem `os.tmpdir()`) per FR-013d (missing)
+- [ ] T071 [US1] Integrar os três portões + escrita atômica em `scripts/build-images.mjs` (SVG antes de `sourceWidth()`/`encodeImage()`; digest por master; Tier B após `ensureImage()`; toda saída de variante via `writeFileAtomic`) per FR-013 (missing)
+- [ ] T072 [US1] Adicionar `QUALITY_FLOORS` explícitos em `scripts/build-images.mjs` (standard AVIF≥30/WebP≥45/JPEG≥45; light AVIF≥20/WebP≥30/JPEG≥30) lançando erro nomeando o frame em vez de degradar silenciosamente per FR-012/FR-011 (missing)
+- [ ] T073 [US1] Rejeitar masters autorais com lado maior > 1200 px via throw `invalid-master-geometry` (mantendo o teto rígido ≤ 2560 px e `withoutEnlargement`) per FR-012 (partial)
+- [ ] T074 [P] [US3] Implementar `scripts/ci-trailers.mjs` (fail-closed: trailers `Authored-With`/`Reviewed-By` + bloco `review decision: approve` para commits que tocam `media-src/`; forward-only; órfão falha) per FR-013e/FR-008 (missing)
+- [ ] T075 [US3] Adicionar o passo de CI em `.github/workflows/ci.yml` executando `node scripts/ci-trailers.mjs` com `actions/checkout fetch-depth: 0` (nunca em `npm run ci`) per FR-013e (missing)
+
+### 8.5 HIGH — Documentação de autoria
+
+- [ ] T076 [US3] Escrever `docs/authoring.md` com (1) fluxo passo-a-passo (criar → exportar → `media-src/` → pipeline → validar), (2) ferramentas + versão "testada-com", (3) rastreabilidade (trailers + sidecar), (4) licenciamento MIT, (5) arte promocional em `marketing/` per FR-001/SC-004 (missing)
+
+### 8.6 MEDIUM
+
+- [ ] T077 [P] [US3] Registrar a adoção da opção MIT (preservar copyright/license; nunca redistribuir trademark ArtCraft; verificar `ASSETS.md` de cada app) per FR-005 (partial)
+
+### 8.7 LOW
+
+- [ ] T078 [P] Criar `marketing/README.md` documentando que `marketing/` fica fora de `build:images`/`build`/`validate` e do `budget.json` per FR-001 (missing)
+- [ ] T079 [P] Criar o diretório de scratch `build/` na raiz (já em `.gitignore`; nunca em `assets/`/`dist/`/`src/`) per FR-013d (missing)
+- [ ] T080 [P] Adicionar o script `clean:assets` em `package.json` como passo de limpeza separado e documentado (não parte de `build:images`) per plan T005 (missing)
+
+### 8.8 Verificação determinística (Auditor — ÚNICA atestação de conclusão)
+
+- [ ] T081 [P] Executar `npm run test:unit` e confirmar 100% de passagem per SC-003 (missing)
+- [ ] T082 [P] Executar `npm run build` e auditar `budget.json` (initial scene, per-frame, total, compressed code) sem violações per SC-002 (missing)
+- [ ] T083 [P] Executar `npx playwright test tests/e2e/artcraft-dpr.spec.js --project=desktop-chromium` (cobertura DPR>1) per FR-009 (missing)
+- [ ] T084 Executar a esteira completa `npm run ci` (preflight, validate, test:unit, build:images, build, test:e2e, test:perf) e confirmar exit 0 per SC-003 (missing)
+- [ ] T085 [P] Executar `npm run lhci` e confirmar perf ≥ 0,9, a11y ≥ 0,95, CLS < 0,1, LCP ≤ 2500 ms per SC-006 (missing)
+- [ ] T086 [P] Auditar `git ls-files` e `package.json` para confirmar ausência de binários ArtCraft e de dependências novas per FR-004/SC-005 (missing)
+- [ ] T087 Emitir a **Atestação Final** com logs comprobatórios: 4/4 quadros autorais (nenhuma fixture sintética publicada), sidecars `approve`, orçamentos medidos vs `budget.json` e todos os portões verdes per SC-001/SC-002/SC-003 (missing)
