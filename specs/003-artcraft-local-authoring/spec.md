@@ -4,7 +4,7 @@
 
 **Created**: 2026-10-17
 
-**Status**: Artifacts ready for implementation (post-analyze remediation); Phase 1 partially complete (T002, T003 done; T004, T005, T005a, T005b pending) and Phase 2 scaffolds (T006, T007–T011, T011a, T011c) complete; T038a (docs/authoring-accessibility.md companion) complete; execution pending TDD gate (Phase 3). External gates T011b/T028/T037a/T039 tracked.
+**Status**: Artifacts ready for implementation (post-analyze remediation); Phase 1 partially complete (T002, T003 done; T004 pending; T005 omitted by default (optional); T005a, T005b pending) and Phase 2 scaffolds (T006, T007–T011, T011a, T011c) complete; T038a (docs/authoring-accessibility.md companion) complete; execution pending TDD gate (Phase 3). External gates T011b/T028/T037a/T039 tracked.
 
 **Input**: Assessment handoff from `.specify/assessments/artcraft-horror-comic-reform` (verdict: go): adotar a suíte ArtCraft como ferramentas de autoria **locais** (Option B) para produzir masters em `media-src/`, mantendo o pipeline de build, o player, o schema do manifesto e os orçamentos inalterados.
 
