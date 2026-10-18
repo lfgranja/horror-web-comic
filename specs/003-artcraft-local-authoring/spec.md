@@ -4,7 +4,7 @@
 
 **Created**: 2026-10-17
 
-**Status**: Ready for implementation (post-analyze remediation; external gates T011b/T028/T037a/T039 tracked, not blocking artifact readiness)
+**Status**: Ready for implementation (post-analyze remediation; external gates T011b/T028/T037a/T039 tracked — they block implementation completion, not spec/plan/tasks artifact readiness)
 
 **Input**: Assessment handoff from `.specify/assessments/artcraft-horror-comic-reform` (verdict: go): adotar a suíte ArtCraft como ferramentas de autoria **locais** (Option B) para produzir masters em `media-src/`, mantendo o pipeline de build, o player, o schema do manifesto e os orçamentos inalterados.
 
@@ -114,7 +114,7 @@ Para que a arte final deixe de ser um fixture sintético e passe a ser uma ilust
 
 **Acceptance Scenarios**:
 1. **Given** um frame autoral exportado para `media-src/frames/`, **When** `npm run build:images` é executado, **Then** as variantes AVIF/WebP/JPEG (e srcsets) são geradas em `assets/frames/generated/` sem erro.
-2. **Given** um master SVG, **When** o pipeline sharp o processa, **Then** as variantes raster são produzidas nas dimensões corretas (≤ 2560 px no lado maior, sem upscaling).
+2. **Given** um master SVG, **When** o pipeline sharp o processa, **Then** as variantes raster são produzidas nas dimensões corretas (conforme FR-012: ≤ 1200 px para masters autorais, teto rígido ≤ 2560 px para qualquer master, sem upscaling).
 3. **Given** um master autoral, **When** `npm run build` é executado, **Then** o manifesto e os ativos são copiados para `dist/` sem violar `budget.json` nem referências externas.
 4. **Given** os 4 quadros do manifesto (frame-01…frame-04), **When** a feature é concluída, **Then** todos os 4 são masters autorais em `media-src/frames/` — **nenhum** fixture sintético permanece (o estado misto sintético+autoral **não** é publicado) e a paleta/intervalo tonal é verificada e documentada na revisão Tier A de cada master.
 
@@ -231,7 +231,7 @@ Para que a produção de arte seja reproduzível e auditável, mesmo sem integra
 - `tool`: string livre (nome do app ArtCraft ou outro produtor válido), não enum fechado — a validade é por formato/restrição (FR-001), não por allowlist de apps. Opcional (ausente quando a proveniência é desconhecida).
 - `toolVersion`: string (ex.: `vectorcraft-cli 0.12.0`)
 - `dimensions`: `{ width, height }` (frames) ou duração (áudio)
-- `budgetCompliant`: boolean (≤ 1200 px lado maior para masters autorais; ≤ 2560 px teto rígido para qualquer master; ≤ 300 000 bytes por frame — soma dos maiores AVIF+WebP+JPEG; ≤ 30 000 000 bytes total)
+- `budgetCompliant`: boolean (conforme FR-012: ≤ 1200 px masters autorais; teto rígido ≤ 2560 px qualquer master; ≤ 300 000 bytes por frame — soma dos maiores AVIF+WebP+JPEG; ≤ 30 000 000 bytes total)
 
 ### Entidade: AuthoringWorkflow
 - `steps`: lista ordenada (criar no app → exportar → colocar em `media-src/` → rodar pipeline → validar)
