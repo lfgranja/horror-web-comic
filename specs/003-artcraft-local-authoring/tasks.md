@@ -32,7 +32,7 @@ description: "Task list for the Adoção Local de Ferramentas ArtCraft para Auto
 - **[ID com sufixo]** (ex.: T005a): usado para inserções pontuais em uma fase já numerada, preservando a ordem dos IDs existentes. Apenas para adições; nunca para renumeração retroativa.
 
 Nota de terminologia: headings em PT usam 'quadro'; identificadores, caminhos e código usam `frame` (canônico per Terminologia do spec.md).
-Nota de mapeamento: tarefas de setup/scaffold/polish/verificação (T001–T005b, T006–T011, T011a–c, T037a, T038a, T039a, T040a, T041–T045) são infraestrutura/meta e não mapeiam diretamente a um FR/SC; T027a/T027b são sub-checks não contabilizados de T027.
+Nota de mapeamento: tarefas de setup/scaffold/polish/verificação (T001–T005b, T006–T011, T011a–c, T037a, T038a, T039a, T040a, T041–T045) são infraestrutura/meta e não mapeiam diretamente a um FR/SC; T027-verification-1/T027-verification-2 são sub-checks não contabilizados de T027.
 ---
 
 ## Phase 1: Setup & Environment Preparation
@@ -189,10 +189,10 @@ Nota de mapeamento: tarefas de setup/scaffold/polish/verificação (T001–T005b
 
 - [ ] T026 [P] [US1] Implementar `scripts/atomic-write.mjs` conforme o contrato do stub (arquivo temporário no mesmo diretório + `rename()`; sem `os.tmpdir()`) (FR-013)
 
-- [ ] T027 [US1] Integrar os três portões + pisos de qualidade + geometria de canvas 1200×800 + escrita atômica em `scripts/build-images.mjs` (FR-011 fail-fast) (portão SVG antes de `sourceWidth()`/`encodeImage()`; digest por master; Tier B após `ensureImage()`; pisos standard/light lançando erro nomeando o frame; masters > 1200 px rejeitados com `invalid-master-geometry`) (sub-checks: T027a quality floors, T027b canvas geometry — verification-only re-checks of this integration; do not re-edit the same ranges separately) (FR-002/FR-012/FR-013). **Critérios de aceite (remediação U2)**: (1) cada portão invocado no ponto certo; (2) throw nomeia o frame; (3) nenhuma edição duplicada de faixa (T027a/T027b são verificação, não tarefa).
+- [ ] T027 [US1] Integrar os três portões + pisos de qualidade + geometria de canvas 1200×800 + escrita atômica em `scripts/build-images.mjs` (FR-011 fail-fast) (portão SVG antes de `sourceWidth()`/`encodeImage()`; digest por master; Tier B após `ensureImage()`; pisos standard/light lançando erro nomeando o frame; masters > 1200 px rejeitados com `invalid-master-geometry`) (sub-checks: T027-verification-1 quality floors, T027-verification-2 canvas geometry — verification-only re-checks of this integration; do not re-edit the same ranges separately) (FR-002/FR-012/FR-013). **Critérios de aceite (remediação U2)**: (1) cada portão invocado no ponto certo; (2) throw nomeia o frame; (3) nenhuma edição duplicada de faixa (T027-verification-1/T027-verification-2 são verificação, não tarefa).
 
-  - **T027a** (sub-check de T027 — verificação absorvida nos critérios de aceite de T027; NÃO é tarefa standalone nem conta no total de tarefas; não editar faixas separadamente): `QUALITY_FLOORS` explícitos (standard AVIF≥30/WebP≥45/JPEG≥45; light AVIF≥20/WebP≥30/JPEG≥30) lançando erro nomeando o frame.
-  - **T027b** (sub-check de T027 — verificação absorvida nos critérios de aceite de T027; NÃO é tarefa standalone nem conta no total de tarefas; não editar faixas separadamente): Rejeição `invalid-master-geometry` (>1200 px sob `media-src/`) e `exceeds-pipeline-ceiling` (>2560 px sob `tests/fixtures/`), com `withoutEnlargement`.
+  - **T027-verification-1** (sub-check de T027 — verificação absorvida nos critérios de aceite de T027; NÃO é tarefa standalone nem conta no total de tarefas; não editar faixas separadamente): `QUALITY_FLOORS` explícitos (standard AVIF≥30/WebP≥45/JPEG≥45; light AVIF≥20/WebP≥30/JPEG≥30) lançando erro nomeando o frame.
+  - **T027-verification-2** (sub-check de T027 — verificação absorvida nos critérios de aceite de T027; NÃO é tarefa standalone nem conta no total de tarefas; não editar faixas separadamente): Rejeição `invalid-master-geometry` (>1200 px sob `media-src/`) e `exceeds-pipeline-ceiling` (>2560 px sob `tests/fixtures/`), com `withoutEnlargement`.
 - [ ] T028 [US1] [HUMAN] [EXTERNAL BLOCKER — não executável por agente (C1)] [ENTREGÁVEL DE AUTORIA HUMANA] Autorar os 4 quadros em `media-src/frames/frame-01.<ext>`…`frame-04.<ext>` (ext ∈ {svg,png,jpg} per FR-001; 1200×800, 3:2) com sidecars `media-src/frames/frame-0X.json` contendo `subject.digest.sha256` correto e bloco `review` com `decision: approve`. **Não executável por agente** — evidência verificada em T045 (sidecar `review.decision: approve` + trailers `Authored-With`/`Reviewed-By`). A validação agente cobre sidecars/trailers (T019/T029). **Tier A checklist (por master)**: dimensões exatas 1200×800; sem upscaling além do master; `review.notes` (no sidecar) e o commit documentam tamanho, formato, impressão qualitativa e verificação de paleta/intervalo tonal; `decision: approve`. (remediação analyze B2) (bloqueador externo: não executável por agente; T045 atesta apenas após conclusão humana. C4: SC-001/SC-003/T030/T035/T044 permanecem bloqueados até a conclusão humana — rastreado, não é defeito de spec.)
 - [ ] T028a [US1] Atualizar `src/data/story.json` conforme a regra F20 (staleness; F20 ancorada em FR-009 — analyze C4/U1): atualizar `alt` e `description` no mesmo change que modifica a imagem; recomputar `durationMs` apenas se a permanência mínima mudar >10% ou cruzar o piso de 500 ms; validar com `npm run validate` (FR-007/FR-009). Referência canônica da regra F20: `docs/authoring-accessibility.md` (T038a).
 
@@ -200,7 +200,7 @@ Nota de mapeamento: tarefas de setup/scaffold/polish/verificação (T001–T005b
 
 ### Deterministic Verification for User Story 1
 
-- [ ] T030 [US1] **Evidência determinística de comando (bloqueada por T028 — masters autorais) (executada pelo Builder; atestação final em T045)**: Executar a sequência canônica `npm run validate && npm run build:images && npm run build`, mais `npm run test:unit` e `npm run report` como verificações suplementares (em comandos separados), conforme SC-001 (incremental evidence; superseded by T035/T044 for full-matrix certification). **Nota (remediação D2): T030 é evidência incremental (subset); a certificação final determinística é T035/T044.** (remediação analyze F2) (I1) (FR-003: contrato de saída inalterado — formatos, srcset, -light-*, budget.json)
+- [ ] T030 [US1] **Evidência determinística de comando (bloqueada por T028 — masters autorais) (executada pelo Builder; atestação final em T045)**: Executar a sequência canônica `npm run validate && npm run build:images && npm run build`, mais `npm run test:unit` e `npm run report` como verificações suplementares (em comandos separados), conforme SC-001 (incremental evidence; superseded by T035/T044 for full-matrix certification). **Nota (remediação D2): T030 é evidência incremental (subset); a certificação final determinística é T035/T044.** (remediação analyze F2) (I1) (FR-003: contrato de saída inalterado — formatos, srcset, -light-*, budget.json) (evidência incremental — superseded por T035/T044 para validação full-matrix)
   - Critério objetivo de sucesso: 100% dos testes unitários passam; build exit 0; nenhum asset não referenciado; orçamentos respeitados; 4/4 quadros gerados; nenhum fixture sintético permanece em `media-src/frames/` (verificado por: diretório contém exatamente `frame-01..frame-04` com extensões aceitas e sidecars correspondentes; arquivos em `tests/fixtures/` permanecem intocados); cada sidecar `review.notes` documenta paleta/intervalo tonal via template (tamanho, formato, impressão qualitativa, paleta) (FR-007/FR-014).
   - Regra F20 aplicada ao `story.json` final (alt≠description, alt≤125 chars, description reproduz lettering, durationMs≥minMs, recomputação apenas >10% ou piso de 500 ms) — verificado por T022c.
 
@@ -227,7 +227,7 @@ Nota de mapeamento: tarefas de setup/scaffold/polish/verificação (T001–T005b
 
 ### Deterministic Verification for User Story 2
 
-- [ ] T035 [US2] **Evidência determinística de comando (bloqueada por T028 — masters autorais) (executada pelo Builder; atestação final em T045)**: Executar `npm run ci` completo (preflight, validate, test:unit, build:images, build, test:e2e, test:perf) e confirmar exit 0 sem regressão (verificação incremental; a certificação final determinística é T044). (supersedes T030 for full-matrix validation) (SC-003)
+- [ ] T035 [US2] **Evidência determinística de comando (bloqueada por T028 — masters autorais) (executada pelo Builder; atestação final em T045)**: Executar `npm run ci` completo (preflight, validate, test:unit, build:images, build, test:e2e, test:perf) e confirmar exit 0 sem regressão (verificação incremental; a certificação final determinística é T044). (supersedes T030 for full-matrix validation) (SC-003) (evidência incremental — superseded por T044 para full-matrix)
   - Critério objetivo de sucesso: todos os portões passam; nenhum binário ArtCraft é invocado.
 
 **Checkpoint**: User Stories 1 e 2 funcionais e verificadas de forma determinística.
@@ -367,7 +367,7 @@ Esta tabela é autoritativa. Menções inline em tasks devem refletir esta tabel
 | FR-009 | T021, T022c, T028a, T038a, T039a |
 | FR-010 | T039a |
 | FR-011 | T015, T027 |
-| FR-012 | T015, T027, T027b |
+| FR-012 | T015, T027, T027-verification-2 |
 | FR-013 | T007, T008, T009, T010, T011, T019, T022, T022b, T023, T024, T025, T026, T027, T031a, T036, T037, T040, T045 |
 | FR-014 | T028, T029, T045 |
 | SC-001 | T028, T030, T035, T044, T045 |
@@ -379,7 +379,7 @@ Esta tabela é autoritativa. Menções inline em tasks devem refletir esta tabel
 | SC-007a | T014, T020, T025 |
 | SC-007b | T024, T028, T036, T038, T041, T045 |
 
-Infra/verification tasks not mapped to a single FR/SC: T001, T002, T005, T005a, T005b, T011a, T011b, T011c, T015b, T027a, T027b, T037a, T038a, T040, T040a, T041–T045 (by design — see mapping note).
+Infra/verification tasks not mapped to a single FR/SC: T001, T002, T005, T005a, T005b, T011a, T011b, T011c, T015b, T027-verification-1, T027-verification-2, T037a, T038a, T040, T040a, T041–T045 (by design — see mapping note).
 
 ## Parallel Execution Opportunities
 
@@ -415,6 +415,6 @@ Os seguintes IDs são referenciados em notas históricas mas **não** existem co
 - **T031** — consolidado em T031a (execução do gate de ausência); nenhuma tarefa separada restante.
 - **T022a** — consolidado em T011c (consolidação de `isSafeLocalReference` em `src/scripts/safe-reference.js`).
 - **T077** — consolidado em T039 (verificação de licença MIT / `ASSETS.md`).
-- **T027a / T027b** — sub-checks absorvidos nos critérios de aceite de T027 (não são tarefas standalone nem contam no total).
+- **T027-verification-1 / T027-verification-2** — sub-checks absorvidos nos critérios de aceite de T027 (não são tarefas standalone nem contam no total).
 
 Nenhuma implementação deve depender desses IDs; use os IDs ativos correspondentes.
