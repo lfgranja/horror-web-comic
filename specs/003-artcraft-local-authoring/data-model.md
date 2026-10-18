@@ -7,6 +7,8 @@ This feature introduces **no runtime schema changes** (manifest schema v1 is fro
 
 ---
 
+> **Glossário canônico de domínio**: este documento é a fonte canônica dos termos de domínio; `spec.md` §Terminologia lista apenas os termos do corpo da spec.
+
 ## Entity: AuthoredMaster
 
 A master file in `media-src/frames/` or `media-src/audio/` produced by an ArtCraft app (or any valid tool). The **format and constraints** determine validity — not an allowlist of apps.
@@ -26,7 +28,7 @@ A master file in `media-src/frames/` or `media-src/audio/` produced by an ArtCra
 - **Format**: frames accept `svg|png|jpg`; audio accepts `wav`. No other formats.
 - **SVG content**: must pass sanitization gate (reject-list floor + allow-list over the minimal vectorcraft vocabulary defined in `plan.md`) before rasterization. Internal `url(#…)` allowed. **DoS caps (measurable)**: ver constante `SVG_DOS_CAPS` em `scripts/svg-sanitize.mjs` — violation → throw.
 - **References**: manifest/sidecar references use `isSafeLocalReference` (a file-path rule; it rejects `#`). SVG URL attributes (`href`, `xlink:href`, `url(...)`) have a **separate** rule: allow fragment-only `#…`; reject absolute, protocol-relative, relative-path, and `data:`.
-- **Audio**: WAV, any stable DAW. `soundcraft` (pre-alpha) is **not** a production dependency.
+- **Audio**: WAV de qualquer DAW que exporte de forma determinística (critério de 'estável' = exportação WAV determinística). `soundcraft` (pre-alpha) is **not** a production dependency.
 
 ### State Transitions
 
