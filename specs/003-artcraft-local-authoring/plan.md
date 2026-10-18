@@ -16,7 +16,7 @@ Adotar a suíte ArtCraft (vectorcraft, photocraft, designcraft e outros válidos
 
 **Storage**: Arquivo — `media-src/` (masters + sidecars), `assets/` (saída gerada), `build/` (scratch Tier B, git-ignored). Sem banco de dados.
 
-**Testing**: Node native test runner (`node --test tests/unit/*.test.js`), Playwright e2e/perf (5 projetos; + cobertura DPR>1 para verificar nitidez por upscaling). Testes unitários cobrem `delivery.test.js`, `integrity-media.test.js`, `media-generation.test.js`.
+**Testing**: Node native test runner (`node --test tests/unit/*.test.js`), Playwright e2e/perf (5 projetos; + cobertura DPR>1 para verificar nitidez por upscaling). Testes unitários cobrem os arquivos existentes (`delivery.test.js`, `integrity-media.test.js`, `media-generation.test.js`) e os novos gates da feature (`svg-sanitize.test.js`, `sidecar.test.js`, `delivery-fidelity.test.js`, `build-images-gates.test.js`, `atomic-write.test.js`, `artcraft-authoring.test.js`, `artcraft-svg-gate.test.js`, `artcraft-sidecar.test.js`, `artcraft-fidelity.test.js`, `artcraft-trailers.test.js`).
 
 **Target Platform**: Linux (CI ubuntu-latest), macOS (manutenção local). Fedora: webkit não roda localmente (CI-enforced).
 
@@ -84,6 +84,11 @@ scripts/
 ├── compatibility-report.mjs  # Relatório permissivo (inalterado)
 ├── build-images.mjs          # MODIFICADO: + sanitização SVG (+ caps DoS), + digest sidecar (+ órfão), + Tier B, + piso de qualidade, + escrita atômica
 ├── build.mjs                 # MODIFICADO (condicional): + copy step de OG/social em `dist/` (spec.md:45); trailers/review vivem no step de `ci.yml`, nunca aqui
+├── svg-sanitize.mjs        # NOVO: gate de sanitização/validação SVG (FR-002)
+├── sidecar.mjs             # NOVO: verificação de digest do sidecar (FR-008)
+├── delivery-fidelity.mjs   # NOVO: portão Tier B SSIM/PSNR (FR-007)
+├── atomic-write.mjs        # NOVO: escrita atômica write-temp→rename (FR-013d)
+├── ci-trailers.mjs        # NOVO: validação fail-closed de trailers/review (FR-013)
 └── serve-e2e.mjs             # Servidor HTTP Range (inalterado)
 
 media-src/
@@ -114,4 +119,9 @@ package.json                  # Deps pinadas inalteradas
 
 ## Complexity Tracking
 
-> Nenhuma violação da constituição a justificar.
+| Added Complexity | Justification (Princípio II — Médium Definido) |
+|:---|:---|
+| 3 build-time gates (SVG sanitize, sidecar digest, Tier B fidelity) | Operam exclusively at build time sobre masters em `media-src/`; nenhum código novo no runtime/player. Masters SVG são rasterizados por sharp (já dependência existente). |
+| 5 new scripts modules | Invoked by existing build-images.mjs; sem dependências novas (sharp, ffmpeg, crypto builtin). |
+| CI step (trailers/review enforcement) | Step separado em ci.yml; não altera npm run ci nem o pipeline core. |
+| Atomic write pattern | Write-temp→rename no mesmo filesystem; sem dependências externas. |
