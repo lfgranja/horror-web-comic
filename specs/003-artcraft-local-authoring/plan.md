@@ -12,14 +12,14 @@ Adotar a suíte ArtCraft (vectorcraft, photocraft, designcraft e outros válidos
 
 **Language/Version**: JavaScript (ES2022), Node.js ≥20
 
-**Primary Dependencies**: sharp (pinned), ffmpeg/ffprobe (system, ≥5), esbuild (pinned). **Nenhuma dependência nova** — sanitização SVG via allow-list/reject-list sobre o vocabulário emitido pelo vectorcraft (librsvg/sharp já rasterizam), Sidecar digest via `crypto` (Node builtin), Tier B via filtros `ssim`/`psnr` nativos do ffmpeg.
+**Primary Dependencies**: sharp (pinned), ffmpeg/ffprobe (system, ≥5), esbuild (pinned). **Nenhuma dependência nova** (salvo exceção de segurança): sidecar digest via `crypto` (Node builtin), Tier B via filtros `ssim`/`psnr` nativos do ffmpeg. A sanitização SVG (allow-list/reject-list sobre o vocabulário vectorcraft; librsvg/sharp rasterizam) **exige um parser XML real ou um tokenizer fail-closed verificável** — regex-only é inaceitável (mXSS/parser disagreement). Se um tokenizer verificável não puder ser implementado sem dependência, a restrição "no new dependencies" é relaxada para este caso de segurança (uma única dependência pequena, auditada e pinada).
 
 **SVG allow-list (vocabulário mínimo vectorcraft — fail-closed)**: O gate FR-002 é fail-closed sobre o seguinte vocabulário. Qualquer elemento/atributo fora desta lista é rejeitado.
 
 - **Elementos permitidos**: `svg, g, defs, title, desc, path, rect, circle, ellipse, line, polyline, polygon, text, tspan, use, linearGradient, radialGradient, stop, clipPath, mask, pattern, symbol`
-- **Atributos permitidos**: `id, class, d, x, y, x1, y1, x2, y2, cx, cy, r, rx, ry, width, height, points, transform, transform-origin, fill, fill-opacity, fill-rule, stroke, stroke-width, stroke-opacity, stroke-linecap, stroke-linejoin, stroke-dasharray, stroke-dashoffset, stroke-miterlimit, opacity, viewBox, preserveAspectRatio, xmlns, xmlns:xlink, font-family, font-size, font-weight, font-style, text-anchor, dominant-baseline, letter-spacing, gradientUnits, gradientTransform, offset, stop-color, stop-opacity, clip-path, mask, marker-start, marker-mid, marker-end, patternUnits, patternTransform, href, xlink:href (fragment-only)`
+- **Atributos permitidos**: `id, class, d, x, y, x1, y1, x2, y2, cx, cy, r, rx, ry, width, height, points, transform, transform-origin, fill, fill-opacity, fill-rule, stroke, stroke-width, stroke-opacity, stroke-linecap, stroke-linejoin, stroke-dasharray, stroke-dashoffset, stroke-miterlimit, opacity, viewBox, preserveAspectRatio, xmlns, xmlns:xlink, font-family, font-size, font-weight, font-style, text-anchor, dominant-baseline, letter-spacing, gradientUnits, gradientTransform, offset, stop-color, stop-opacity, clip-path, mask, patternUnits, patternTransform, href, xlink:href (fragment-only)`
 - **Rejeitados**: qualquer elemento/atributo não listado; `href`/`xlink:href` deve ser fragment-only `#…` (absoluto, protocol-relative, caminho relativo e `data:` rejeitados).
-- **Nota**: Vocabulário inicial a ser validado contra um export real do vectorcraft antes de implementar o gate.
+- **Nota**: Vocabulário inicial a ser validado contra um export real do vectorcraft antes de implementar o gate. `marker-start/mid/end` foram removidos (sem elemento `marker` na allow-list — atributos mortos); re-adicionar (junto com `marker` + `markerWidth/Height/Units/refX/refY/orient`) se um export real emitir `<marker>`. O gate também aplica um orçamento de expansão de referências (`<use>`/`<pattern>`: `maxExpandedReferences` ≈ 100 000, `maxReferenceDepth` ≈ 20, rejeitar ciclos) além dos caps estáticos, e não pode ser apenas regex — usa-se parser XML real ou tokenizer fail-closed verificável, re-serializando bytes canônicos. Sidecars vivem ao lado do ativo, fora da árvore publicável, em `media-src/` e `marketing/`. O valor `oversight` é project-defined (`human_authored`/`human_assisted`/`human_reviewed`), não os valores C2PA.
 
 **Quality thresholds (centralized in `scripts/delivery-fidelity.mjs`)**:
 - Tier B SSIM: ≥ 0.95 (standard) / ≥ 0.90 (light); PSNR ≥ 30 dB; standard fail-fast, light warn-only.
@@ -95,7 +95,7 @@ scripts/
 ├── validate-manifest.mjs     # Schema + refs (inalterado)
 ├── compatibility-report.mjs  # Relatório permissivo (inalterado)
 ├── build-images.mjs          # MODIFICADO: + sanitização SVG (+ caps DoS), + digest sidecar (+ órfão), + Tier B, + piso de qualidade, + escrita atômica
-├── build.mjs                 # MODIFICADO (condicional): + copy step de OG/social em `dist/` (spec.md:45); trailers/review vivem no step de `ci.yml`, nunca aqui
+├── build.mjs                 # inalterado neste feature: nenhum passo de cópia de imagem OG/social é adicionado (fora de escopo per clarificação batch 2); trailers/review vivem no step de `ci.yml`, nunca aqui
 ├── svg-sanitize.mjs        # NOVO: gate de sanitização/validação SVG (FR-002)
 ├── sidecar.mjs             # NOVO: verificação de digest do sidecar (FR-008)
 ├── delivery-fidelity.mjs   # NOVO: portão Tier B SSIM/PSNR (FR-007)
