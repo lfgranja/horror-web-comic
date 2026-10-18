@@ -6,13 +6,25 @@
 
 ## Summary
 
-Adotar a suíte ArtCraft (vectorcraft, photocraft, designcraft e outros válidos) como ferramentas **locais** de autoria de masters em `media-src/frames/` e `media-src/audio/`, substituindo os fixtures sintéticos por arte autoral de alta qualidade. O pipeline de build existente (sharp/ffmpeg) permanece responsável pela re-codificação para os formatos de entrega (AVIF/WebP/JPEG + srcset, AAC/Opus), pelo manifesto (schema v1 congelado) e pelos orçamentos (`budget.json`). Três novos portões de build-time são adicionados a `scripts/build-images.mjs`: (a) sanitização/validação SVG, (b) verificação de digest do sidecar, (c) fidelidade Tier B (SSIM/PSNR). Um novo passo em `.github/workflows/ci.yml` (`fetch-depth: 0`) verifica trailers de commit e o bloco `review` do Tier A, fail-closed para commits que tocam `media-src/`. O player, o schema do manifesto, os orçamentos e a matriz de testes permanecem inalterados.
+Adotar a suíte ArtCraft (vectorcraft, photocraft, designcraft e outros válidos) como ferramentas **locais** de autoria de masters em `media-src/frames/` (4 frames), substituindo os fixtures sintéticos por arte autoral de alta qualidade. A produção de masters de áudio (WAV) está documentada mas fica **fora do escopo das tarefas desta feature** (follow-up). O pipeline de build existente (sharp/ffmpeg) permanece responsável pela re-codificação para os formatos de entrega (AVIF/WebP/JPEG + srcset), pelo manifesto (schema v1 congelado) e pelos orçamentos (`budget.json`). Três novos portões de build-time são adicionados a `scripts/build-images.mjs`: (a) sanitização/validação SVG, (b) verificação de digest do sidecar, (c) fidelidade Tier B (SSIM/PSNR). Um novo passo em `.github/workflows/ci.yml` (`fetch-depth: 0`) verifica trailers de commit e o bloco `review` do Tier A, fail-closed para commits que tocam `media-src/`. O player, o schema do manifesto, os orçamentos e a matriz de testes permanecem inalterados.
 
 ## Technical Context
 
 **Language/Version**: JavaScript (ES2022), Node.js ≥20
 
 **Primary Dependencies**: sharp (pinned), ffmpeg/ffprobe (system, ≥5), esbuild (pinned). **Nenhuma dependência nova** — sanitização SVG via allow-list/reject-list sobre o vocabulário emitido pelo vectorcraft (librsvg/sharp já rasterizam), Sidecar digest via `crypto` (Node builtin), Tier B via filtros `ssim`/`psnr` nativos do ffmpeg.
+
+**SVG allow-list (vocabulário mínimo vectorcraft — fail-closed)**: O gate FR-002 é fail-closed sobre o seguinte vocabulário. Qualquer elemento/atributo fora desta lista é rejeitado.
+
+- **Elementos permitidos**: `svg, g, defs, title, desc, path, rect, circle, ellipse, line, polyline, polygon, text, tspan, use, linearGradient, radialGradient, stop, clipPath, mask, pattern, symbol`
+- **Atributos permitidos**: `id, class, d, x, y, x1, y1, x2, y2, cx, cy, r, rx, ry, width, height, points, transform, transform-origin, fill, fill-opacity, fill-rule, stroke, stroke-width, stroke-opacity, stroke-linecap, stroke-linejoin, stroke-dasharray, stroke-dashoffset, stroke-miterlimit, opacity, viewBox, preserveAspectRatio, xmlns, xmlns:xlink, font-family, font-size, font-weight, font-style, text-anchor, dominant-baseline, letter-spacing, gradientUnits, gradientTransform, offset, stop-color, stop-opacity, clip-path, mask, marker-start, marker-mid, marker-end, patternUnits, patternTransform, href, xlink:href (fragment-only)`
+- **Rejeitados**: qualquer elemento/atributo não listado; `href`/`xlink:href` deve ser fragment-only `#…` (absoluto, protocol-relative, caminho relativo e `data:` rejeitados).
+- **Nota**: Vocabulário inicial a ser validado contra um export real do vectorcraft antes de implementar o gate.
+
+**Quality thresholds (centralized in `scripts/delivery-fidelity.mjs`)**:
+- Tier B SSIM: ≥ 0.95 (standard) / ≥ 0.90 (light); PSNR ≥ 30 dB; standard fail-fast, light warn-only.
+- Quality floors: standard AVIF ≥ 30 / WebP ≥ 45 / JPEG ≥ 45; light AVIF ≥ 20 / WebP ≥ 30 / JPEG ≥ 30 (throw naming the frame).
+- Canvas: 1200×800 px (3:2); rigid ceiling ≤ 2560 px for any master.
 
 **Storage**: Arquivo — `media-src/` (masters + sidecars), `assets/` (saída gerada), `build/` (scratch Tier B, git-ignored). Sem banco de dados.
 
@@ -26,7 +38,7 @@ Adotar a suíte ArtCraft (vectorcraft, photocraft, designcraft e outros válidos
 
 **Constraints**: Sem dependências novas em `package.json`; nenhum binário ArtCraft no repo/CI; `npm run ci` deve rodar sem a suíte instalada; `budget.json` congelado; schema v1 do manifesto congelado; `media-src/` e `assets/` continuam separação rígida (masters nunca publicados, `findUnreferencedAssets === []`).
 
-**Scale/Scope**: 4 frames (frame-01…frame-04) autoralizados + áudio ambiente existente. Escopo de autoria: `media-src/frames/` + `media-src/audio/`. Arte promocional (designcraft) vive em `marketing/`, fora do pipeline.
+**Scale/Scope**: 4 frames (frame-01…frame-04) autoralizados. Escopo de autoria: `media-src/frames/`. A produção de masters de áudio (WAV) está documentada mas fica **fora do escopo das tarefas desta feature** (follow-up). Arte promocional (designcraft) vive em `marketing/`, fora do pipeline.
 
 **Success-criteria mechanism**: Tier B computes delivery fidelity with the pipeline's native metrics (ffmpeg `ssim`/`psnr`) against a lossless PNG reference of the master at each delivery width; Tier A is a documented human-review protocol with a binary `approve`/`reject` decision. These mechanisms were moved out of the spec's success criteria (SC-007a/SC-007b) into the plan.
 
