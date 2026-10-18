@@ -95,7 +95,7 @@ Nota de terminologia: headings em PT usam 'quadro'; identificadores, caminhos e 
   - Caps de DoS mensuráveis: arquivo > 1 MB (1 048 576 B), elementos > 10 000, profundidade > 100, atributos/elemento > 256 → lança erro
   - Caps de expansão de referência: `<use>`/`<pattern>` com mais de 100 000 referências expandidas ou profundidade > 20, ou ciclos de referência → lança erro (plan.md, SVG allow-list)
   - Property-based: assertar cobertura de vocabulário (tokens do fixture sintético vs allow-list) para detectar lacunas da allow-list
-  - Property-based: gerar SVGs aleatórios determinísticos (PRNG com seed fixa) a partir de uma gramática e assertar que o veredito do gate corresponde a um oráculo (allow-list/reject-list)
+  - Property-based: gerar SVGs aleatórios determinísticos (PRNG com seed fixa) a partir de uma gramática e assertar que o veredito do gate corresponde a um oráculo explícito (allow-list/reject-list definido no cabeçalho do teste via `// OWNS:`)
   - (Confirmar que os testes em `tests/unit/svg-sanitize.test.js` falham)
 
 - [ ] T013 [P] Escrever testes unitários para `scripts/sidecar.mjs` em `tests/unit/sidecar.test.js`:
@@ -149,6 +149,8 @@ Nota de terminologia: headings em PT usam 'quadro'; identificadores, caminhos e 
   - critério mensurável: `naturalWidth` do elemento ≤ 1200 (teto intrínseco do master); candidato do `srcset` selecionado ≤ 1200w; nenhum estado de imagem quebrada; upscaling pelo navegador em DPR≥2 é esperado e não é falha (não reprova)
   - (Confirmar que o teste em `tests/e2e/artcraft-dpr.spec.js` falha)
 
+### Testes de Unidade (Node) — enforcement de trailers/ausência/metadados
+
 - [ ] T022 [P] Escrever teste de unidade (Node native runner) de enforcement de trailers/review em `tests/unit/artcraft-trailers.test.js`, usando uma **fixture de repositório git temporário** (obrigatório; o mock de execSync/git log não é aceito) para simular commits que tocam `media-src/`:
   - commit que toca `media-src/` sem `Authored-With`, `Reviewed-By` ou bloco `review` → o validador lança (fail-closed)
   - commit com trailers completos + bloco `review` (`decision: approve`) → passa
@@ -187,7 +189,7 @@ Nota de terminologia: headings em PT usam 'quadro'; identificadores, caminhos e 
 - [ ] T027a [US1] *(Sub-check of T027 — não rastrear como tarefa separada; não editar faixas separadamente)* `QUALITY_FLOORS` explícitos (standard AVIF≥30/WebP≥45/JPEG≥45; light AVIF≥20/WebP≥30/JPEG≥30) lançando erro nomeando o frame — verificado dentro de T027.
 - [ ] T027b [US1] *(Sub-check of T027 — não rastrear como tarefa separada; não editar faixas separadamente)* Rejeição `invalid-master-geometry` (>1200 px sob `media-src/`) e `exceeds-pipeline-ceiling` (>2560 px sob `tests/fixtures/`), com `withoutEnlargement` — verificado dentro de T027.
 - [ ] T028 [US1] [HUMAN] [EXTERNAL BLOCKER — não executável por agente (C1)] [ENTREGÁVEL DE AUTORIA HUMANA] Autorar os 4 quadros em `media-src/frames/frame-01.<ext>`…`frame-04.<ext>` (ext ∈ {svg,png,jpg} per FR-001; 1200×800, 3:2) com sidecars `media-src/frames/frame-0X.json` contendo `subject.digest.sha256` correto e bloco `review` com `decision: approve`. **Não executável por agente** — evidência verificada em T045 (sidecar `review.decision: approve` + trailers `Authored-With`/`Reviewed-By`). A validação agente cobre sidecars/trailers (T019/T029). **Tier A checklist (por master)**: dimensões exatas 1200×800; sem upscaling além do master; `review.notes` (no sidecar) e o commit documentam tamanho, formato, impressão qualitativa e verificação de paleta/intervalo tonal; `decision: approve`. (remediação analyze B2) (bloqueador externo: não executável por agente; T045 atesta apenas após conclusão humana)
-- [ ] T028a [US1] Atualizar `src/data/story.json` conforme a regra F20 (staleness): atualizar `alt` e `description` no mesmo change que modifica a imagem; recomputar `durationMs` apenas se a permanência mínima mudar >10% ou cruzar o piso de 500 ms; validar com `npm run validate` (FR-007/FR-009).
+- [ ] T028a [US1] Atualizar `src/data/story.json` conforme a regra F20 (staleness): atualizar `alt` e `description` no mesmo change que modifica a imagem; recomputar `durationMs` apenas se a permanência mínima mudar >10% ou cruzar o piso de 500 ms; validar com `npm run validate` (FR-007/FR-009). Referência canônica da regra F20: `docs/authoring-accessibility.md` (T038a).
 
 - [ ] T029 [US1] Registrar os trailers `Authored-With: vectorcraft-cli <versão>` e `Reviewed-By: <nome>` nos commits dos masters em `media-src/frames/` (FR-008)
 
