@@ -24,6 +24,7 @@ description: "Task list for the Adoção Local de Ferramentas ArtCraft para Auto
 
 ## Format: `- [ ] [TaskID] [P?] [Story?] Description with file path`
 
+- **[TaskID]**: Identificador da tarefa (ex.: T007, T012a, T039b).
 - **[P]**: Pode rodar em paralelo (arquivos diferentes, sem dependências concorrentes).
 - **[Story]**: Rótulo da história do usuário (`[US1]`, `[US2]`, `[US3]`). Tarefas de setup, scaffolds, TDD gate e polish/verificação geral não usam rótulo de história.
 - Caminhos de arquivo exatos fornecidos em todas as tarefas.
@@ -160,7 +161,7 @@ description: "Task list for the Adoção Local de Ferramentas ArtCraft para Auto
 ### Deterministic Verification for User Story 1
 
 - [ ] T030 [US1] **Verificação Determinística US1**: Executar `npm run test:unit && npm run validate && npm run build:images && npm run build && npm run report`
-  - Critério objetivo de sucesso: 100% dos testes unitários passam; build exit 0; nenhum asset não referenciado; orçamentos respeitados; 4/4 quadros gerados.
+  - Critério objetivo de sucesso: 100% dos testes unitários passam; build exit 0; nenhum asset não referenciado; orçamentos respeitados; 4/4 quadros gerados; nenhum fixture sintético permanece em `media-src/frames/` (verificado por ausência de arquivos sem sidecar correspondente).
 
 **Checkpoint**: User Story 1 funcional e verificada de forma determinística.
 
@@ -217,6 +218,8 @@ description: "Task list for the Adoção Local de Ferramentas ArtCraft para Auto
 
 - [ ] T040 [US3] **Verificação Determinística US3**: Executar `node scripts/ci-trailers.mjs` contra fixtures (commit com trailers completos passa; commit sem trailers falha) e `npm run test:unit`
   - Critério objetivo de sucesso: validador fail-closed comprovado; testes unitários passam.
+
+- [ ] T040a [P] Verificar o passo de CI com `act` (nektos/act) ou equivalente: simular um commit que toca `media-src/` sem trailers e confirmar que o step falha; simular um commit com trailers completos e confirmar que passa
 
 **Checkpoint**: Todas as histórias de usuário (US1, US2, US3) implementadas e verificadas.
 
