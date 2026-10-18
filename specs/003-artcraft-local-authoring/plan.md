@@ -12,7 +12,7 @@ Adotar a suíte ArtCraft (vectorcraft, photocraft, designcraft e outros válidos
 
 **Language/Version**: JavaScript (ES2022), Node.js ≥20
 
-**Primary Dependencies**: sharp (pinned), ffmpeg/ffprobe (system, ≥5), esbuild (pinned). **Nenhuma dependência nova** (FR-004/SC-005): sidecar digest via `crypto` (Node builtin), Tier B via filtros `ssim`/`psnr` nativos do ffmpeg. **Dependência de host**: `librsvg` é necessária para rasterização SVG por sharp (pré-requisito de host, não dependência de repo; ver U2/CC2 e T037a). A sanitização SVG (allow-list/reject-list sobre o vocabulário vectorcraft; librsvg/sharp rasterizam) **exige um parser XML real ou um tokenizer fail-closed verificável** — regex-only é inaceitável (mXSS/parser disagreement). **Decisão (C1)**: o tokenizer fail-closed é implementado em JavaScript puro (sem nova dependência); se isso se provar inviável, a exceção de segurança deverá ser aprovada explicitamente via emenda à constituição (Princípio II) e T031/SC-005 atualizados antes da implementação. Nenhuma dependência nova entra em `package.json` neste feature.
+**Primary Dependencies**: sharp (pinned), ffmpeg/ffprobe (system, ≥5), esbuild (pinned). **Nenhuma dependência nova** (FR-004/SC-005): sidecar digest via `crypto` (Node builtin), Tier B via filtros `ssim`/`psnr` nativos do ffmpeg. **Dependência de host**: `librsvg` é necessária para rasterização SVG por sharp (pré-requisito de host, não dependência de repo; ver U2/CC2 e T037a). Detecção no preflight: `pkg-config --exists librsvg-2.0` (fallback: probe de decode SVG via sharp). A sanitização SVG (allow-list/reject-list sobre o vocabulário vectorcraft; librsvg/sharp rasterizam) **exige um parser XML real ou um tokenizer fail-closed verificável** — regex-only é inaceitável (mXSS/parser disagreement). **Decisão (C1)**: o tokenizer fail-closed é implementado em JavaScript puro (sem nova dependência); se isso se provar inviável, a exceção de segurança deverá ser aprovada explicitamente via emenda à constituição (Princípio II) e T031/SC-005 atualizados antes da implementação. Nenhuma dependência nova entra em `package.json` neste feature.
 
 **SVG allow-list (vocabulário mínimo vectorcraft — fail-closed)**: O gate FR-002 é fail-closed sobre o seguinte vocabulário. Qualquer elemento/atributo fora desta lista é rejeitado.
 
@@ -23,6 +23,7 @@ Adotar a suíte ArtCraft (vectorcraft, photocraft, designcraft e outros válidos
 
 **Quality thresholds (centralized in `scripts/delivery-fidelity.mjs`)**:
 - Tier B SSIM: ≥ 0.95 (standard) / ≥ 0.90 (light); PSNR ≥ 30 dB; standard fail-fast, light warn-only.
+- Tier B invocation (native filters, no new dependency): `ffmpeg -i <variant> -i <ref.png> -lavfi "ssim=...,psnr=..." -f null -`; referência PNG lossless gerada por sharp sob `build/` (mesmo filesystem). Comparação por largura de entrega (nunca contra o master em tamanho nativo).
 - Quality floors: standard AVIF ≥ 30 / WebP ≥ 45 / JPEG ≥ 45; light AVIF ≥ 20 / WebP ≥ 30 / JPEG ≥ 30 (throw naming the frame).
 - Canvas: 1200×800 px (3:2); rigid ceiling ≤ 2560 px for any master.
 
@@ -96,7 +97,7 @@ scripts/
 ├── validate-manifest.mjs     # Schema + refs (inalterado)
 ├── compatibility-report.mjs  # Relatório permissivo (inalterado)
 ├── build-images.mjs          # MODIFICADO: + sanitização SVG (+ caps DoS), + digest sidecar (+ órfão), + Tier B, + piso de qualidade, + escrita atômica
-├── build.mjs                 # inalterado neste feature: nenhum passo de cópia de imagem OG/social é adicionado (fora de escopo per clarificação batch 2); trailers/review vivem no step de `ci.yml`, nunca aqui
+├── build.mjs                 # inalterado neste feature quanto a OG/social copy (nenhum passo de cópia de imagem OG/social é adicionado — fora de escopo per clarificação batch 2); trailers/review vivem no step de `ci.yml`, nunca aqui. Única alteração: reexport de `isSafeLocalReference` (import-only) consolidado em T011c; sem mudança de comportamento.
 ├── svg-sanitize.mjs        # NOVO: gate de sanitização/validação SVG (FR-002)
 ├── sidecar.mjs             # NOVO: verificação de digest do sidecar (FR-008)
 ├── delivery-fidelity.mjs   # NOVO: portão Tier B SSIM/PSNR (FR-007)
