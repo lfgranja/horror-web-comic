@@ -12,7 +12,7 @@
 
 ## Clarifications
 
-> Nota: as clarificações abaixo estão organizadas por sessão/lote para rastreabilidade. As decisões normativas consolidadas estão em FR-001…FR-014 e SC-001…SC-007b; em caso de conflito, prevalecem os FR/SC. (Analyze remediation: batches retained for traceability; normative authority is FR/SC only — see also plan.md "Analyze Remediation Notes".)
+> Nota: as clarificações abaixo estão organizadas por sessão/lote para rastreabilidade **apenas**. As decisões normativas consolidadas estão exclusivamente em FR-001…FR-014 e SC-001…SC-007b; em caso de conflito (ex.: batch 2 "subconjunto mínimo" vs batch 3 "todos os apps válidos"), prevalecem integralmente os FR/SC. Batches são mantidos para histórico, não para autoridade normativa. (Remediation A1 applied)
 
 ### Session 2026-10-17 (assessment handoff)
 
