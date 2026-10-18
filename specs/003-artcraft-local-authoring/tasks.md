@@ -58,16 +58,16 @@ Nota de terminologia: headings em PT usam 'quadro'; identificadores, caminhos e 
 
 **⚠️ CRITICAL**: Nenhuma implementação manual pode iniciar antes da conclusão dos scaffolds e do portão TDD.
 
-- [ ] T006 [P] Gerar/validar o contrato `specs/003-artcraft-local-authoring/contracts/sidecar.schema.json` (JSON Schema draft 2020-12; `additionalProperties: false`; `sha256` com `^[0-9a-f]{64}$`; timestamps UTC `Z|+00:00`; enums `oversight` = `human_authored|human_assisted|human_reviewed` e `decision` = `approve|reject`)
+- [x] T006 [P] Gerar/validar o contrato `specs/003-artcraft-local-authoring/contracts/sidecar.schema.json` (JSON Schema draft 2020-12; `additionalProperties: false`; `sha256` com `^[0-9a-f]{64}$`; timestamps UTC `Z|+00:00`; enums `oversight` = `human_authored|human_assisted|human_reviewed` e `decision` = `approve|reject`). **Scaffold já presente e validado** (contrato existe em `contracts/sidecar.schema.json`); marcado concluído em 2026-10-18 (remediação analyze).
 - [ ] T007 [P] Scaffold do módulo `scripts/svg-sanitize.mjs` (stub com assinaturas exportadas: `sanitizeSvg`, `isSafeSvgReference`, `SVG_DOS_CAPS`)
 - [ ] T008 [P] Scaffold do módulo `scripts/sidecar.mjs` (stub: `verifySidecar`, `findOrphanSidecars`, `validateSidecarSchema`)
 - [ ] T009 [P] Scaffold do módulo `scripts/delivery-fidelity.mjs` (stub: `measureFidelity`, `assertFidelity`, `FIDELITY_THRESHOLDS`)
 - [ ] T010 [P] Scaffold do módulo `scripts/atomic-write.mjs` (stub: `writeFileAtomic`)
 - [ ] T011 [P] Scaffold do módulo `scripts/ci-trailers.mjs` (stub: `validateCommitTrailers`, `validateReviewBlock`)
 
-- [ ] T011a [P] Criar helper de teste baseado em propriedades (PRNG determinístico semeado, sem dependência nova) em `tests/unit/property-helpers.mjs` (exportando `createPrng(seed)`, `randomSvgGrammar(prng)`, `randomSidecarDoc(prng)`) para reuso pelos testes de invariante (FR-002/plan Testing; U1).
+- [ ] T011a [P] Criar helper de teste baseado em propriedades (PRNG determinístico semeado, sem dependência nova) em `tests/unit/property-helpers.mjs` (exportando `createPrng(seed)`, `randomSvgGrammar(prng)`, `randomSidecarDoc(prng)`, `randomImagePair(prng)` — este último para os testes property-based de monotonicidade SSIM/PSNR de T014) para reuso pelos testes de invariante (FR-002/plan Testing; U1; remediação analyze C2).
 
-- [ ] T011b [P] [GATE MANUAL] Validar o vocabulário SVG (allow-list em `plan.md`) contra um export real do vectorcraft antes de implementar o gate; **bloqueante para T012 e T023**. Critério de saída: (a) export real passa sem rejeição indevida, ou (b) allow-list ajustada com diff registrado em `docs/authoring.md` (seção "SVG allow-list validation"). Registrar resultado (pass/fail + diff) e a versão "testada-com" do app. Fallback: se o export real não estiver disponível, usar um fixture sintético derivado de um export registrado em `tests/fixtures/` e registrar a justificativa em `docs/authoring.md` (seção 'SVG allow-list validation'); a tarefa não pode ser silenciosamente pulada. **Risco rastreado**: o fallback sintético pode não cobrir o vocabulário real do vectorcraft; se utilizado, registrar a lacuna como risco em T045 (obrigatório, não opcional). Bloqueio: estrito para T023 (implementação); T012 (testes) pode iniciar com o vocabulário draft de plan.md, refinado após T011b. A tarefa não pode ser silenciosamente pulada.
+- [ ] T011b [P] [GATE MANUAL] Validar o vocabulário SVG (allow-list em `plan.md`) contra um export real do vectorcraft antes de implementar o gate; **bloqueio estrito para T023 (e T027)** — T012 (testes) pode iniciar com o vocabulário draft de `plan.md` e ser refinado após T011b (remediação analyze B1). Critério de saída: (a) export real passa sem rejeição indevida, ou (b) allow-list ajustada com diff registrado em `docs/authoring.md` (seção "SVG allow-list validation"). Registrar resultado (pass/fail + diff) e a versão "testada-com" do app. Fallback: se o export real não estiver disponível, usar um fixture sintético derivado de um export registrado em `tests/fixtures/` e registrar a justificativa em `docs/authoring.md` (seção 'SVG allow-list validation'); a tarefa não pode ser silenciosamente pulada. **Risco rastreado**: o fallback sintético pode não cobrir o vocabulário real do vectorcraft; se utilizado, registrar a lacuna como risco em T045 (obrigatório, não opcional). A tarefa não pode ser silenciosamente pulada.
 - [x] T011c [P] Consolidar `isSafeLocalReference` em `src/scripts/safe-reference.js` (fonte canônica única) e reexportar em `src/scripts/story-loader.js` e `scripts/build.mjs`; `scripts/sidecar.mjs` (T008/T024) importa da fonte canônica (D1). Evita drift entre validador de manifesto, pipeline e portão de sidecar. Cobertura via testes existentes de story-loader/build; nenhum teste dedicado requerido. **Approved early scaffold (safe-reference consolidation only); SVG allow-list validation remains owned by T011b.** Aplicado em 2026-10-18; `npm run test:unit` verde (139/139). (migrado de T022a; U3/A4).
 
 **Checkpoint**: Contratos e scaffolds prontos.
@@ -112,6 +112,7 @@ Nota de terminologia: headings em PT usam 'quadro'; identificadores, caminhos e 
   - srcset do manifesto lista apenas larguras que o master preenche (320/640/960/1200 para masters de 1200 px)
   - smoke de rasterização SVG por sharp (FR-006): master SVG válido gera variantes raster sem erro
   - asserção de que `marketing/` não é referenciado pelo manifesto nem contado em `budget.json` (G3)
+  - Tier D: fixtures sintéticos sob `tests/fixtures/` **não** recebem portão perceptual (SSIM/PSNR); apenas estrutural/byte/integridade (FR-007, remediação analyze C3)
   - (Confirmar que os testes em `tests/unit/build-images-gates.test.js` falham)
 
 - [ ] T015b [P] Atualizar os testes existentes afetados pelos novos portões (`tests/unit/delivery.test.js`, `tests/unit/integrity-media.test.js`, `tests/unit/media-generation.test.js`) para refletir sanitização SVG, digest de sidecar e Tier B, **sem relaxar asserções** nem alterar contratos (M3).
@@ -183,14 +184,14 @@ Nota de terminologia: headings em PT usam 'quadro'; identificadores, caminhos e 
 
 - [ ] T027a [US1] Adicionar `QUALITY_FLOORS` explícitos em `scripts/build-images.mjs` (standard AVIF≥30/WebP≥45/JPEG≥45; light AVIF≥20/WebP≥30/JPEG≥30) lançando erro nomeando o frame em vez de degradar silenciosamente (FR-012/FR-011; U1-migrated).
 - [ ] T027b [US1] Rejeitar masters sob `media-src/` com lado maior > 1200 px via throw `invalid-master-geometry` (detecção por raiz de caminho); masters sob `tests/fixtures/` aceitos até o teto rígido ≤ 2560 px; manter `withoutEnlargement` (FR-012).
-- [ ] T028 [US1] [ENTREGÁVEL DE AUTORIA HUMANA] Autorar os 4 quadros em `media-src/frames/frame-01.<ext>`…`frame-04.<ext>` (ext ∈ {svg,png,jpg} per FR-001; 1200×800, 3:2) com sidecars `media-src/frames/frame-0X.json` contendo `subject.digest.sha256` correto e bloco `review` com `decision: approve`. A validação agente cobre sidecars/trailers (T019/T029). **Tier A checklist (por master)**: dimensões exatas 1200×800; sem upscaling além do master; `review.notes` (no sidecar) e o commit documentam tamanho, formato, impressão qualitativa e verificação de paleta/intervalo tonal; `decision: approve`.
+- [ ] T028 [US1] [HUMAN] [ENTREGÁVEL DE AUTORIA HUMANA] Autorar os 4 quadros em `media-src/frames/frame-01.<ext>`…`frame-04.<ext>` (ext ∈ {svg,png,jpg} per FR-001; 1200×800, 3:2) com sidecars `media-src/frames/frame-0X.json` contendo `subject.digest.sha256` correto e bloco `review` com `decision: approve`. **Não executável por agente** — evidência verificada em T045 (sidecar `review.decision: approve` + trailers `Authored-With`/`Reviewed-By`). A validação agente cobre sidecars/trailers (T019/T029). **Tier A checklist (por master)**: dimensões exatas 1200×800; sem upscaling além do master; `review.notes` (no sidecar) e o commit documentam tamanho, formato, impressão qualitativa e verificação de paleta/intervalo tonal; `decision: approve`. (remediação analyze B2)
 - [ ] T028a [US1] Atualizar `src/data/story.json` conforme a regra F20 (staleness): atualizar `alt` e `description` no mesmo change que modifica a imagem; recomputar `durationMs` apenas se a permanência mínima mudar >10% ou cruzar o piso de 500 ms; validar com `npm run validate` (FR-007/FR-009).
 
 - [ ] T029 [US1] Registrar os trailers `Authored-With: vectorcraft-cli <versão>` e `Reviewed-By: <nome>` nos commits dos masters em `media-src/frames/`
 
 ### Deterministic Verification for User Story 1
 
-- [ ] T030 [US1] **Evidência determinística de comando (executada pelo Builder; atestação final em T045)**: Executar `npm run test:unit && npm run validate && npm run build:images && npm run build && npm run report` (sequência canônica de SC-001 é `validate && build:images && build`; `test:unit` e `report` são verificação suplementar e podem rodar antes/ depois) (I1)
+- [ ] T030 [US1] **Evidência determinística de comando (executada pelo Builder; atestação final em T045)**: Executar a sequência canônica `npm run validate && npm run build:images && npm run build`, mais `npm run test:unit` e `npm run report` como verificações suplementares (em comandos separados), conforme SC-001. (remediação analyze F2) (I1)
   - Critério objetivo de sucesso: 100% dos testes unitários passam; build exit 0; nenhum asset não referenciado; orçamentos respeitados; 4/4 quadros gerados; nenhum fixture sintético permanece em `media-src/frames/` (verificado por: diretório contém exatamente `frame-01..frame-04` com extensões aceitas e sidecars correspondentes; arquivos em `tests/fixtures/` permanecem intocados); cada sidecar `review.notes` documenta paleta/intervalo tonal via template (tamanho, formato, impressão qualitativa, paleta) (FR-007/FR-014).
   - Regra F20 aplicada ao `story.json` final (alt≠description, alt≤125 chars, description reproduz lettering, durationMs≥minMs, recomputação apenas >10% ou piso de 500 ms) — verificado por T022c.
 
@@ -208,8 +209,7 @@ Nota de terminologia: headings em PT usam 'quadro'; identificadores, caminhos e 
 
 ### Implementation & Verification Tasks for User Story 2
 
-- [ ] T031 [P] [US2] [GATE MANUAL] Documentação consolidada em T031a (não duplicar): referenciar `node --test tests/unit/artcraft-absence.test.js` e seus resultados; sem comando separado (FR-013 (g)/SC-005; U4).
-- [ ] T031a [P] [US2] Executar `node --test tests/unit/artcraft-absence.test.js` (redigido em **T022b**, portão TDD) e confirmar passagem; verificar ausência de binários ArtCraft em `git ls-files`, `PATH` e `node_modules` (fail-closed; SC-005/FR-013 (g)) (U1)
+- [ ] T031a [P] [US2] Executar `node --test tests/unit/artcraft-absence.test.js` (redigido em **T022b**, portão TDD) e confirmar passagem; verificar ausência de binários ArtCraft em `git ls-files`, `PATH` e `node_modules` (fail-closed; SC-005/FR-013 (g)) (U1). (T031 consolidado aqui — remediação analyze F4)
 
 - [ ] T032 [P] [US2] Verificar que `npm run ci` executa e passa sem a suíte ArtCraft instalada no PATH
 
@@ -351,6 +351,6 @@ flowchart TD
 1. **Passo 1 (Scaffold)**: Gerar contratos e stubs (T006–T011). Nenhuma escrita manual antes disso.
 2. **Passo 2 (TDD First)**: Agente de Testes redige todos os testes unitários, de integração e E2E (T012–T022). Executa as suítes e confirma o status **RED** (falhas esperadas).
 3. **Passo 3 (MVP Delivery - User Story 1)**: Agente de Implementação implementa os quatro módulos (T023–T026), integra em `build-images.mjs` (T027) e autoriza os 4 quadros (T028–T029). Executa T030 e valida o MVP.
-4. **Passo 4 (Continuity - User Story 2)**: Verifica ausência de dependências novas, `npm run ci` sem ArtCraft, orçamentos e DPR>1 (T031–T034). Executa T035.
+4. **Passo 4 (Continuity - User Story 2)**: Verifica ausência de dependências novas, `npm run ci` sem ArtCraft, orçamentos e DPR>1 (T031a–T034). Executa T035. (remediação analyze F4)
 5. **Passo 5 (Perfection - User Story 3)**: Implementa o validador de trailers (T036), o passo de CI (T037), a documentação (T038) e a verificação de licença (T039). Executa T040.
 6. **Passo 6 (Gate Check - Fase 7)**: Agente de Verificação roda o gate determinístico (`npm run test:unit`, `npm run build`, matriz Playwright, `npm run ci`). Apenas evidências com código de saída 0 validam o fechamento (T041–T045).
