@@ -141,3 +141,11 @@ package.json                  # Deps pinadas inalteradas; scripts npm opcionais 
 | CI step (trailers/review enforcement) | Step separado em ci.yml; não altera npm run ci nem o pipeline core. |
 | Atomic write pattern | Write-temp→rename no mesmo filesystem; sem dependências externas. |
 | OG/social image copy step (out of scope) | Nenhum passo de cópia de imagem OG/social é adicionado a `build.mjs` neste feature (T005b); se necessário no futuro, requer alteração explícita de `build.mjs` e atualização de `budget.json` (I2). |
+
+## Analyze Remediation Notes (2026-10-18)
+
+- **U1 (SVG allow-list)**: final vocabulary is validated in T011b against a real vectorcraft export; synthetic fallback is permitted only with the risk recorded as mandatory in T045 and revalidation on the first real export.
+- **U2 (trailer base SHA)**: the forward-only enforcement base is computed at implementation time via `git merge-base HEAD <default-branch>` and recorded in `docs/authoring.md` (section "Rastreabilidade"); pre-existing commits are grandfathered.
+- **U4 (atomic write scratch)**: `build/` is created with `mkdirSync(..., { recursive: true })` in `build-images.mjs` (T002 complement) so clean checkouts do not fail.
+- **D1 (clarifications)**: normative decisions remain authoritative in FR/SC; the clarification batches are retained for traceability only.
+- **A1/A3/A4/A5/A6/G1/G2/G3**: tracked as explicit blockers/gaps in T045 (see spec.md "External dependencies & tooling gaps").
