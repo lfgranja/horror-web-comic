@@ -352,30 +352,32 @@ flowchart TD
 
 ## FR/SC → Task Coverage
 
+Esta tabela é autoritativa. Menções inline em tasks devem refletir esta tabela.
+
 | Requirement | Task IDs |
 |---|---|
 | FR-001 | T003, T004, T028, T038, T039, T045 |
-| FR-002 | T007, T012, T023, T027 |
-| FR-003 | T015, T027, T030, T035, T044 |
+| FR-002 | T007, T011a, T012, T023, T027 |
+| FR-003 | T015, T027, T030, T033, T035, T044 |
 | FR-004 | T022b, T031a, T032, T039a |
 | FR-005 | T003, T039 |
 | FR-006 | T015 (smoke test) |
-| FR-007 | T009, T014, T020, T025, T038, T045 |
+| FR-007 | T009, T014, T015, T020, T025, T030, T038, T045 |
 | FR-008 | T006, T008, T013, T019, T022, T024, T029, T036 |
-| FR-009 | T021, T022c, T028a, T039a |
+| FR-009 | T021, T022c, T028a, T038a, T039a |
 | FR-010 | T039a |
 | FR-011 | T015, T027 |
 | FR-012 | T015, T027, T027b |
-| FR-013 | T007, T008, T009, T010, T011, T023, T024, T025, T026, T027, T036, T037 |
+| FR-013 | T007, T008, T009, T010, T011, T019, T022, T022b, T023, T024, T025, T026, T027, T031a, T036, T037, T040, T045 |
 | FR-014 | T028, T029, T045 |
 | SC-001 | T028, T030, T035, T044, T045 |
 | SC-002 | T033, T042 |
 | SC-003 | T032, T035, T044 |
 | SC-004 | T004, T038, T041 |
-| SC-005 | T022b, T031a |
+| SC-005 | T022b, T023, T031a |
 | SC-006 | T005a, T044a |
 | SC-007a | T014, T020, T025 |
-| SC-007b | T028, T038, T041, T045 |
+| SC-007b | T024, T028, T036, T038, T041, T045 |
 
 Infra/verification tasks not mapped to a single FR/SC: T001, T002, T005, T005a, T005b, T011a, T011b, T011c, T015b, T027a, T027b, T037a, T038a, T040, T040a, T041–T045 (by design — see mapping note).
 
