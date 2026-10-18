@@ -12,7 +12,7 @@
 
 ## Clarifications
 
-> Nota: as clarificações abaixo estão organizadas por sessão/lote para rastreabilidade. As decisões normativas consolidadas estão em FR-001…FR-014 e SC-001…SC-007b; em caso de conflito, prevalecem os FR/SC.
+> Nota: as clarificações abaixo estão organizadas por sessão/lote para rastreabilidade. As decisões normativas consolidadas estão em FR-001…FR-014 e SC-001…SC-007b; em caso de conflito, prevalecem os FR/SC. (Analyze remediation: batches retained for traceability; normative authority is FR/SC only — see also plan.md "Analyze Remediation Notes".)
 
 ### Session 2026-10-17 (assessment handoff)
 
@@ -241,6 +241,19 @@ Assumptions:
 - **sharp suporta SVG**: validado localmente (sharp lê SVG e produz PNG/AVIF/WebP/JPEG). Depende da presença de librsvg no host; a confirmar em CI se futuramente integrado (fora do escopo).
 - **ArtCraft instalado localmente**: o autor possui a suíte instalada; o repo não a distribui.
 - **Fixtures sintéticos de teste permanecem válidos**: os fixtures sob `tests/fixtures/` permanecem para regressão.
+
+### External dependencies & tooling gaps (tracked — analyze remediation)
+
+These are explicit, tracked blockers rather than silent passes. Each must be recorded in T045 with evidence or a justified gap:
+
+- **T028 (human authoring)**: the 4 frames are authored by a human; agent cannot produce masters. SC-001/FR-014 close only after sidecar `review.decision: approve` + `Authored-With`/`Reviewed-By` trailers exist (A2).
+- **T011b (SVG allow-list)**: validated against a real vectorcraft export when available; synthetic-fallback is allowed only with the risk recorded as mandatory in T045 and revalidation on first real export (A4/U1).
+- **T039 (license/ASSETS.md)**: manual verification of MIT option + no trademark redistribution, per app; fallback (unavailable `ASSETS.md`) recorded in `docs/authoring.md` and T045 (A3).
+- **T044a (Lighthouse/Chrome)**: SC-006 is attested only when Chrome is available; otherwise logged as a tracked blocker in T045 (A5).
+- **T044 (WebKit)**: not runnable on Fedora; WebKit gates are attested from CI logs on ubuntu (A6).
+- **T005a (baseline)**: budget/LCP baseline must be measured before integration; tool gaps logged in T045 (G1).
+- **T043 (local matrix)**: covers 3 of 5 projects locally; WebKit coverage attested from CI (G2).
+- **T040a (act)**: optional; if skipped, justification recorded in T045 (G3).
 ---
 
 ## Non-Goals *(fora de escopo)*
