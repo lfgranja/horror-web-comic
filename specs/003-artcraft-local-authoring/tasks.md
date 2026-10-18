@@ -24,7 +24,7 @@ description: "Task list for the Adoção Local de Ferramentas ArtCraft para Auto
 
 ## Format: `- [ ] [TaskID] [P?] [Story?] Description with file path`
 
-- **[TaskID]**: Identificador da tarefa (ex.: T007, T012a, T039b).
+- **[TaskID]**: Identificador da tarefa (ex.: T007, T005a, T039a).
 - **[P]**: Pode rodar em paralelo (arquivos diferentes, sem dependências concorrentes).
 - **[Story]**: Rótulo da história do usuário (`[US1]`, `[US2]`, `[US3]`). Tarefas de setup, scaffolds, TDD gate e polish/verificação geral não usam rótulo de história.
 - Caminhos de arquivo exatos fornecidos em todas as tarefas.
@@ -35,8 +35,10 @@ description: "Task list for the Adoção Local de Ferramentas ArtCraft para Auto
 
 **Purpose**: Infraestrutura estática, diretórios e validação de ferramentas para a feature `003-artcraft-local-authoring`.
 
+**Escopo**: Apenas `media-src/frames/`. A produção de masters de áudio (WAV) é follow-up fora deste feature (ver FR-001/Non-Goals).
+
 - [ ] T001 [P] Validar o baseline executando `npm run preflight && npm run validate && npm run test:unit && npm run build` a partir da raiz do repositório
-- [ ] T002 [P] Criar o diretório de scratch `build/` na raiz do repositório e registrá-lo em `.gitignore` (nunca em `assets/`, `dist/` ou `src/`)
+- [ ] T002 [P] Criar o diretório de scratch `build/` na raiz do repositório e verificar que está registrado em `.gitignore` (já presente) (nunca em `assets/`, `dist/` ou `src/`)
 - [ ] T003 [P] Criar o diretório `marketing/` na raiz (fora de `assets/` e de `media-src/frames|audio`) com um `README.md` explicando que não é processado por `build:images`/`build`/`validate` nem contado em `budget.json`
 - [ ] T004 [P] Criar o esqueleto de `docs/authoring.md` com as seções: fluxo de autoria, ferramentas, versão "testada-com", rastreabilidade (trailers + sidecar), licenciamento MIT e arte promocional
 - [ ] T005 [P] Adicionar o script `clean:assets` em `package.json` como passo de limpeza separado e documentado (não parte de `build:images`; opcional — não requerido por FR/SC, mas recomendado para manutenção)
@@ -120,12 +122,12 @@ description: "Task list for the Adoção Local de Ferramentas ArtCraft para Auto
 
 ### Testes End-to-End (Playwright)
 
-- [ ] T021 [P] [US2] Escrever teste E2E de cobertura DPR>1 em `tests/e2e/artcraft-dpr.spec.js`:
+- [ ] T021 [P] Escrever teste E2E de cobertura DPR>1 em `tests/e2e/artcraft-dpr.spec.js`:
   - emular `deviceScaleFactor: 2`; verificar que o `srcset` do manifesto não contém entradas mortas e que o quadro renderiza sem estado de imagem quebrada
   - critério mensurável: o candidato selecionado pelo navegador deve ter largura ≤ 1200 px (sem upscaling além do master); nenhum estado de imagem quebrada; `naturalWidth` do elemento ≤ `srcset` candidato selecionado
   - (Confirmar que o teste em `tests/e2e/artcraft-dpr.spec.js` falha)
 
-- [ ] T022 [P] [US3] Escrever teste de integração Node de enforcement de trailers/review em `tests/unit/artcraft-trailers.test.js`:
+- [ ] T022 [P] Escrever teste de integração Node de enforcement de trailers/review em `tests/unit/artcraft-trailers.test.js`:
   - commit que toca `media-src/` sem `Authored-With`, `Reviewed-By` ou bloco `review` → o validador lança (fail-closed)
   - commit com trailers completos + bloco `review` (`decision: approve`) → passa
   - (Confirmar que o teste em `tests/unit/artcraft-trailers.test.js` falha)
@@ -160,8 +162,8 @@ description: "Task list for the Adoção Local de Ferramentas ArtCraft para Auto
 
 ### Deterministic Verification for User Story 1
 
-- [ ] T030 [US1] **Verificação Determinística US1**: Executar `npm run test:unit && npm run validate && npm run build:images && npm run build && npm run report`
-  - Critério objetivo de sucesso: 100% dos testes unitários passam; build exit 0; nenhum asset não referenciado; orçamentos respeitados; 4/4 quadros gerados; nenhum fixture sintético permanece em `media-src/frames/` (verificado por ausência de arquivos sem sidecar correspondente).
+- [ ] T030 [US1] **Auto-checagem determinística do Builder (não atesta**; a atestação final é T045): Executar `npm run test:unit && npm run validate && npm run build:images && npm run build && npm run report`
+  - Critério objetivo de sucesso: 100% dos testes unitários passam; build exit 0; nenhum asset não referenciado; orçamentos respeitados; 4/4 quadros gerados; nenhum fixture sintético permanece em `media-src/frames/` (verificado por ausência de arquivos sem sidecar correspondente); cada sidecar `review.notes` documenta paleta/intervalo tonal (FR-007/FR-014).
 
 **Checkpoint**: User Story 1 funcional e verificada de forma determinística.
 
@@ -175,7 +177,7 @@ description: "Task list for the Adoção Local de Ferramentas ArtCraft para Auto
 
 > **Executor**: Agente de Implementação (Builder - distinto do autor dos testes).
 
-### Implementation Tasks for User Story 2
+### Implementation & Verification Tasks for User Story 2
 
 - [ ] T031 [P] [US2] Verificar que `package.json` não ganhou dependências novas (`git diff package.json` sem alterações em `dependencies`/`devDependencies`) e que nenhum binário ArtCraft foi adicionado (`git ls-files`)
 
@@ -187,7 +189,7 @@ description: "Task list for the Adoção Local de Ferramentas ArtCraft para Auto
 
 ### Deterministic Verification for User Story 2
 
-- [ ] T035 [US2] **Verificação Determinística US2**: Executar `npm run ci` completo (preflight, validate, test:unit, build:images, build, test:e2e, test:perf) e confirmar exit 0 sem regressão
+- [ ] T035 [US2] **Auto-checagem determinística do Builder (não atesta**; a atestação final é T045): Executar `npm run ci` completo (preflight, validate, test:unit, build:images, build, test:e2e, test:perf) e confirmar exit 0 sem regressão
   - Critério objetivo de sucesso: todos os portões passam; nenhum binário ArtCraft é invocado.
 
 **Checkpoint**: User Stories 1 e 2 funcionais e verificadas de forma determinística.
@@ -210,16 +212,16 @@ description: "Task list for the Adoção Local de Ferramentas ArtCraft para Auto
 
 - [ ] T038 [US3] Escrever `docs/authoring.md` com: fluxo passo-a-passo (criar no app → exportar → `media-src/` → pipeline → validar), ferramentas e versão "testada-com", rastreabilidade (trailers + sidecar), licenciamento MIT (preservar copyright/license; nunca redistribuir trademark) e arte promocional em `marketing/`
 
-- [ ] T039 [P] [US3] Verificar a licença MIT adotada e a ausência de redistribuição de trademark ArtCraft (revisar `docs/authoring.md` e `ASSETS.md` de assets embutidos)
+- [ ] T039 [P] [US3] Verificar a licença MIT adotada e a ausência de redistribuição de trademark ArtCraft (revisar `docs/authoring.md` e o `ASSETS.md` de **cada app ArtCraft** (assets embutidos; arquivo externo da suíte, não versionado aqui))
 
 - [ ] T039a [P] Verificar que os Non-Goals (FR-010) permanecem respeitados: nenhum binário ArtCraft no repo/CI, nenhum filmcraft/effectcraft no runtime, nenhum cambio de schema/player
 
 ### Deterministic Verification for User Story 3
 
-- [ ] T040 [US3] **Verificação Determinística US3**: Executar `node scripts/ci-trailers.mjs` contra fixtures (commit com trailers completos passa; commit sem trailers falha) e `npm run test:unit`
+- [ ] T040 [US3] **Auto-checagem determinística do Builder (não atesta**; a atestação final é T045): Executar `node scripts/ci-trailers.mjs` contra fixtures (commit com trailers completos passa; commit sem trailers falha) e `npm run test:unit`
   - Critério objetivo de sucesso: validador fail-closed comprovado; testes unitários passam.
 
-- [ ] T040a [P] Verificar o passo de CI com `act` (nektos/act) ou equivalente: simular um commit que toca `media-src/` sem trailers e confirmar que o step falha; simular um commit com trailers completos e confirmar que passa
+- [ ] T040a [P] Verificar o passo de CI com `act` (nektos/act) ou equivalente: **pré-requisito — instalar `nektos/act` previamente (comando documentado em `docs/authoring.md`)**. Simular um commit que toca `media-src/` sem trailers e confirmar que o step falha; simular um commit com trailers completos e confirmar que passa
 
 **Checkpoint**: Todas as histórias de usuário (US1, US2, US3) implementadas e verificadas.
 
@@ -238,7 +240,7 @@ description: "Task list for the Adoção Local de Ferramentas ArtCraft para Auto
 
 - [ ] T042 [P] Executar `npm run build` e auditar `budget.json` (initial scene, per-frame, total, compressed code) sem violações
 
-- [ ] T043 [P] Executar a matriz Playwright local: `npx playwright test tests/e2e/artcraft-*.spec.js tests/e2e/navigation.spec.js tests/e2e/audio.spec.js --project=mobile-chromium --project=desktop-chromium --project=desktop-firefox` e confirmar zero falhas
+- [ ] T043 [P] Executar a matriz Playwright local: `npx playwright test tests/e2e/artcraft-*.spec.js tests/e2e/navigation.spec.js tests/e2e/audio.spec.js tests/e2e/reduced-motion.spec.js --project=mobile-chromium --project=desktop-chromium --project=desktop-firefox` e confirmar zero falhas
 
 - [ ] T044 Executar a esteira completa `npm run ci` (preflight, validate, test:unit, build:images, build, test:e2e, test:perf) e confirmar exit 0
 
