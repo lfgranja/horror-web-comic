@@ -4,7 +4,7 @@
 
 **Created**: 2026-10-17
 
-**Status**: Draft
+**Status**: Ready for implementation (post-analyze remediation)
 
 **Input**: Assessment handoff from `.specify/assessments/artcraft-horror-comic-reform` (verdict: go): adotar a suíte ArtCraft como ferramentas de autoria **locais** (Option B) para produzir masters em `media-src/`, mantendo o pipeline de build, o player, o schema do manifesto e os orçamentos inalterados.
 
