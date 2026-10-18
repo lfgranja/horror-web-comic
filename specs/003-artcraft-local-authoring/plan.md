@@ -37,6 +37,7 @@ YAML parsing in the CI trailer step (T037) uses `js-yaml` when available (transi
 - Tier B invocation (native filters, no new dependency): `ffmpeg -i <variant> -i <ref.png> -lavfi "ssim=...,psnr=..." -f null -`; referência PNG lossless gerada por sharp sob `build/` (mesmo filesystem). Comparação por largura de entrega (nunca contra o master em tamanho nativo).
 - Quality floors: standard AVIF ≥ 30 / WebP ≥ 45 / JPEG ≥ 45; light AVIF ≥ 20 / WebP ≥ 30 / JPEG ≥ 30 (throw naming the frame) (fonte: FR-002 / FR-012).
 - Canvas: 1200×800 px (3:2); rigid ceiling ≤ 2560 px for any master (fonte: FR-002 / FR-012).
+- **G1 (LOW — resolved)**: SSIM/PSNR thresholds, quality floors e canvas/ceiling são fonte única em `scripts/delivery-fidelity.mjs` (Tier B) e FR-012 (geometria); plan.md, spec.md, tasks.md e data-model.md referenciam essas fontes sem duplicação de valor.
 
 **Storage**: Arquivo — `media-src/` (masters + sidecars), `assets/` (saída gerada), `build/` (scratch Tier B, git-ignored). Sem banco de dados.
 
