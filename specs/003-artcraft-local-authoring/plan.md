@@ -1,6 +1,6 @@
 # Implementation Plan: Adoção Local de Ferramentas ArtCraft para Autoria de Ativos
 
-**Branch**: `003-artcraft-local-authoring` | **Date**: 2026-10-17 | **Spec**: [spec.md](./spec.md)
+**Branch**: `003-artcraft-local-authoring` (feature dir) — working branch at analysis time: `feature/002-theme-switcher` | **Date**: 2026-10-17 | **Spec**: [spec.md](./spec.md)
 
 **Input**: Feature specification from `/specs/003-artcraft-local-authoring/spec.md`
 
@@ -12,7 +12,7 @@ Adotar a suíte ArtCraft (vectorcraft, photocraft, designcraft e outros válidos
 
 **Language/Version**: JavaScript (ES2022), Node.js ≥20
 
-**Primary Dependencies**: sharp (pinned), ffmpeg/ffprobe (system, ≥5), esbuild (pinned). **Nenhuma dependência nova** (FR-004/SC-005): sidecar digest via `crypto` (Node builtin), Tier B via filtros `ssim`/`psnr` nativos do ffmpeg. **Dependência de host**: `librsvg` é necessária para rasterização SVG por sharp (pré-requisito de host, não dependência de repo; ver U2/CC2 e T037a). Detecção no preflight: `pkg-config --exists librsvg-2.0` (fallback: probe de decode SVG via sharp). A sanitização SVG (allow-list/reject-list sobre o vocabulário vectorcraft; librsvg/sharp rasterizam) **exige um parser XML real ou um tokenizer fail-closed verificável** — regex-only é inaceitável (mXSS/parser disagreement). **Decisão (C1)**: o tokenizer fail-closed é implementado em JavaScript puro (sem nova dependência); se isso se provar inviável, a exceção de segurança deverá ser aprovada explicitamente via emenda à constituição (Princípio II) e T022b/SC-005 atualizados antes da implementação. (remediação analyze F4) Nenhuma dependência nova entra em `package.json` neste feature.
+**Primary Dependencies**: sharp (pinned), ffmpeg/ffprobe (system, ≥5), esbuild (pinned). **Nenhuma dependência nova** (FR-004/SC-005): sidecar digest via `crypto` (Node builtin), Tier B via filtros `ssim`/`psnr` nativos do ffmpeg. Schema validation (sidecar): hand-rolled, zero-dependency subset validator reusing `contracts/sidecar.schema.json`; no new entry in `package.json` (Principle II / FR-004 / SC-005). **Dependência de host**: `librsvg` é necessária para rasterização SVG por sharp (pré-requisito de host, não dependência de repo; ver U2/CC2 e T037a). Detecção no preflight: `pkg-config --exists librsvg-2.0` (fallback: probe de decode SVG via sharp). A sanitização SVG (allow-list/reject-list sobre o vocabulário vectorcraft; librsvg/sharp rasterizam) **exige um parser XML real ou um tokenizer fail-closed verificável** — regex-only é inaceitável (mXSS/parser disagreement). **Decisão (C1)**: o tokenizer fail-closed é implementado em JavaScript puro (sem nova dependência); se isso se provar inviável, a exceção de segurança deverá ser aprovada explicitamente via emenda à constituição (Princípio II) e T022b/SC-005 atualizados antes da implementação. (remediação analyze F4) Nenhuma dependência nova entra em `package.json` neste feature.
 
 **SVG allow-list (vocabulário mínimo vectorcraft — fail-closed)**: O gate FR-002 é fail-closed sobre o seguinte vocabulário. Qualquer elemento/atributo fora desta lista é rejeitado.
 
@@ -113,7 +113,7 @@ build/                        # Scratch Tier B (git-ignored, NUNCA em assets/)
 docs/
 ├── delivery.md               # Contrato de saída (inalterado)
 ├── authoring.md              # NOVO: fluxo de autoria ArtCraft
-├── authoring-accessibility.md # Companheiro: regra F20 de alt/description/durationMs (existente, remediação analyze F3)
+├── authoring-accessibility.md # Companheiro: regra F20 de alt/description/durationMs (existente, remediação analyze F3) (maintained separately; out of scope of this feature's task list)
 └── image-quality-assessment.md  # Referência de qualidade (existe)
 
 marketing/                    # NOVO: arte promocional (designcraft), fora do pipeline
