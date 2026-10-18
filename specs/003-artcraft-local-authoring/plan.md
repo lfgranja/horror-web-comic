@@ -28,7 +28,7 @@ Adotar a suíte ArtCraft (vectorcraft, photocraft, designcraft e outros válidos
 
 **Storage**: Arquivo — `media-src/` (masters + sidecars), `assets/` (saída gerada), `build/` (scratch Tier B, git-ignored). Sem banco de dados.
 
-**Testing**: Node native test runner (`node --test tests/unit/*.test.js`), Playwright e2e/perf (5 projetos; + cobertura DPR>1 via `tests/e2e/artcraft-dpr.spec.js` para verificar nitidez por upscaling). Testes unitários/integração cobrem os arquivos existentes (`delivery.test.js`, `integrity-media.test.js`, `media-generation.test.js`) e os novos gates da feature (`svg-sanitize.test.js`, `sidecar.test.js`, `delivery-fidelity.test.js`, `build-images-gates.test.js`, `atomic-write.test.js`, `artcraft-authoring.test.js`, `artcraft-svg-gate.test.js`, `artcraft-sidecar.test.js`, `artcraft-fidelity.test.js`, `artcraft-trailers.test.js`) — 10 arquivos Node + 1 spec E2E.
+**Testing**: Node native test runner (`node --test tests/unit/*.test.js`), Playwright e2e/perf (5 projetos; + cobertura DPR>1 via `tests/e2e/artcraft-dpr.spec.js` para verificar nitidez por upscaling). Testes unitários/integração cobrem os arquivos existentes (`delivery.test.js`, `integrity-media.test.js`, `media-generation.test.js`) e os novos gates da feature (`svg-sanitize.test.js`, `sidecar.test.js`, `delivery-fidelity.test.js`, `build-images-gates.test.js`, `atomic-write.test.js`, `artcraft-authoring.test.js`, `artcraft-svg-gate.test.js`, `artcraft-sidecar.test.js`, `artcraft-fidelity.test.js`, `artcraft-trailers.test.js`, `artcraft-absence.test.js`) + helper `property-helpers.mjs` — 11 arquivos Node + 1 spec E2E (U2).
 
 **Target Platform**: Linux (CI ubuntu-latest), macOS (manutenção local). Fedora: webkit não roda localmente (CI-enforced).
 
@@ -137,3 +137,4 @@ package.json                  # Deps pinadas inalteradas
 | 5 new scripts modules | Invoked by existing build-images.mjs; sem dependências novas (sharp, ffmpeg, crypto builtin). |
 | CI step (trailers/review enforcement) | Step separado em ci.yml; não altera npm run ci nem o pipeline core. |
 | Atomic write pattern | Write-temp→rename no mesmo filesystem; sem dependências externas. |
+| OG/social image copy step (out of scope) | Nenhum passo de cópia de imagem OG/social é adicionado a `build.mjs` neste feature (T005b); se necessário no futuro, requer alteração explícita de `build.mjs` e atualização de `budget.json` (I2). |
