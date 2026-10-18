@@ -16,7 +16,7 @@
 - [x] CHK001 — Is the "output contract unchanged" constraint explicitly defined (formats, srcset widths, `-light-*` naming, `budget.json`)? [Clarity, Spec §FR-003]
 - [x] CHK002 — Is the redefinition of FR-003 explicitly documented (from "scripts unchanged" to "output contract unchanged")? [Clarity, Spec §FR-003]
 - [x] CHK003 — Are the specific output formats explicitly preserved: AVIF/WebP/JPEG for frames, AAC/Opus for audio? [Completeness, Spec §FR-003]
-- [x] CHK004 — Is the srcset width ladder explicitly preserved (320, 640, 960, 1200, 1920, 2560)? [Completeness, Spec §FR-003]
+- [x] CHK004 — Is the srcset width ladder explicitly preserved (generator `STANDARD_WIDTHS` = 320/640/960/1200/1920/2560; the manifest lists only the widths the master can fill — 320/640/960/1200 for 1200 px masters)? [Completeness, Spec §FR-003]
   - **Resolved (2026-10-17, batch 9)**: the ladder is the frozen code constant `STANDARD_WIDTHS` (`scripts/build-images.mjs:14`); the manifest srcset lists only widths the master can fill (320–1200 for 1200 px masters). FR-003 now states this explicitly.
 - [x] CHK005 — Is the `-light-*` variant naming convention explicitly preserved? [Completeness, Spec §FR-003]
 - [x] CHK006 — Is `budget.json` explicitly stated as frozen/unchanged? [Clarity, Spec §FR-003]
@@ -109,7 +109,7 @@
 ## Audio Authoring Scope
 
 - [x] CHK055 — Is the audio master format explicitly specified as WAV from any stable DAW? [Clarity, Spec §FR-001]
-- [x] CHK056 — Is the audio pipeline explicitly stated as unchanged (ffmpeg → AAC/Opus, same bitrates)? [Completeness, Spec §FR-009]
+- [x] CHK056 — (coberto por CHK020 — mesmo critério) Is the audio pipeline explicitly stated as unchanged (ffmpeg → AAC/Opus, same bitrates)? [Completeness, Spec §FR-009]
 - [x] CHK057 — Is the loudness normalization explicitly deferred to planning as a documented authoring target, not a build gate? [Clarity, Spec §Assumptions]
 - [x] CHK058 — Is the true-peak hard-fail behavior explicitly specified (pipeline hard-fails only on true-peak exceedance/clipping)? [Completeness, Spec §Assumptions]
 
