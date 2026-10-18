@@ -206,8 +206,7 @@ Nota de terminologia: headings em PT usam 'quadro'; identificadores, caminhos e 
 
 ### Implementation & Verification Tasks for User Story 2
 
-- [ ] T031 [P] [US2] [GATE MANUAL] Documentar o comando de verificação de ausência de dependências/binários ArtCraft (documentação; a execução determinística fica em T031a); a verificação determinística efetiva fica em T031a (`node --test tests/unit/artcraft-absence.test.js`), que cobre `git ls-files`, `PATH` e `node_modules` (FR-013 (g)/SC-005; U4).
-
+- [ ] T031 [P] [US2] [GATE MANUAL] Documentar o comando de verificação de ausência de dependências/binários ArtCraft (documentação; a execução determinística fica em T031a: `node --test tests/unit/artcraft-absence.test.js`), que cobre `git ls-files`, `PATH` e `node_modules` (FR-013 (g)/SC-005; U4).
 - [ ] T031a [P] [US2] Executar `node --test tests/unit/artcraft-absence.test.js` (redigido em **T022b**, portão TDD) e confirmar passagem; verificar ausência de binários ArtCraft em `git ls-files`, `PATH` e `node_modules` (fail-closed; SC-005/FR-013 (g)) (U1)
 
 - [ ] T032 [P] [US2] Verificar que `npm run ci` executa e passa sem a suíte ArtCraft instalada no PATH
