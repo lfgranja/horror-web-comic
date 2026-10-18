@@ -166,7 +166,7 @@ Para que a produção de arte seja reproduzível e auditável, mesmo sem integra
 - **gate** — build-time gate (gate de sanitização SVG, gate Tier B, gates de release);
 - **piso** — quality floor (piso de qualidade explícito do codificador);
 - **contrato de saída** — output contract (FR-003);
-- **master** — ativo autoral (authored asset).
+- **master** — ativo autoral (authored asset). Nota (remediação E1): o termo também aparece para fixtures sintéticos de teste, mas esses não são "masters autorais" no sentido de FR-014; a distinção é feita pela localização (`media-src/frames/` = autoral; `tests/fixtures/` = sintético/regressão).
 - **SC-018** (externo — ver tests/perf/zz-ci-budgets.spec.js) — critério de performance pré-existente/externo (transição 120 ms fixture / 700 ms produção), definido em `tests/perf/zz-ci-budgets.spec.js`; não é definido por esta feature.
 
 ## Functional Requirements *(mandatory)*
