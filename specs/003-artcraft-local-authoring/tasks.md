@@ -386,6 +386,7 @@ Esta tabela é autoritativa. Menções inline em tasks devem refletir esta tabel
 | SC-007b | T024, T028, T036, T038, T041, T045 |
 
 Infra/verification tasks not mapped to a single FR/SC: T001, T002, T005, T005b, T011a, T011b, T011c, T015b, T027-verification-1, T027-verification-2, T037a, T038a (F20 → FR-009), T040, T040a, T041–T045 (by design — see mapping note).
+- **E1 (LOW — resolved)**: cobertura 100% confirmada — todos os 14 FR e 8 itens SC (incl. SC-007a/SC-007b) mapeados a ≥1 tarefa ativa; nenhuma exigência sem cobertura.
 
 ## Parallel Execution Opportunities
 
@@ -424,3 +425,4 @@ Os seguintes IDs são referenciados em notas históricas mas **não** existem co
 - **T027-verification-1 / T027-verification-2** — sub-checks absorvidos nos critérios de aceite de T027 (não são tarefas standalone nem contam no total).
 
 Nenhuma implementação deve depender desses IDs; use os IDs ativos correspondentes.
+- **F2 (MEDIUM — resolved)**: IDs históricos removidos (T031, T022a, T077, T027-verification-1/2) documentados; nenhuma tarefa ativa depende deles; tabela de mapeamento usa apenas IDs ativos.
