@@ -44,7 +44,7 @@ Nota de terminologia: headings em PT usam 'quadro'; identificadores, caminhos e 
 - [ ] T001 [P] Validar o baseline executando `npm run preflight && npm run validate && npm run test:unit && npm run build:images && npm run build` a partir da raiz do repositório (escopo do baseline: portões de build/unit; e2e/perf ficam para T043/T044)
 - [ ] T002 [P] Criar o diretório de scratch `build/` na raiz do repositório e verificar que está registrado em `.gitignore` (já presente; nunca em `assets/`, `dist/` ou `src/`)
 - [ ] T003 [P] Criar o diretório `marketing/` na raiz (fora de `assets/` e de `media-src/frames|audio`) com um `README.md` explicando que não é processado por `build:images`/`build`/`validate` nem contado em `budget.json`. A verificação de licença MIT/trademark é consolidada em T039 (não duplicar aqui) (FR-005/FR-001)
-- [ ] T004 [P] Criar o esqueleto de `docs/authoring.md` com as seções: fluxo de autoria, ferramentas, versão "testada-com", rastreabilidade (trailers + sidecar), licenciamento MIT e arte promocional
+- [ ] T004 [P] Criar o esqueleto de `docs/authoring.md` com as seções: fluxo de autoria, ferramentas, versão "testada-com", rastreabilidade (trailers + sidecar), licenciamento MIT, arte promocional, **Baseline (pre-integration)** (reservado para os valores de T005a/T005b)
 - [ ] T005 [P] [OPCIONAL] Adicionar o script `clean:assets` em `package.json` como passo de limpeza separado e documentado (não parte de `build:images`; não requerido por FR/SC — manutenção opcional; pode ser omitido sem impacto) (já opcional; nenhum FR/SC depende deste script).
 
 - [ ] T005a [P] Medir e registrar o baseline atual de orçamento (frame mais pesado e total) e LCP antes da integração, usando `npm run report` e Lighthouse; registrar os valores em `docs/authoring.md`
@@ -111,6 +111,7 @@ Nota de terminologia: headings em PT usam 'quadro'; identificadores, caminhos e 
   - pisos de qualidade: standard AVIF ≥30/WebP ≥45/JPEG ≥45 e light AVIF ≥20/WebP ≥30/JPEG ≥30 lançam erro nomeando o frame
   - srcset do manifesto lista apenas larguras que o master preenche (320/640/960/1200 para masters de 1200 px)
   - smoke de rasterização SVG por sharp (FR-006): master SVG válido gera variantes raster sem erro
+  - asserção de que `marketing/` não é referenciado pelo manifesto nem contado em `budget.json` (G3)
   - (Confirmar que os testes em `tests/unit/build-images-gates.test.js` falham)
 
 - [ ] T015b [P] Atualizar os testes existentes afetados pelos novos portões (`tests/unit/delivery.test.js`, `tests/unit/integrity-media.test.js`, `tests/unit/media-generation.test.js`) para refletir sanitização SVG, digest de sidecar e Tier B, **sem relaxar asserções** nem alterar contratos (M3).
@@ -212,7 +213,7 @@ Nota de terminologia: headings em PT usam 'quadro'; identificadores, caminhos e 
 
 - [ ] T032 [P] [US2] Verificar que `npm run ci` executa e passa sem a suíte ArtCraft instalada no PATH
 
-- [ ] T033 [P] [US2] Verificar orçamentos via `npm run report`: por frame ≤ 300 000 B (soma do maior AVIF + maior WebP + maior JPEG) e total ≤ 30 000 000 B; asserção de que `marketing/` não é referenciado pelo manifesto nem contado em `budget.json` (G3). Incluir asserção automatizada em `tests/unit/build-images-gates.test.js` (arquivo único, não criar teste dedicado) verificando que `marketing/` não é referenciado pelo manifesto nem contado em `budget.json`.
+- [ ] T033 [P] [US2] Verificar orçamentos via `npm run report`: por frame ≤ 300 000 B (soma do maior AVIF + maior WebP + maior JPEG) e total ≤ 30 000 000 B. A asserção de que `marketing/` não é referenciado pelo manifesto nem contado em `budget.json` (G3) já vive em `tests/unit/build-images-gates.test.js` (T015) — apenas reexecutar/confirmar passagem, sem nova edição de teste.
 - [ ] T034 [P] [US2] Verificar a cobertura DPR>1 executando `npx playwright test tests/e2e/artcraft-dpr.spec.js --project=desktop-chromium`
 
 ### Deterministic Verification for User Story 2
@@ -236,7 +237,7 @@ Nota de terminologia: headings em PT usam 'quadro'; identificadores, caminhos e 
 
 - [ ] T036 [P] [US3] Implementar `scripts/ci-trailers.mjs` conforme o contrato do stub (validação fail-closed de trailers `Authored-With`/`Reviewed-By` e do bloco `review` com `decision: approve` para commits que tocam `media-src/`; detecção de sidecar órfão delegada ao build gate `build:images` — não revalidar aqui; forward-only; `fetch-depth: 0`)
 
-- [ ] T037 [US3] Modificar o step de checkout do job **`gate`** em `.github/workflows/ci.yml` para `fetch-depth: 0` (os jobs `webkit-layout-gate` e `macos-webkit-compositor` permanecem em depth 1) e adicionar, nesse mesmo job, o passo executando `node scripts/ci-trailers.mjs` (nunca em `npm run ci`); validar o YAML resultante com `actionlint` (pinado no workflow ou `go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.7`) ou, na ausência, parser YAML Node (`js-yaml`) como fallback documentado em `docs/authoring.md` (U5). `actionlint` não é adicionado a `package.json` (sem nova dependência). **Nota (M8)**: PRs que tocam `media-src/` sem sidecar (ou sem `review.decision: approve`) falham no CI (fail-closed) — comportamento intencional; build isolado permanece no-op quando o sidecar está ausente.
+- [ ] T037 [US3] Modificar o step de checkout do job **`gate`** em `.github/workflows/ci.yml` para `fetch-depth: 0` (os jobs `webkit-layout-gate` e `macos-webkit-compositor` permanecem em depth 1) e adicionar, nesse mesmo job, o passo executando `node scripts/ci-trailers.mjs` (nunca em `npm run ci`); validar o YAML resultante com `actionlint` (pinado no workflow ou `go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.7`) ou, na ausência (estado atual do repo), parser YAML Node (`js-yaml`, já presente transitivamente) como fallback padrão documentado em `docs/authoring.md` (U5). `actionlint` não é adicionado a `package.json` (sem nova dependência). **Nota (M8)**: PRs que tocam `media-src/` sem sidecar (ou sem `review.decision: approve`) falham no CI (fail-closed) — comportamento intencional; build isolado permanece no-op quando o sidecar está ausente.
 
 - [ ] T037a [P] [US3] [GATE MANUAL] Verificar pré-requisito de host `librsvg` (necessário para rasterização SVG por sharp): documentar em `docs/authoring.md` (T038) e adicionar verificação obrigatória ao preflight via `pkg-config --exists librsvg-2.0` (fallback: probe de decode SVG via sharp) (U2/CC2)
 - [ ] T038 [US3] Escrever `docs/authoring.md` com: fluxo passo-a-passo (criar no app → exportar → `media-src/` → pipeline → validar), ferramentas e versão "testada-com" (resultante de T011b/T039, com data de validação), rastreabilidade (trailers + sidecar), licenciamento MIT (preservar copyright/license; nunca redistribuir trademark), pré-requisito de host `librsvg` (T037a), arte promocional em `marketing/`, pré-requisito opcional `nektos/act` para simulação do passo de CI (T040a), baseline Lighthouse (T005a) e seção "Autoria de áudio (documentada; follow-up)" descrevendo masters WAV de qualquer DAW estável, alvo −14/−16 LUFS, true peak ≤ −1 dBTP (A4). Dependências: T011b (vocabulário/versão testada-com) e T039 (licença/ASSETS.md); registrar resultados antes de fechar.
@@ -271,16 +272,18 @@ Nota de terminologia: headings em PT usam 'quadro'; identificadores, caminhos e 
 
 - [ ] T044 Executar a esteira completa `npm run ci` (preflight, validate, test:unit, build:images, build, test:e2e, test:perf) e confirmar exit 0
 
-- [ ] T044a [P] Executar `npm run lhci` (Lighthouse CI) e confirmar perf ≥ 0,9, a11y ≥ 0,95, CLS < 0,1, LCP ≤ 2500 ms sem regressão (SC-006)
+- [ ] T044a [P] Executar `npm run lhci` (Lighthouse CI) e confirmar perf ≥ 0,9, a11y ≥ 0,95, CLS < 0,1, LCP ≤ 2500 ms sem regressão (SC-006). Pré-requisito: Chrome/Chromium disponível (via `CHROME_PATH` ou instalação local); se indisponível, registrar a lacuna em T045 (não silenciar).
 
 - [ ] T045 **Atestação Final de Sucesso**: Registrar relatório determinístico de fechamento contendo:
   - Status de aprovação de todos os portões (unit, build, e2e matrix, ci completo)
   - Orçamentos medidos (per-frame e total) vs `budget.json` e vs baseline registrado em T005a
   - Confirmação de 4/4 quadros autorais e ausência de fixtures sintéticos publicados (verificação mecânica: cada `media-src/frames/frame-0X.<ext>` possui sidecar com `review.decision: approve` e commit correspondente com trailers `Authored-With`/`Reviewed-By`; U8)
+  - Evidência Tier A por master (A2): commit diff do master + sidecar, notas lado-a-lado (tamanho, formato, impressão qualitativa, paleta/intervalo tonal) e `review.decision: approve` — auto-revisão aceitável para mantenedor único, mas a evidência deve ser registrada, não apenas o booleano
   - Confirmação de ausência de binários ArtCraft (PATH/node_modules/git ls-files) (FR-013 (g)) — automatizada por T031a
   - Confirmação de revisão Tier A (SC-007b) por master: sidecar `review` com `decision: approve` + trailer `Reviewed-By` (CG3)
   - Registro **obrigatório** da exceção documentada warn-only light vs Princípio IV, com justificativa (CC1) — ausência reprova o fechamento
   - Confirmação de pré-requisito de host `librsvg` (U2/CC2)
+  - Registro de qualquer lacuna de ferramenta (Chrome para T044a, actionlint para T037) com justificativa
   - Impedir encerramento sem os logs comprobatórios de execução
 
 ---
