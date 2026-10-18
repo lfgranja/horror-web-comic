@@ -42,3 +42,17 @@ export const ALLOWED_SVG_ELEMENTS = Object.freeze([
   'line', 'polyline', 'polygon', 'text', 'tspan', 'use', 'linearGradient',
   'radialGradient', 'stop', 'clipPath', 'mask', 'pattern', 'symbol'
 ]);
+
+// Attribute allow-list (mirror of plan.md "SVG allow-list" vocabulary). Single
+// source for T012/T023; keep in sync with plan.md (remediation C2).
+export const ALLOWED_SVG_ATTRIBUTES = Object.freeze([
+  'id', 'class', 'd', 'x', 'y', 'x1', 'y1', 'x2', 'y2', 'cx', 'cy', 'r',
+  'rx', 'ry', 'width', 'height', 'points', 'transform', 'transform-origin',
+  'fill', 'fill-opacity', 'fill-rule', 'stroke', 'stroke-width', 'stroke-opacity',
+  'stroke-linecap', 'stroke-linejoin', 'stroke-dasharray', 'stroke-dashoffset',
+  'stroke-miterlimit', 'opacity', 'viewBox', 'preserveAspectRatio', 'xmlns',
+  'xmlns:xlink', 'font-family', 'font-size', 'font-weight', 'font-style',
+  'text-anchor', 'dominant-baseline', 'letter-spacing', 'gradientUnits',
+  'gradientTransform', 'offset', 'stop-color', 'stop-opacity', 'clip-path',
+  'mask', 'patternUnits', 'patternTransform', 'href', 'xlink:href'
+]);
