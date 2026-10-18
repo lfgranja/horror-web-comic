@@ -29,7 +29,7 @@ Adotar a suíte ArtCraft (vectorcraft, photocraft, designcraft e outros válidos
 
 **Storage**: Arquivo — `media-src/` (masters + sidecars), `assets/` (saída gerada), `build/` (scratch Tier B, git-ignored). Sem banco de dados.
 
-**Testing**: Node native test runner (`node --test tests/unit/*.test.js`), Playwright e2e/perf (5 projetos; + cobertura DPR>1 via `tests/e2e/artcraft-dpr.spec.js` para verificar nitidez por upscaling). Testes Node (sob `tests/unit/`, rodados pelo runner nativo) cobrem os arquivos existentes (`delivery.test.js`, `integrity-media.test.js`, `media-generation.test.js`) e os novos gates da feature (`svg-sanitize.test.js`, `sidecar.test.js`, `delivery-fidelity.test.js`, `build-images-gates.test.js`, `atomic-write.test.js` — unitários puros; `artcraft-authoring.test.js`, `artcraft-svg-gate.test.js`, `artcraft-sidecar.test.js`, `artcraft-fidelity.test.js`, `artcraft-trailers.test.js`, `artcraft-absence.test.js`, `story-metadata.test.js` — integração via diretório temporário) + helper `property-helpers.mjs` — 12 arquivos Node de gate + 1 spec E2E (U2). `artcraft-*` com sufixo `-gate`/`-sidecar`/`-fidelity` são testes de integração do fluxo de build, não unitários puros, embora residam em `tests/unit/`.
+**Testing**: Node native test runner (`node --test tests/unit/*.test.js`), Playwright e2e/perf (5 projetos; + cobertura DPR>1 via `tests/e2e/artcraft-dpr.spec.js` para verificar nitidez por upscaling). Testes Node (sob `tests/unit/`, rodados pelo runner nativo) cobrem os arquivos existentes (`delivery.test.js`, `integrity-media.test.js`, `media-generation.test.js`) e os novos gates da feature (`svg-sanitize.test.js`, `sidecar.test.js`, `delivery-fidelity.test.js`, `build-images-gates.test.js`, `atomic-write.test.js` — unitários puros; `artcraft-authoring.test.js`, `artcraft-svg-gate.test.js`, `artcraft-sidecar.test.js`, `artcraft-fidelity.test.js`, `artcraft-trailers.test.js`, `artcraft-absence.test.js`, `story-metadata.test.js` — integração via diretório temporário) + helper `property-helpers.mjs` — 12 arquivos Node de gate novos (+ 3 pre-existentes atualizados: delivery.test.js, integrity-media.test.js, media-generation.test.js) + 1 spec E2E (U2). `artcraft-*` com sufixo `-gate`/`-sidecar`/`-fidelity` são testes de integração do fluxo de build, não unitários puros, embora residam em `tests/unit/`.
 
 **Target Platform**: Linux (CI ubuntu-latest), macOS (manutenção local). Fedora: webkit não roda localmente (CI-enforced).
 
@@ -113,7 +113,7 @@ build/                        # Scratch Tier B (git-ignored, NUNCA em assets/)
 docs/
 ├── delivery.md               # Contrato de saída (inalterado)
 ├── authoring.md              # NOVO: fluxo de autoria ArtCraft
-├── authoring-accessibility.md # Companheiro: regra F20 de alt/description/durationMs (existente, remediação analyze F3) (maintained separately; out of scope of this feature's task list)
+├── authoring-accessibility.md # Companheiro: regra F20 de alt/description/durationMs (criado durante remediação analyze F3, não rastreado; mantido separadamente; fora do escopo da task list desta feature)
 └── image-quality-assessment.md  # Referência de qualidade (existe)
 
 marketing/                    # NOVO: arte promocional (designcraft), fora do pipeline

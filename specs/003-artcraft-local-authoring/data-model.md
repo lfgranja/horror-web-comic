@@ -22,7 +22,7 @@ A master file in `media-src/frames/` or `media-src/audio/` produced by an ArtCra
 
 ### Validation Rules
 
-- **Geometry**: **Authored masters**: larger side > 1200 px → `invalid-master-geometry` throw (fail-fast). **Rigid pipeline ceiling for any master (including fixtures/test masters)**: larger side > 2560 px → `invalid-master-geometry` throw (FR-002). The 2560 px ceiling is therefore the guard for fixture/test masters, while authored masters already fail-fast at 1200 px. No upscaling (`withoutEnlargement: true`).
+- **Geometry**: **Authored masters**: larger side > 1200 px → `invalid-master-geometry` throw (fail-fast). **Rigid pipeline ceiling for any master (including fixtures/test masters)**: larger side > 2560 px → `exceeds-pipeline-ceiling` throw (FR-002). The 2560 px ceiling is therefore the guard for fixture/test masters, while authored masters already fail-fast at 1200 px. No upscaling (`withoutEnlargement: true`).
 - **Format**: frames accept `svg|png|jpg`; audio accepts `wav`. No other formats.
 - **SVG content**: must pass sanitization gate (reject-list floor + allow-list over the minimal vectorcraft vocabulary defined in `plan.md`) before rasterization. Internal `url(#…)` allowed. **DoS caps (measurable)**: ver constante `SVG_DOS_CAPS` em `scripts/svg-sanitize.mjs` — violation → throw.
 - **References**: manifest/sidecar references use `isSafeLocalReference` (a file-path rule; it rejects `#`). SVG URL attributes (`href`, `xlink:href`, `url(...)`) have a **separate** rule: allow fragment-only `#…`; reject absolute, protocol-relative, relative-path, and `data:`.
@@ -209,7 +209,7 @@ AuthoringWorkflow 1 ──── requires ────► TierAReview (for maste
 | Constraint | Value | Enforced by |
 |:---|:---|:---|
 | Canvas (authoring target) | 1200×800 px (3:2) | `invalid-master-geometry` throw |
-| Rigid ceiling (any master) | ≤ 2560 px larger side | `invalid-master-geometry` throw |
+| Rigid ceiling (any master) | ≤ 2560 px larger side | `exceeds-pipeline-ceiling` throw |
 | Per-frame budget | ≤ 300 000 B (sum of largest AVIF+WebP+JPEG) | `build.mjs` budget check |
 | Total assets | ≤ 30 000 000 B | `build.mjs` budget check |
 | Quality floor (standard) | AVIF ≥30 / WebP ≥45 / JPEG ≥45 | `encodeImage` throw naming frame |
