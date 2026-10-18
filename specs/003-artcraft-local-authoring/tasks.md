@@ -38,7 +38,7 @@ description: "Task list for the Adoção Local de Ferramentas ArtCraft para Auto
 **Escopo**: Apenas `media-src/frames/`. A produção de masters de áudio (WAV) é follow-up fora deste feature (ver FR-001/Non-Goals).
 
 - [ ] T001 [P] Validar o baseline executando `npm run preflight && npm run validate && npm run test:unit && npm run build` a partir da raiz do repositório
-- [ ] T002 [P] Criar o diretório de scratch `build/` na raiz do repositório e verificar que está registrado em `.gitignore` (já presente) (nunca em `assets/`, `dist/` ou `src/`)
+- [ ] T002 [P] Criar o diretório de scratch `build/` na raiz do repositório e verificar que está registrado em `.gitignore` (já presente; nunca em `assets/`, `dist/` ou `src/`)
 - [ ] T003 [P] Criar o diretório `marketing/` na raiz (fora de `assets/` e de `media-src/frames|audio`) com um `README.md` explicando que não é processado por `build:images`/`build`/`validate` nem contado em `budget.json`
 - [ ] T004 [P] Criar o esqueleto de `docs/authoring.md` com as seções: fluxo de autoria, ferramentas, versão "testada-com", rastreabilidade (trailers + sidecar), licenciamento MIT e arte promocional
 - [ ] T005 [P] Adicionar o script `clean:assets` em `package.json` como passo de limpeza separado e documentado (não parte de `build:images`; opcional — não requerido por FR/SC, mas recomendado para manutenção)
@@ -162,7 +162,7 @@ description: "Task list for the Adoção Local de Ferramentas ArtCraft para Auto
 
 ### Deterministic Verification for User Story 1
 
-- [ ] T030 [US1] **Auto-checagem determinística do Builder (não atesta**; a atestação final é T045): Executar `npm run test:unit && npm run validate && npm run build:images && npm run build && npm run report`
+- [ ] T030 [US1] **Auto-checagem determinística do Builder — não atesta**; a atestação final é T045: Executar `npm run test:unit && npm run validate && npm run build:images && npm run build && npm run report`
   - Critério objetivo de sucesso: 100% dos testes unitários passam; build exit 0; nenhum asset não referenciado; orçamentos respeitados; 4/4 quadros gerados; nenhum fixture sintético permanece em `media-src/frames/` (verificado por ausência de arquivos sem sidecar correspondente); cada sidecar `review.notes` documenta paleta/intervalo tonal (FR-007/FR-014).
 
 **Checkpoint**: User Story 1 funcional e verificada de forma determinística.
@@ -189,7 +189,7 @@ description: "Task list for the Adoção Local de Ferramentas ArtCraft para Auto
 
 ### Deterministic Verification for User Story 2
 
-- [ ] T035 [US2] **Auto-checagem determinística do Builder (não atesta**; a atestação final é T045): Executar `npm run ci` completo (preflight, validate, test:unit, build:images, build, test:e2e, test:perf) e confirmar exit 0 sem regressão
+- [ ] T035 [US2] **Auto-checagem determinística do Builder — não atesta**; a atestação final é T045: Executar `npm run ci` completo (preflight, validate, test:unit, build:images, build, test:e2e, test:perf) e confirmar exit 0 sem regressão
   - Critério objetivo de sucesso: todos os portões passam; nenhum binário ArtCraft é invocado.
 
 **Checkpoint**: User Stories 1 e 2 funcionais e verificadas de forma determinística.
@@ -218,7 +218,7 @@ description: "Task list for the Adoção Local de Ferramentas ArtCraft para Auto
 
 ### Deterministic Verification for User Story 3
 
-- [ ] T040 [US3] **Auto-checagem determinística do Builder (não atesta**; a atestação final é T045): Executar `node scripts/ci-trailers.mjs` contra fixtures (commit com trailers completos passa; commit sem trailers falha) e `npm run test:unit`
+- [ ] T040 [US3] **Auto-checagem determinística do Builder — não atesta**; a atestação final é T045: Executar `node scripts/ci-trailers.mjs` contra fixtures (commit com trailers completos passa; commit sem trailers falha) e `npm run test:unit`
   - Critério objetivo de sucesso: validador fail-closed comprovado; testes unitários passam.
 
 - [ ] T040a [P] Verificar o passo de CI com `act` (nektos/act) ou equivalente: **pré-requisito — instalar `nektos/act` previamente (comando documentado em `docs/authoring.md`)**. Simular um commit que toca `media-src/` sem trailers e confirmar que o step falha; simular um commit com trailers completos e confirmar que passa
