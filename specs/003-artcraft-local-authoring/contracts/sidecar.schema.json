@@ -9,7 +9,8 @@
   "properties": {
     "schemaVersion": {
       "type": "string",
-      "description": "Schema version identifier."
+      "const": "1.0",
+      "description": "Schema version identifier. Current value: \"1.0\"."
     },
     "subject": {
       "type": "object",
@@ -103,8 +104,8 @@
         },
         "oversight": {
           "type": "string",
-          "enum": ["fully_autonomous", "prompt_guided", "human_validated"],
-          "description": "Project-defined vocabulary for human-authored masters; reuses C2PA 2.4 §18.28 humanOversightLevel enum values (defined by C2PA only for AI-generated content)."
+          "enum": ["human_authored", "human_assisted", "human_reviewed"],
+          "description": "Project-defined vocabulary for human-authored masters (not C2PA's humanOversightLevel, which applies only to AI-generated content)."
         },
         "notes": {
           "type": "string",
