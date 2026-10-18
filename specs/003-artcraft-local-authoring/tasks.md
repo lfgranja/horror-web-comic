@@ -47,11 +47,11 @@ Nota de mapeamento: tarefas de setup/scaffold/polish/verificação (T001–T005b
 - [ ] T001 [P] Validar o baseline executando `npm run preflight && npm run validate && npm run test:unit && npm run build:images && npm run build` a partir da raiz do repositório (escopo do baseline: portões de build/unit; e2e/perf ficam para T043/T044) (baseline pré-mudança; preflight anterior à verificação de librsvg de T037a) (remediação A1/A4: em host Fedora o check `browser-launch` do preflight falha para WebKit — atestar o baseline no subconjunto de 3 projetos ou no runner ubuntu; os passos T015 (smoke SVG) e T023 dependem de librsvg no host, verificado apenas em T037a).
 - [ ] T002 [P] Criar o diretório de scratch `build/` na raiz do repositório e verificar que está registrado em `.gitignore` (já presente; nunca em `assets/`, `dist/` ou `src/`). **Comando (remediação U3)**: `mkdir -p build && grep -qx 'build/' .gitignore`. **Complemento (U2)**: garantir que `build-images.mjs` (Tier B / escrita atômica) crie `build/` via `mkdirSync(..., { recursive: true })` quando ausente, para que execuções em checkout limpo não falhem.
 - [ ] T003 [P] Criar o diretório `marketing/` na raiz (fora de `assets/` e de `media-src/frames|audio`) com um `README.md` explicando que não é processado por `build:images`/`build`/`validate` nem contado em `budget.json`. **Template mínimo (remediação U4)**: seções `# marketing/`, `## Escopo`, `## Pipeline (fora do build)`, `## Licenciamento (ver T039)`. A verificação de licença MIT/trademark é consolidada em T039 (não duplicar aqui) (FR-005/FR-001)
-- [ ] T004 [P] Criar o esqueleto de `docs/authoring.md` com as seções: fluxo de autoria, ferramentas, versão "testada-com", rastreabilidade (trailers + sidecar), licenciamento MIT, arte promocional, pré-requisito de host `librsvg`, `nektos/act` (opcional), baseline Lighthouse (T005a), autoria de áudio (follow-up), checklist Tier A, critérios da versão 'testada-com', decisão OG/social (T005b), validação YAML (js-yaml + fallback), **Baseline (pre-integration)** (reservado para os valores de T005a/T005b). **Stubs mínimos (remediação U5)**: cada seção inicia com `## <nome>` + placeholder `<!-- Skeleton sections added; completed with Tier A clarification (remediation A4). Remaining sections (fluxo, ferramentas, rastreabilidade, licenciamento, baseline, áudio follow-up) dependem de T011b, T037a, T039, T005a, T005b — ver T045 -->`.
+- [ ] T004 [P] Criar o esqueleto de `docs/authoring.md` com as seções: fluxo de autoria, ferramentas, versão "testada-com", rastreabilidade (trailers + sidecar), licenciamento MIT, arte promocional, pré-requisito de host `librsvg`, `nektos/act` (opcional), baseline Lighthouse (T005a), autoria de áudio (follow-up), checklist Tier A, critérios da versão 'testada-com', decisão OG/social (T005b), validação YAML (js-yaml + fallback), **Baseline (pre-integration)** (reservado para os valores de T005a/T005b). **Stubs mínimos (remediação U5)**: cada seção inicia com `## <nome>` + placeholder `<!-- Skeleton sections added; completed with Tier A clarification (remediation A4). Remaining sections (fluxo, ferramentas, rastreabilidade, licenciamento, baseline, áudio follow-up) dependem de T011b, T037a, T039, T005a, T005b — ver T045 -->`. **[Nota A1 — remediation]** este é o único criador do arquivo; T005a/T005b/T038 editam-no depois e NÃO são paralelizáveis com ele.
 - [ ] T005 [P] [OPCIONAL — omitir sem impacto] Adicionar o script `clean:assets` em `package.json` como passo de limpeza separado e documentado (não parte de `build:images`; não requerido por FR/SC — manutenção opcional; pode ser omitido sem impacto) (já opcional; nenhum FR/SC depende deste script). (T005 e T005a são tarefas irmãs independentes, não hierárquicas.) Não conta para total de tasks.
 
-- [ ] T005a [P] **[REQUIRED — não opcional]** Medir e registrar o baseline atual de orçamento (frame mais pesado e total) e LCP antes da integração, usando `npm run report` e Lighthouse; registrar os valores em `docs/authoring.md`. Sem este baseline, SC-006 não é mensurável (C2). Se a ferramenta (Chrome/Lighthouse) estiver indisponível, registrar a lacuna e a justificativa em T045 em vez de silenciar.
-- [ ] T005b [P] Verificar que nenhuma imagem OG/social precisa ser copiada para `dist/` neste feature (fora de escopo per clarificação batch 2); documentar a decisão em `docs/authoring.md`. Nenhuma alteração em `scripts/build.mjs` (U2/I1).
+- [ ] T005a **[REQUIRED — não opcional]** Medir e registrar o baseline atual de orçamento (frame mais pesado e total) e LCP antes da integração, usando `npm run report` e Lighthouse; registrar os valores em `docs/authoring.md`. Sem este baseline, SC-006 não é mensurável (C2). Se a ferramenta (Chrome/Lighthouse) estiver indisponível, registrar a lacuna e a justificativa em T045 em vez de silenciar. **[Sequencial — edita `docs/authoring.md` (compartilhado com T004/T005b/T038); não paralelizar com essas tarefas.]**
+- [ ] T005b Verificar que nenhuma imagem OG/social precisa ser copiada para `dist/` neste feature (fora de escopo per clarificação batch 2); documentar a decisão em `docs/authoring.md`. Nenhuma alteração em `scripts/build.mjs` (U2/I1). **[Sequencial — edita `docs/authoring.md` (compartilhado com T004/T005a/T038); não paralelizar com essas tarefas.]**
 
 **Checkpoint**: Setup estático pronto.
 
@@ -185,7 +185,9 @@ Nota de mapeamento: tarefas de setup/scaffold/polish/verificação (T001–T005b
 
 ### Implementation Tasks for User Story 1
 
-- [ ] T023 [US1] Implementar `scripts/svg-sanitize.mjs` conforme o contrato do stub (reject-list piso + allow-list fail-closed sobre o vocabulário vectorcraft, caps de DoS, `url(#…)` permitido, referências externas/`data:` rejeitadas) — depende de T011b (FR-002). **Pré-condição (G1)**: confirmar a viabilidade do tokenizer fail-closed em JS puro **antes** de implementar, executando-o contra o fixture de T011b e verificando que todos os vetores de T012 são rejeitados e o vocabulário allow-list aceito (evidência registrada em `docs/authoring.md`, seção "SVG allow-list validation"); se inviável, abrir PR de emenda à constituição (Princípio II) e atualizar T022b/SC-005 **antes** de prosseguir (bloqueio estrito). **Métrica de viabilidade (remediação A2)**: pass = (vetores rejeitados == total de vetores de T012) AND (vocabulário allow-list aceito sem falso positivo) AND (tempo de parse ≤ 100 ms para fixture ≤ 1 MB); qualquer falha → bloqueio.
+- [ ] T023a [US1] **[GATE — pré-condição de T023]** Executar o probe de viabilidade do tokenizer fail-closed em JS puro (G1): rodar o protótipo contra o fixture de T011b, verificando que (a) todos os vetores de T012 são rejeitados, (b) o vocabulário allow-list é aceito sem falso positivo, (c) tempo de parse ≤ 100 ms para fixture ≤ 1 MB. Registrar evidência (pass/fail + métricas) em `docs/authoring.md` (seção "SVG allow-list validation"). Se inviável, abrir PR de emenda à constituição (Princípio II) e atualizar T022b/SC-005 **antes** de prosseguir (bloqueio estrito). (Remediation U1.)
+
+- [ ] T023 [US1] Implementar `scripts/svg-sanitize.mjs` conforme o contrato do stub (reject-list piso + allow-list fail-closed sobre o vocabulário vectorcraft, caps de DoS, `url(#…)` permitido, referências externas/`data:` rejeitadas) — depende de T011b e de T023a (FR-002). **Pré-condição (G1)**: T023a concluído com evidência de pass (ver acima). Se T023a falhar, bloquear e abrir emenda à constituição antes de prosseguir.
 
 - [ ] T024 [P] [US1] Implementar `scripts/sidecar.mjs` conforme o contrato do stub (validação strict do schema, recomputação e comparação de SHA-256, staleness de `subject.name`, detecção de sidecar órfão, no-op quando ausente) (honra sidecar apenas em media-src/ e marketing/; varre todas as raízes permitidas) (FR-008, SC-007b)
 
@@ -380,24 +382,24 @@ Esta tabela é autoritativa. Menções inline em tasks devem refletir esta tabel
 | SC-002 | T033, T042 |
 | SC-003 | T032, T035, T043, T044 |
 | SC-004 | T004, T038, T041 |
-| SC-005 | T022b, T023, T031a |
+| SC-005 | T022b, T031a | (T023 removido — svg-sanitize não verifica ausência de binários; ver analyze I4) |
 | SC-006 | T005a, T044a |
 | SC-007a | T014, T020, T025 |
 | SC-007b | T024, T028, T036, T038, T041, T045 |
 
-Infra/verification tasks not mapped to a single FR/SC: T001, T002, T005, T005b, T011a, T011b, T011c, T015b, T027-verification-1, T027-verification-2, T037a, T038a (F20 → FR-009), T040, T040a, T041–T045 (by design — see mapping note).
+Infra/verification tasks not mapped to a single FR/SC: T001, T002, T005, T005b, T011a, T011b, T011c, T015b, T023a (tokenizer viability gate — precondition for T023), T027-verification-1, T027-verification-2, T037a, T038a (F20 → FR-009), T040, T040a, T041–T045 (by design — see mapping note).
 - **E1 (LOW — resolved)**: cobertura 100% confirmada — todos os 14 FR e 8 itens SC (incl. SC-007a/SC-007b) mapeados a ≥1 tarefa ativa; nenhuma exigência sem cobertura.
 
 ## Parallel Execution Opportunities
 
-- **Scaffolds (Fase 2)**: T006, T007, T008, T009, T010 e T011 podem rodar em paralelo (arquivos/contratos distintos) — **Onda 1**.
+- **Scaffolds (Fase 2)**: T006, T007, T008, T009, T010, T011 e T011a podem rodar em paralelo (arquivos/contratos distintos) — **Onda 1**. (T011a adicionado — remediation G1.)
 - **Testes TDD (Fase 3)**: T012–T022 podem rodar em paralelo (arquivos de teste separados) — **Onda 2**; cada subagente escreve um arquivo de teste.
 - **Implementação US1 (Fase 4)**: T023 (`svg-sanitize.mjs`), T024 (`sidecar.mjs`), T025 (`delivery-fidelity.mjs`) e T026 (`atomic-write.mjs`) podem rodar em paralelo — **Onda 3**; a integração (T027) e a autoria (T028) dependem das quatro. Caveat: T023 é bloqueado por T011b (validação da allow-list SVG) e, portanto, não é paralelizável até a conclusão de T011b.
 - **Verificação Final (Fase 7)**: T041 (`test:unit`), T042 (`build`) e T043 (matriz Playwright) podem ser disparados em paralelo — **Onda 4**.
 
 ### Atribuição de Subagentes por Onda (contexto compartilhado)
 
-- **Onda 1** (scaffolds): um subagente para contratos (T006) e um subagente para stubs de módulos (T007–T011).
+- **Onda 1** (scaffolds): um subagente para contratos (T006) e um subagente para stubs de módulos (T007–T011, T011a).
 - **Onda 2** (testes): subagentes distintos por arquivo de teste; o subagente que escrever `svg-sanitize.test.js` (T012) reutiliza o contexto para `svg-sanitize.mjs`.
 - **Onda 3** (implementação): um subagente por módulo (T023–T026); o subagente de `build-images.mjs` (T027) reutiliza o contexto de integração.
 - **Onda 4** (verificação): subagentes distintos por portão; o **Agente de Verificação** consolida o atestado (T045).

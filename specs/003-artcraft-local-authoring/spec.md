@@ -4,7 +4,7 @@
 
 **Created**: 2026-10-17
 
-**Status**: Ready for implementation (post-analyze remediation; external gates T011b/T028/T037a/T039 tracked — they block implementation completion, not spec/plan/tasks artifact readiness)
+**Status**: Artifacts ready for implementation (post-analyze remediation); execution pending Phase 2 scaffolds (T007–T011, T011a) and the TDD gate (Phase 3). External gates T011b/T028/T037a/T039 tracked — they block implementation completion, not spec/plan/tasks artifact readiness.
 
 **Input**: Assessment handoff from `.specify/assessments/artcraft-horror-comic-reform` (verdict: go): adotar a suíte ArtCraft como ferramentas de autoria **locais** (Option B) para produzir masters em `media-src/`, mantendo o pipeline de build, o player, o schema do manifesto e os orçamentos inalterados.
 
@@ -269,6 +269,7 @@ Para que a produção de arte seja reproduzível e auditável, mesmo sem integra
 
 Assumptions:
 - **sharp suporta SVG**: validado localmente (sharp lê SVG e produz PNG/AVIF/WebP/JPEG). Depende da presença de librsvg no host; evidência registrada em plan.md §Technical Context e research.md §1. A confirmar em CI se futuramente integrado (fora do escopo).
+- **Pesquisa primária (batches 9–10)**: evidência suplementar em `specs/003-artcraft-local-authoring/research/clarifications/` (SVG refs, quality floor, srcset, success criteria, sidecar placement, etc.) — fonte de rastreabilidade para FR/SC; não altera normas. (remediation G2)
 - **ArtCraft instalado localmente**: o autor possui a suíte instalada; o repo não a distribui.
 - **Fixtures sintéticos de teste permanecem válidos**: os fixtures sob `tests/fixtures/` permanecem para regressão.
 
@@ -281,6 +282,7 @@ These are explicit, tracked blockers rather than silent passes. Each must be rec
 - **T039 (license/ASSETS.md)**: manual verification of MIT option + no trademark redistribution, per app; fallback (unavailable `ASSETS.md`) recorded in `docs/authoring.md` and T045 (A3).
 - **T044a (Lighthouse/Chrome)**: SC-006 is attested only when Chrome is available; otherwise logged as a tracked blocker in T045 (A5).
 - **T044 (WebKit)**: not runnable on Fedora; WebKit gates are attested from CI logs on ubuntu (A6).
+- **T037a (librsvg host)**: `librsvg` is required for sharp SVG rasterization (host dependency, not repo dependency); verified via `pkg-config --exists librsvg-2.0` (fallback: sharp SVG decode probe). If unavailable, the SVG smoke test (T015) and T023 (svg-sanitize) are environment-gated; register the result (pass/fail/fallback) in T045. (remediation I2)
 - **T005a (baseline)**: budget/LCP baseline must be measured before integration; tool gaps logged in T045 (G1).
 - **T043 (local matrix)**: covers 3 of 5 projects locally; WebKit coverage attested from CI (G2).
 - **T040a (act)**: optional; if skipped, justification recorded in T045 (G3).

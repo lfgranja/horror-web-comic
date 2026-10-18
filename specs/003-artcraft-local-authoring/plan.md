@@ -32,12 +32,12 @@ YAML parsing in the CI trailer step (T037) uses `js-yaml` when available (transi
 - **Caps de DoS (constante `SVG_DOS_CAPS` em `scripts/svg-sanitize.mjs`)**: tamanho de arquivo ≤ 1 048 576 B (1 MB); contagem de elementos ≤ 10 000; profundidade de aninhamento ≤ 100; atributos por elemento ≤ 256. Violação → throw (fail-fast). (remediação A2: espelhado de FR-002 para evitar drift de revisão.) (fonte: FR-002 / FR-012)
 - **Nota**: Vocabulário inicial a ser validado contra um export real do vectorcraft antes de implementar o gate. `marker-start/mid/end` foram removidos (sem elemento `marker` na allow-list — atributos mortos); re-adicionar (junto com `marker` + `markerWidth/Height/Units/refX/refY/orient`) se um export real emitir `<marker>`. O gate também aplica um orçamento de expansão de referências (`<use>`/`<pattern>`: `maxExpandedReferences` 100 000, `maxReferenceDepth` 20, rejeitar ciclos) além dos caps estáticos, e não pode ser apenas regex — usa-se parser XML real ou tokenizer fail-closed verificável, re-serializando bytes canônicos. Sidecars vivem ao lado do ativo, fora da árvore publicável, em `media-src/` e `marketing/`. O valor `oversight` é project-defined (`human_authored`/`human_assisted`/`human_reviewed`), não os valores C2PA.
 
-**Quality thresholds (centralized in `scripts/delivery-fidelity.mjs`)**:
-- Tier B SSIM: ≥ 0.95 (standard) / ≥ 0.90 (light); PSNR ≥ 30 dB (fonte única: SC-007a; ver `scripts/delivery-fidelity.mjs`); standard fail-fast, light warn-only (fonte única: SC-007a + emenda 2.1.0 da constituição).
+**Quality thresholds (single source: `scripts/delivery-fidelity.mjs` + FR-012)**:
+> **Mirror only (remediation D1)**: the values below mirror the single source. Do not edit them here — edit `scripts/delivery-fidelity.mjs` (Tier B) and FR-012 (geometry) instead; other artifacts must reference, not restate.
+- Tier B SSIM: ≥ 0.95 (standard) / ≥ 0.90 (light); PSNR ≥ 30 dB (SC-007a); standard fail-fast, light warn-only (SC-007a + emenda 2.1.0).
 - Tier B invocation (native filters, no new dependency): `ffmpeg -i <variant> -i <ref.png> -lavfi "ssim=...,psnr=..." -f null -`; referência PNG lossless gerada por sharp sob `build/` (mesmo filesystem). Comparação por largura de entrega (nunca contra o master em tamanho nativo).
-- Quality floors: standard AVIF ≥ 30 / WebP ≥ 45 / JPEG ≥ 45; light AVIF ≥ 20 / WebP ≥ 30 / JPEG ≥ 30 (throw naming the frame) (fonte: FR-002 / FR-012).
-- Canvas: 1200×800 px (3:2); rigid ceiling ≤ 2560 px for any master (fonte: FR-002 / FR-012).
-- **G1 (LOW — resolved)**: SSIM/PSNR thresholds, quality floors e canvas/ceiling são fonte única em `scripts/delivery-fidelity.mjs` (Tier B) e FR-012 (geometria); plan.md, spec.md, tasks.md e data-model.md referenciam essas fontes sem duplicação de valor.
+- Quality floors: standard AVIF ≥ 30 / WebP ≥ 45 / JPEG ≥ 45; light AVIF ≥ 20 / WebP ≥ 30 / JPEG ≥ 30 (throw naming the frame) (FR-002 / FR-012).
+- Canvas: 1200×800 px (3:2); rigid ceiling ≤ 2560 px for any master (FR-002 / FR-012).
 
 **Storage**: Arquivo — `media-src/` (masters + sidecars), `assets/` (saída gerada), `build/` (scratch Tier B, git-ignored). Sem banco de dados.
 
@@ -86,7 +86,7 @@ specs/003-artcraft-local-authoring/
 ├── plan.md              # This file
 ├── spec.md              # Feature specification
 ├── research.md          # Phase 0 output
-├── research/clarifications/ # Batch 9–10 primary-source research (SVG refs, quality floor, srcset, success criteria)
+├── research/clarifications/ # Batch 9–10 primary-source research (SVG refs, quality floor, srcset, success criteria) — supplementary evidence for FR/SC (remediation G2)
 ├── data-model.md        # Phase 1 output
 ├── quickstart.md        # Phase 1 output
 ├── contracts/           # Phase 1 output
@@ -117,11 +117,11 @@ scripts/
 ├── compatibility-report.mjs  # Relatório permissivo (inalterado)
 ├── build-images.mjs          # MODIFICADO: + sanitização SVG (+ caps DoS), + digest sidecar (+ `orphan-sidecar`), + Tier B, + piso de qualidade, + escrita atômica
 ├── build.mjs                 # inalterado neste feature quanto a OG/social copy (nenhum passo de cópia de imagem OG/social é adicionado — fora de escopo per clarificação batch 2); trailers/review vivem no step de `ci.yml`, nunca aqui. Consolidação de `isSafeLocalReference` (import-only reexport) já aplicada em T011c (concluída; `npm run test:unit` verde); sem mudança de comportamento.
-├── svg-sanitize.mjs        # NOVO: gate de sanitização/validação SVG (FR-002)
-├── sidecar.mjs             # NOVO: verificação de digest do sidecar (FR-008)
-├── delivery-fidelity.mjs   # NOVO: portão Tier B SSIM/PSNR (FR-007)
-├── atomic-write.mjs        # NOVO: escrita atômica write-temp→rename (FR-013d)
-├── ci-trailers.mjs        # NOVO: validação fail-closed de trailers/review (FR-013)
+├── svg-sanitize.mjs        # NOVO (planned — scaffold pending T007): gate de sanitização/validação SVG (FR-002)
+├── sidecar.mjs             # NOVO (planned — scaffold pending T008): verificação de digest do sidecar (FR-008)
+├── delivery-fidelity.mjs   # NOVO (planned — scaffold pending T009): portão Tier B SSIM/PSNR (FR-007)
+├── atomic-write.mjs        # NOVO (planned — scaffold pending T010): escrita atômica write-temp→rename (FR-013d)
+├── ci-trailers.mjs        # NOVO (planned — scaffold pending T011): validação fail-closed de trailers/review (FR-013)
 └── serve-e2e.mjs             # Servidor HTTP Range (inalterado)
 
 media-src/
