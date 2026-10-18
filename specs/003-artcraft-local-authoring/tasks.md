@@ -30,6 +30,7 @@ description: "Task list for the Adoção Local de Ferramentas ArtCraft para Auto
 - Caminhos de arquivo exatos fornecidos em todas as tarefas.
 - **[ID com sufixo]** (ex.: T005a): usado para inserções pontuais em uma fase já numerada, preservando a ordem dos IDs existentes. Apenas para adições; nunca para renumeração retroativa.
 
+Nota de terminologia: headings em PT usam 'quadro'; identificadores, caminhos e código usam `frame` (canônico per Terminologia do spec.md).
 ---
 
 ## Phase 1: Setup & Environment Preparation
@@ -38,6 +39,7 @@ description: "Task list for the Adoção Local de Ferramentas ArtCraft para Auto
 
 **Escopo**: Apenas `media-src/frames/`. A produção de masters de áudio (WAV) é follow-up fora deste feature (ver FR-001/Non-Goals).
 
+**Non-Goal (explícito)**: masters de áudio (WAV) estão fora do escopo desta feature (follow-up); apenas os quadros frame-01…frame-04 são entregues (FR-001, FR-014, SC-001).
 - [ ] T001 [P] Validar o baseline executando `npm run preflight && npm run validate && npm run test:unit && npm run build:images && npm run build` a partir da raiz do repositório (escopo do baseline: portões de build/unit; e2e/perf ficam para T043/T044)
 - [ ] T002 [P] Criar o diretório de scratch `build/` na raiz do repositório e verificar que está registrado em `.gitignore` (já presente; nunca em `assets/`, `dist/` ou `src/`)
 - [ ] T003 [P] Criar o diretório `marketing/` na raiz (fora de `assets/` e de `media-src/frames|audio`) com um `README.md` explicando que não é processado por `build:images`/`build`/`validate` nem contado em `budget.json` (inclui verificação de licença MIT e ausência de redistribuição de trademark ArtCraft — ASSETS.md de cada app; FR-005/FR-001)
@@ -64,7 +66,7 @@ description: "Task list for the Adoção Local de Ferramentas ArtCraft para Auto
 
 - [ ] T011a [P] Criar helper de teste baseado em propriedades (PRNG determinístico semeado, sem dependência nova) em `tests/unit/property-helpers.mjs` (exportando `createPrng(seed)`, `randomSvgGrammar(prng)`, `randomSidecarDoc(prng)`) para reuso pelos testes de invariante (FR-002/plan Testing; U1).
 
-- [ ] T011b [P] [GATE MANUAL] Validar o vocabulário SVG (allow-list em `plan.md`) contra um export real do vectorcraft antes de implementar o gate; **bloqueante para T012 e T023**. Critério de saída: (a) export real passa sem rejeição indevida, ou (b) allow-list ajustada com diff registrado em `docs/authoring.md` (seção "SVG allow-list validation"). Registrar resultado (pass/fail + diff) e a versão "testada-com" do app. (migrado de T022a; U3/A4).
+- [ ] T011b [P] [GATE MANUAL] Validar o vocabulário SVG (allow-list em `plan.md`) contra um export real do vectorcraft antes de implementar o gate; **bloqueante para T012 e T023**. Critério de saída: (a) export real passa sem rejeição indevida, ou (b) allow-list ajustada com diff registrado em `docs/authoring.md` (seção "SVG allow-list validation"). Registrar resultado (pass/fail + diff) e a versão "testada-com" do app. Fallback: se o export real não estiver disponível, usar um fixture sintético derivado de um export registrado em `tests/fixtures/` e registrar a justificativa em `docs/authoring.md` (seção 'SVG allow-list validation'); a tarefa não pode ser silenciosamente pulada. (migrado de T022a; U3/A4).
 
 **Checkpoint**: Contratos e scaffolds prontos.
 
@@ -76,10 +78,11 @@ description: "Task list for the Adoção Local de Ferramentas ArtCraft para Auto
 > - Esta fase DEVE ser executada integralmente pelo **Agente de Testes (TDD Author)**.
 > - Todos os testes abaixo DEVEM ser implementados e commitados ANTES de qualquer alteração de código produtivo.
 > - Todos os testes DEVEM FALHAR (*Red Phase*) antes de desbloquear as Fases 4–6.
-> - NENHUMA tarefa de implementação pode ser iniciada até T012–T022 estarem concluídos e falhando nos testes.
+> - NENHUMA tarefa de implementação pode ser iniciada até todas as tarefas de teste da Fase 3 (T011a, T012–T022, T015b, T022b) estarem concluídas e falhando nos testes.
 
 > **Escopo dos testes (D2)**: Os pares `svg-sanitize.test.js`/`artcraft-svg-gate.test.js`, `sidecar.test.js`/`artcraft-sidecar.test.js` e `delivery-fidelity.test.js`/`artcraft-fidelity.test.js` cobrem, respectivamente, o nível de **unidade do módulo** e o nível de **integração do fluxo de build**. Não duplicar asserções entre os dois níveis; cada invariante vive em apenas um dos dois.
 
+> Anotação property-based por tarefa: T012/T013/T014/T022c = sim (invariantes); T015/T016/T017/T018/T019/T020/T021/T022/T022b = não (cenários determinísticos/exemplos).
 ### Testes de Unidade (Node Native Test Runner) — com property-based onde aplicável
 
 - [ ] T012 [P] Escrever testes unitários para `scripts/svg-sanitize.mjs` em `tests/unit/svg-sanitize.test.js`:
@@ -87,6 +90,7 @@ description: "Task list for the Adoção Local de Ferramentas ArtCraft para Auto
   - Invariante: todo vetor perigoso (`<script>`, handlers `on*`, `foreignObject`, `href`/`xlink:href` externos, todo DOCTYPE, URIs `data:`, SMIL `animate|set|animateMotion|animateTransform|discard`, elementos DOMPurify-forbidden, vetores CSS `url()|@import|image-set()|expression()|-moz-binding|behavior:`) lança erro nomeando o vetor
   - Invariante: referência interna `url(#…)` permitida; referências absolutas, protocol-relative, de caminho relativo e `data:` rejeitadas
   - Caps de DoS mensuráveis: arquivo > 1 MB (1 048 576 B), elementos > 10 000, profundidade > 100, atributos/elemento > 256 → lança erro
+  - Caps de expansão de referência: `<use>`/`<pattern>` com mais de 100 000 referências expandidas ou profundidade > 20, ou ciclos de referência → lança erro (plan.md, SVG allow-list)
   - Property-based: gerar SVGs aleatórios determinísticos (PRNG com seed fixa) a partir de uma gramática e assertar que o veredito do gate corresponde a um oráculo (allow-list/reject-list)
   - (Confirmar que os testes em `tests/unit/svg-sanitize.test.js` falham)
 
@@ -121,6 +125,7 @@ description: "Task list for the Adoção Local de Ferramentas ArtCraft para Auto
 
 - [ ] T018 [P] Escrever teste de integração da rejeição SVG em `tests/unit/artcraft-svg-gate.test.js`:
   - master SVG perigoso → `buildImages()` lança erro nomeando o frame; nenhuma variante gerada
+  - incluindo caps de expansão de referência e ciclos
   - (Confirmar que o teste em `tests/unit/artcraft-svg-gate.test.js` falha)
 
 - [ ] T019 [P] Escrever teste de integração de digest/sidecar órfão em `tests/unit/artcraft-sidecar.test.js`:
@@ -146,6 +151,7 @@ description: "Task list for the Adoção Local de Ferramentas ArtCraft para Auto
 
 - [ ] T022b [P] Escrever teste de unidade `tests/unit/artcraft-absence.test.js` verificando ausência de binários ArtCraft em `git ls-files`, `PATH` e `node_modules` (fail-closed; SC-005/FR-013 (g)) — migrado da antiga T031a para respeitar o portão TDD (U1). (Confirmar que o teste falha)
 
+- [ ] T022c [P] Escrever teste de unidade `tests/unit/story-metadata.test.js` validando a regra F20: (a) `alt ≠ description`; (b) `alt ≤ 125 chars`; (c) `description` reproduz todo o lettering visível; (d) `durationMs ≥ minMs` onde `minMs = 500 + (words/150)·60000 + 1000` clampado a [500, 30000], com `words` = número de palavras do `description`; (e) `durationMs` recomputado apenas quando a permanência mínima muda >10% ou cruza o piso de 500 ms. (Confirmar que o teste falha)
 **Checkpoint TDD**: 100% dos testes redigidos e em estado FALHO comprovado (*Red Phase*). Implementação liberada para o **Agente de Implementação (Builder)**.
 
 ---
@@ -160,7 +166,6 @@ description: "Task list for the Adoção Local de Ferramentas ArtCraft para Auto
 
 ### Implementation Tasks for User Story 1
 
-- [ ] T022a [US1] (migrado para **T011b** em Phase 2) — validação de vocabulário SVG concluída antes da implementação e do portão TDD.
 - [ ] T023 [US1] Implementar `scripts/svg-sanitize.mjs` conforme o contrato do stub (reject-list piso + allow-list fail-closed sobre o vocabulário vectorcraft, caps de DoS, `url(#…)` permitido, referências externas/`data:` rejeitadas) — depende de T011b
 
 - [ ] T024 [P] [US1] Implementar `scripts/sidecar.mjs` conforme o contrato do stub (validação strict do schema, recomputação e comparação de SHA-256, staleness de `subject.name`, detecção de sidecar órfão, no-op quando ausente)
@@ -234,8 +239,7 @@ description: "Task list for the Adoção Local de Ferramentas ArtCraft para Auto
 
 - [ ] T038 [US3] Escrever `docs/authoring.md` com: fluxo passo-a-passo (criar no app → exportar → `media-src/` → pipeline → validar), ferramentas e versão "testada-com" (resultante de T011b/T039, com data de validação), rastreabilidade (trailers + sidecar), licenciamento MIT (preservar copyright/license; nunca redistribuir trademark), pré-requisito de host `librsvg` (T037a), arte promocional em `marketing/`, pré-requisito opcional `nektos/act` para simulação do passo de CI (T040a) e baseline Lighthouse (T005a) (A4)
 
-- [ ] T039 [P] [US3] [GATE MANUAL] Verificar a licença MIT adotada, a ausência de redistribuição de trademark ArtCraft e revisar o `ASSETS.md` de **cada app ArtCraft** (pré-requisito: obter `ASSETS.md` da instalação local de cada app; arquivo externo da suíte, não versionado aqui). Registrar checksum (SHA-256) e versão "testada-com" de cada `ASSETS.md` em `docs/authoring.md` (A2/A4); registrar resultado (pass/fail) e evidência em T045 (FR-005; T077-migrated; A5; I6).
-
+- [ ] T039 [P] [US3] [GATE MANUAL] Verificar a licença MIT adotada, a ausência de redistribuição de trademark ArtCraft e revisar o `ASSETS.md` de **cada app ArtCraft** (pré-requisito: obter `ASSETS.md` da instalação local de cada app; arquivo externo da suíte, não versionado aqui). Registrar checksum (SHA-256) e versão "testada-com" de cada `ASSETS.md` em `docs/authoring.md` (A2/A4); registrar resultado (pass/fail) e evidência em T045 (FR-005; T077-migrated; A5; I6). Checklist documentado: (1) obter `ASSETS.md` de cada app em sua instalação local; (2) verificar opção MIT adotada; (3) verificar ausência de redistribuição de trademark; (4) registrar SHA-256 e versão 'testada-com' de cada `ASSETS.md` em `docs/authoring.md` (seção 'Licenciamento'). Nenhum script automatizado é requerido; a verificação é manual e registrada em T045.
 - [ ] T039a [P] Verificar que os Non-Goals (FR-010) permanecem respeitados: nenhum binário ArtCraft no repo/CI, nenhum filmcraft/effectcraft no runtime, nenhum cambio de schema/player
 
 ### Deterministic Verification for User Story 3
@@ -312,7 +316,7 @@ flowchart TD
 
 ### Regras de Transição e Bloqueio
 
-1. **Portão TDD (Fase 3)**: Bloqueia totalmente o início de qualquer implementação. Nenhuma linha de código produtivo pode ser alterada em `scripts/` antes de T012–T022 estarem concluídos e falhando nos testes.
+1. **Portão TDD (Fase 3)**: Bloqueia totalmente o início de qualquer implementação. Nenhuma linha de código produtivo pode ser alterada em `scripts/` antes de T011a, T012–T022, T015b, T022b estarem concluídos e falhando nos testes.
 2. **Scaffold antes da escrita manual**: Nenhuma implementação manual (Fases 4–6) pode iniciar antes de T006–T011 (contratos e scaffolds).
 3. **Separação de Papéis**:
    - `Agente de Testes`: Conclui Fase 3.
