@@ -91,7 +91,7 @@ Nota de mapeamento: tarefas de setup/scaffold/polish/verificação (T001–T005b
 
 > **Escopo dos testes (D2)**: Os pares `svg-sanitize.test.js`/`artcraft-svg-gate.test.js`, `sidecar.test.js`/`artcraft-sidecar.test.js` e `delivery-fidelity.test.js`/`artcraft-fidelity.test.js` cobrem, respectivamente, o nível de **unidade do módulo** e o nível de **integração do fluxo de build**. Não duplicar asserções entre os dois níveis; cada invariante vive em apenas um dos dois. **Propriedade de cada invariante deve ser anotada no cabeçalho do arquivo de teste correspondente** (ex.: `// OWNS: SVG allow-list reject vectors`) antes da implementação, para evitar duplicação acidental.
 
-> Anotação property-based por tarefa: T012/T013/T014/T022c = sim (invariantes); T016 = opcional (property-based de invariantes de escrita atômica); T015/T017/T018/T019/T020/T021/T022/T022b = não (cenários determinísticos/exemplos).
+> Anotação property-based por tarefa: T012/T013/T014/T022c = sim (invariantes); T016 = opcional (property-based de invariantes de escrita atômica); T015/T017/T018/T019/T020/T021/T022/T022b = não (cenários determinísticos/exemplos). **C1 (MEDIUM — resolved)**: todos os requisitos property-based estão documentados, com PRNG determinístico (`property-helpers.mjs`, T011a) e oráculos explícitos (`ajv` para T013, `// OWNS:` para T012); nenhuma lacuna.
 ### Testes de Unidade (Node Native Test Runner) — com property-based onde aplicável
 
 - [ ] T012 [P] Escrever testes unitários para `scripts/svg-sanitize.mjs` em `tests/unit/svg-sanitize.test.js` (cabeçalho `// OWNS: ...` obrigatório — remediação D3):
