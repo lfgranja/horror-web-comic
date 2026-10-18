@@ -57,7 +57,7 @@ JSON sidecar tracking the provenance of a master. Path = master path with extens
 
 | Field | Type | Required | Constraints |
 |:---|:---|:---:|:---|
-| `schemaVersion` | string | ✅ | — (fonte de autoridade: `contracts/sidecar.schema.json`) |
+| `schemaVersion` | string | ✅ | — (fonte de autoridade: `contracts/sidecar.schema.json`; JSON Schema pins it with `const: "1.0"`) |
 | `subject.name` | string | ✅ | Must equal master basename (stale → throw) |
 | `subject.digest.sha256` | string | ✅ | 64 lowercase hex; must match SHA-256 of master bytes (recomputed) |
 | `provenance.tool` | string | ✅ | e.g. `vectorcraft-cli` |
@@ -66,11 +66,11 @@ JSON sidecar tracking the provenance of a master. Path = master path with extens
 | `provenance.author` | string | ✅ | — |
 | `inputs[].uri` | string | required within item | Must satisfy `isSafeLocalReference` (no external/absolute/traversal) |
 | `inputs[].digest.sha256` | string | required within item | 64 lowercase hex |
-| `review.reviewer` | string | within block | Required when `review` present |
-| `review.reviewedAt` | string | within block | ISO-8601 UTC |
-| `review.oversight` | enum | within block | `human_authored` \| `human_assisted` \| `human_reviewed` (project-defined for human-authored masters) |
-| `review.notes` | string | within block | Side-by-side: size, format, qualitative impression |
-| `review.decision` | enum | within block | `approve` \| `reject` |
+| `review.reviewer` | string | Required when `review` present | Per `contracts/sidecar.schema.json` |
+| `review.reviewedAt` | string | Required when `review` present | ISO-8601 UTC (per `contracts/sidecar.schema.json`) |
+| `review.oversight` | enum | Required when `review` present | `human_authored` \| `human_assisted` \| `human_reviewed` (project-defined for human-authored masters; per `contracts/sidecar.schema.json`) |
+| `review.notes` | string | Required when `review` present | Side-by-side: size, format, qualitative impression (per `contracts/sidecar.schema.json`) |
+| `review.decision` | enum | Required when `review` present | `approve` \| `reject` (per `contracts/sidecar.schema.json`) |
 | `review.measuredSSIM` | number | optional | Tier B fidelity measurement (SSIM value; PSNR reported separately when available) |
 
 ### Validation Rules (fail-fast)
@@ -208,16 +208,17 @@ AuthoringWorkflow 1 ──── requires ────► TierAReview (for maste
 
 | Constraint | Value | Enforced by |
 |:---|:---|:---|
-| Canvas (authoring target) | 1200×800 px (3:2) | `invalid-master-geometry` throw |
-| Rigid ceiling (any master) | ≤ 2560 px larger side | `exceeds-pipeline-ceiling` throw |
+| Canvas (authoring target) | 1200×800 px (3:2) (fonte: FR-002 / FR-012) | `invalid-master-geometry` throw |
+| Rigid ceiling (any master) | ≤ 2560 px larger side (fonte: FR-002 / FR-012) | `exceeds-pipeline-ceiling` throw |
 | Per-frame budget | ≤ 300 000 B (sum of largest AVIF+WebP+JPEG) | `build.mjs` budget check |
 | Total assets | ≤ 30 000 000 B | `build.mjs` budget check |
-| Quality floor (standard) | AVIF ≥30 / WebP ≥45 / JPEG ≥45 | `encodeImage` throw naming frame |
-| Quality floor (light) | AVIF ≥20 / WebP ≥30 / JPEG ≥30 | `encodeImage` throw naming frame |
-| Tier B SSIM | ≥ 0.95 standard / ≥ 0.90 light | fail-fast / warn-only |
-| Tier B PSNR | ≥ 30 dB | fail-fast (standard) |
+| Quality floor (standard) | AVIF ≥30 / WebP ≥45 / JPEG ≥45 (fonte: FR-002 / FR-012) | `encodeImage` throw naming frame |
+| Quality floor (light) | AVIF ≥20 / WebP ≥30 / JPEG ≥30 (fonte: FR-002 / FR-012) | `encodeImage` throw naming frame |
+| Tier B SSIM | ≥ 0.95 standard / ≥ 0.90 light (fonte: SC-007a) | fail-fast / warn-only |
+| Tier B PSNR | ≥ 30 dB (fonte: SC-007a) | fail-fast (standard) |
 | New dependencies | none | `package.json` unchanged |
-| SVG DoS caps | file ≤ 1 MB · elements ≤ 10 000 · depth ≤ 100 · attrs/element ≤ 256 | sanitization gate throw |
+| SVG DoS caps | file ≤ 1 MB · elements ≤ 10 000 · depth ≤ 100 · attrs/element ≤ 256 (fonte: FR-002 / FR-012) | sanitization gate throw |
+| Reference expansion budget (`<use>`/`<pattern>`) | `maxExpandedReferences = 100 000; maxReferenceDepth = 20; circular references rejected` (fonte: FR-002 / plan.md) | `scripts/svg-sanitize.mjs` throw |
 | Orphan sidecar | forbidden (sidecar without master) | digest-gate throw (`orphan-sidecar`) |
 | ArtCraft binaries in repo/CI | none | `git ls-files` + preflight |
 | Schema v1 manifest | frozen | no manifest field changes |
