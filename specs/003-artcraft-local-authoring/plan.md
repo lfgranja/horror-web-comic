@@ -97,7 +97,7 @@ scripts/
 ├── validate-manifest.mjs     # Schema + refs (inalterado)
 ├── compatibility-report.mjs  # Relatório permissivo (inalterado)
 ├── build-images.mjs          # MODIFICADO: + sanitização SVG (+ caps DoS), + digest sidecar (+ órfão), + Tier B, + piso de qualidade, + escrita atômica
-├── build.mjs                 # inalterado neste feature quanto a OG/social copy (nenhum passo de cópia de imagem OG/social é adicionado — fora de escopo per clarificação batch 2); trailers/review vivem no step de `ci.yml`, nunca aqui. Única alteração: reexport de `isSafeLocalReference` (import-only) consolidado em T011c; sem mudança de comportamento.
+├── build.mjs                 # inalterado neste feature quanto a OG/social copy (nenhum passo de cópia de imagem OG/social é adicionado — fora de escopo per clarificação batch 2); trailers/review vivem no step de `ci.yml`, nunca aqui. Consolidação de `isSafeLocalReference` (import-only reexport) já aplicada em T011c (concluída; `npm run test:unit` verde); sem mudança de comportamento.
 ├── svg-sanitize.mjs        # NOVO: gate de sanitização/validação SVG (FR-002)
 ├── sidecar.mjs             # NOVO: verificação de digest do sidecar (FR-008)
 ├── delivery-fidelity.mjs   # NOVO: portão Tier B SSIM/PSNR (FR-007)
@@ -113,7 +113,7 @@ build/                        # Scratch Tier B (git-ignored, NUNCA em assets/)
 docs/
 ├── delivery.md               # Contrato de saída (inalterado)
 ├── authoring.md              # NOVO: fluxo de autoria ArtCraft
-├── authoring-accessibility.md # Companheiro: regra F20 de alt/description/durationMs (criado durante remediação analyze F3, não rastreado; mantido separadamente; fora do escopo da task list desta feature)
+├── authoring-accessibility.md # Companheiro: regra F20 de alt/description/durationMs (criado neste feature; arquivo de trabalho ainda não rastreado — adicionar ao git antes do merge)
 └── image-quality-assessment.md  # Referência de qualidade (existe)
 
 marketing/                    # NOVO: arte promocional (designcraft), fora do pipeline

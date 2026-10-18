@@ -115,7 +115,7 @@ JSON sidecar tracking the provenance of a master. Path = master path with extens
 
 ## Entity: AuthoringWorkflow
 
-The ordered, documented process for producing a master. Lives in `docs/authoring.md` (to be created) and `docs/authoring-accessibility.md` (existing).
+The ordered, documented process for producing a master. Lives in `docs/authoring.md` (to be created) and `docs/authoring-accessibility.md` (companion doc created in this feature's working tree; not yet tracked — add to git before merge).
 
 | Step | Action | Tool | Output |
 |:---|:---|:---|:---|
