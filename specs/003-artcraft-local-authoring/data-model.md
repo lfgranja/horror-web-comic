@@ -64,11 +64,11 @@ JSON sidecar tracking the provenance of a master. Path = master path with extens
 | `provenance.toolVersion` | string | ✅ | e.g. `0.12.0` |
 | `provenance.timestamp` | string | ✅ | ISO-8601 UTC |
 | `provenance.author` | string | ✅ | — |
-| `inputs[].uri` | string | optional | Must satisfy `isSafeLocalReference` (no external/absolute/traversal) |
-| `inputs[].digest.sha256` | string | optional | 64 lowercase hex |
+| `inputs[].uri` | string | required within item | Must satisfy `isSafeLocalReference` (no external/absolute/traversal) |
+| `inputs[].digest.sha256` | string | required within item | 64 lowercase hex |
 | `review.reviewer` | string | within block | Required when `review` present |
 | `review.reviewedAt` | string | within block | ISO-8601 UTC |
-| `review.oversight` | enum | within block | `fully_autonomous` \| `prompt_guided` \| `human_validated` (project-defined; reuses C2PA 2.4 §18.28 enum values) |
+| `review.oversight` | enum | within block | `human_authored` \| `human_assisted` \| `human_reviewed` (project-defined for human-authored masters) |
 | `review.notes` | string | within block | Side-by-side: size, format, qualitative impression |
 | `review.decision` | enum | within block | `approve` \| `reject` |
 | `review.measuredSSIM` | number | optional | Tier B fidelity measurement (SSIM value; PSNR reported separately when available) |
@@ -143,7 +143,7 @@ Human visual review recorded per master. Stored in sidecar `review` block + comm
 |:---|:---|:---|
 | `reviewer` | string | Name (self-review acceptable for solo maintainer) |
 | `reviewedAt` | ISO-8601 UTC | — |
-| `oversight` | enum | `fully_autonomous` \| `prompt_guided` \| `human_validated` |
+| `oversight` | enum | `human_authored` \| `human_assisted` \| `human_reviewed` |
 | `notes` | string | Side-by-side: size, format, qualitative impression + palette/tonal-range verification |
 | `decision` | enum | `approve` \| `reject` |
 | `measuredSSIM` | number (optional) | Tier B fidelity measurement (SSIM value; PSNR reported separately when available) |
@@ -163,6 +163,29 @@ Automated delivery-fidelity check comparing each generated variant to a lossless
 | `scratchLocation` | directory | `build/` (git-ignored root scratch) |
 
 ---
+
+## Entity: GeneratedVariant (in `assets/`)
+
+Output of the build pipeline for an `AuthoredMaster`: the re-encoded AVIF/WebP/JPEG (and `-light-*`) variants at each delivery width, plus the rasterized reference used for srcset selection.
+
+| Field | Type | Constraints |
+|:---|:---|:---|
+| `path` | string | Under `assets/frames/generated/` (or `assets/audio/`); must be referenced by the manifest or fail `findUnreferencedAssets === []` |
+| `format` | enum | `avif` \| `webp` \| `jpeg` (and `-light-*` counterparts) |
+| `width` | number | One of the fillable widths for the master (≤ intrinsic width; no upscaling) |
+| `master` | AuthoredMaster | Source master that produced this variant |
+| `quality` | number | Encoder quality actually used (≥ `QUALITY_FLOORS` for the format/tier) |
+
+## Entity: TierBReference (in `build/`, git-ignored)
+
+Lossless PNG reference of an `AuthoredMaster` re-scaled to a delivery width, used as the comparison target for the Tier B fidelity gate (SSIM/PSNR). Scratch artifact only — never published, never committed.
+
+| Field | Type | Constraints |
+|:---|:---|:---|
+| `path` | string | Under `build/` (git-ignored root scratch); same filesystem as variant for atomic writes |
+| `width` | number | Delivery width the reference was re-scaled to |
+| `master` | AuthoredMaster | Source master |
+| `format` | const | `png` (lossless) |
 
 ## Relationships
 

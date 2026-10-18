@@ -28,7 +28,7 @@ Adotar a suíte ArtCraft (vectorcraft, photocraft, designcraft e outros válidos
 
 **Storage**: Arquivo — `media-src/` (masters + sidecars), `assets/` (saída gerada), `build/` (scratch Tier B, git-ignored). Sem banco de dados.
 
-**Testing**: Node native test runner (`node --test tests/unit/*.test.js`), Playwright e2e/perf (5 projetos; + cobertura DPR>1 via `tests/e2e/artcraft-dpr.spec.js` para verificar nitidez por upscaling). Testes unitários/integração cobrem os arquivos existentes (`delivery.test.js`, `integrity-media.test.js`, `media-generation.test.js`) e os novos gates da feature (`svg-sanitize.test.js`, `sidecar.test.js`, `delivery-fidelity.test.js`, `build-images-gates.test.js`, `atomic-write.test.js`, `artcraft-authoring.test.js`, `artcraft-svg-gate.test.js`, `artcraft-sidecar.test.js`, `artcraft-fidelity.test.js`, `artcraft-trailers.test.js`, `artcraft-absence.test.js`) + helper `property-helpers.mjs` — 11 arquivos Node + 1 spec E2E (U2).
+**Testing**: Node native test runner (`node --test tests/unit/*.test.js`), Playwright e2e/perf (5 projetos; + cobertura DPR>1 via `tests/e2e/artcraft-dpr.spec.js` para verificar nitidez por upscaling). Testes unitários/integração cobrem os arquivos existentes (`delivery.test.js`, `integrity-media.test.js`, `media-generation.test.js`) e os novos gates da feature (`svg-sanitize.test.js`, `sidecar.test.js`, `delivery-fidelity.test.js`, `build-images-gates.test.js`, `atomic-write.test.js`, `artcraft-authoring.test.js`, `artcraft-svg-gate.test.js`, `artcraft-sidecar.test.js`, `artcraft-fidelity.test.js`, `artcraft-trailers.test.js`, `artcraft-absence.test.js`, `story-metadata.test.js`) + helper `property-helpers.mjs` — 12 arquivos Node de gate + 1 spec E2E (U2).
 
 **Target Platform**: Linux (CI ubuntu-latest), macOS (manutenção local). Fedora: webkit não roda localmente (CI-enforced).
 
@@ -127,7 +127,7 @@ budget.json                   # Congelado
 package.json                  # Deps pinadas inalteradas
 ```
 
-**Structure Decision**: Estrutura existente preservada. Três portões de build-time e a escrita atômica são adicionados a `scripts/build-images.mjs` (único módulo que enxerga masters e variantes simultaneamente). O passo de trailers/review é adicionado como step separado em `ci.yml` (nunca em `npm run ci`). `docs/authoring.md` é criado como documentação do fluxo. `marketing/` é criado fora de `assets/` e `media-src/`. `build/` é criado como scratch Tier B (já em `.gitignore`).
+**Structure Decision**: Estrutura existente preservada. Três portões de build-time e a escrita atômica são adicionados a `scripts/build-images.mjs` (único módulo que enxerga masters e variantes simultaneamente). O passo de trailers/review é adicionado como step separado em `ci.yml` (nunca em `npm run ci`). `docs/authoring.md` é criado como documentação do fluxo. `marketing/` é criado fora de `assets/` e `media-src/`. `build/` é criado como scratch Tier B (já em `.gitignore`). A tarefa opcional T005 (`clean:assets`) é um script npm opcional de manutenção, fora do pipeline e fora de `budget.json`; pode ser omitida sem impacto (não requerido por nenhum FR/SC).
 
 ## Complexity Tracking
 

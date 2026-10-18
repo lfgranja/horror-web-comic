@@ -66,7 +66,7 @@ Nota de terminologia: headings em PT usam 'quadro'; identificadores, caminhos e 
 
 - [ ] T011a [P] Criar helper de teste baseado em propriedades (PRNG determinístico semeado, sem dependência nova) em `tests/unit/property-helpers.mjs` (exportando `createPrng(seed)`, `randomSvgGrammar(prng)`, `randomSidecarDoc(prng)`) para reuso pelos testes de invariante (FR-002/plan Testing; U1).
 
-- [ ] T011b [P] [GATE MANUAL] Validar o vocabulário SVG (allow-list em `plan.md`) contra um export real do vectorcraft antes de implementar o gate; **bloqueante para T012 e T023**. Critério de saída: (a) export real passa sem rejeição indevida, ou (b) allow-list ajustada com diff registrado em `docs/authoring.md` (seção "SVG allow-list validation"). Registrar resultado (pass/fail + diff) e a versão "testada-com" do app. Fallback: se o export real não estiver disponível, usar um fixture sintético derivado de um export registrado em `tests/fixtures/` e registrar a justificativa em `docs/authoring.md` (seção 'SVG allow-list validation'); a tarefa não pode ser silenciosamente pulada. (migrado de T022a; U3/A4).
+- [ ] T011b [P] [GATE MANUAL] Validar o vocabulário SVG (allow-list em `plan.md`) contra um export real do vectorcraft antes de implementar o gate; **bloqueante para T012 e T023**. Critério de saída: (a) export real passa sem rejeição indevida, ou (b) allow-list ajustada com diff registrado em `docs/authoring.md` (seção "SVG allow-list validation"). Registrar resultado (pass/fail + diff) e a versão "testada-com" do app. Fallback: se o export real não estiver disponível, usar um fixture sintético derivado de um export registrado em `tests/fixtures/` e registrar a justificativa em `docs/authoring.md` (seção 'SVG allow-list validation'); a tarefa não pode ser silenciosamente pulada. **Risco rastreado**: o fallback sintético pode não cobrir o vocabulário real do vectorcraft; se utilizado, registrar a lacuna como risco em T045. (migrado de T022a; U3/A4).
 
 **Checkpoint**: Contratos e scaffolds prontos.
 
@@ -78,7 +78,7 @@ Nota de terminologia: headings em PT usam 'quadro'; identificadores, caminhos e 
 > - Esta fase DEVE ser executada integralmente pelo **Agente de Testes (TDD Author)**.
 > - Todos os testes abaixo DEVEM ser implementados e commitados ANTES de qualquer alteração de código produtivo.
 > - Todos os testes DEVEM FALHAR (*Red Phase*) antes de desbloquear as Fases 4–6.
-> - NENHUMA tarefa de implementação pode ser iniciada até todas as tarefas de teste da Fase 3 (T011a, T012–T022, T015b, T022b) estarem concluídas e falhando nos testes.
+> - NENHUMA tarefa de implementação pode ser iniciada até todas as tarefas de teste da Fase 3 (T011a, T012–T022, T015b, T022b, T022c) estarem concluídas e falhando nos testes.
 
 > **Escopo dos testes (D2)**: Os pares `svg-sanitize.test.js`/`artcraft-svg-gate.test.js`, `sidecar.test.js`/`artcraft-sidecar.test.js` e `delivery-fidelity.test.js`/`artcraft-fidelity.test.js` cobrem, respectivamente, o nível de **unidade do módulo** e o nível de **integração do fluxo de build**. Não duplicar asserções entre os dois níveis; cada invariante vive em apenas um dos dois.
 
@@ -152,7 +152,7 @@ Nota de terminologia: headings em PT usam 'quadro'; identificadores, caminhos e 
 - [ ] T022b [P] Escrever teste de unidade `tests/unit/artcraft-absence.test.js` verificando ausência de binários ArtCraft em `git ls-files`, `PATH` e `node_modules` (fail-closed; SC-005/FR-013 (g)) — migrado da antiga T031a para respeitar o portão TDD (U1). (Confirmar que o teste falha)
 
 - [ ] T022c [P] Escrever teste de unidade `tests/unit/story-metadata.test.js` validando a regra F20: (a) `alt ≠ description`; (b) `alt ≤ 125 chars`; (c) `description` reproduz todo o lettering visível; (d) `durationMs ≥ minMs` onde `minMs = 500 + (words/150)·60000 + 1000` clampado a [500, 30000], com `words` = número de palavras do `description`; (e) `durationMs` recomputado apenas quando a permanência mínima muda >10% ou cruza o piso de 500 ms. (Confirmar que o teste falha)
-**Checkpoint TDD**: 100% dos testes redigidos e em estado FALHO comprovado (*Red Phase*). Implementação liberada para o **Agente de Implementação (Builder)**.
+**Checkpoint TDD**: 100% dos testes redigidos (incluindo `story-metadata.test.js`, T022c) e em estado FALHO comprovado (*Red Phase*). Implementação liberada para o **Agente de Implementação (Builder)**.
 
 ---
 
@@ -202,7 +202,7 @@ Nota de terminologia: headings em PT usam 'quadro'; identificadores, caminhos e 
 
 ### Implementation & Verification Tasks for User Story 2
 
-- [ ] T031 [P] [US2] [GATE MANUAL] Verificar que `package.json` não ganhou dependências novas (`git diff package.json` sem alterações em `dependencies`/`devDependencies`), que nenhum binário ArtCraft foi adicionado (`git ls-files`), que nenhum binário ArtCraft resolve no `PATH` nem em `node_modules` (FR-013 (g)/SC-005; U4) e documentar o comando de verificação para reuso automatizado.
+- [ ] T031 [P] [US2] [GATE MANUAL] Documentar o comando de verificação de ausência de dependências/binários ArtCraft (reuso automatizado); a verificação determinística efetiva fica em T031a (`node --test tests/unit/artcraft-absence.test.js`), que cobre `git ls-files`, `PATH` e `node_modules` (FR-013 (g)/SC-005; U4).
 
 - [ ] T031a [P] [US2] Executar `node --test tests/unit/artcraft-absence.test.js` (redigido em **T022b**, portão TDD) e confirmar passagem; verificar ausência de binários ArtCraft em `git ls-files`, `PATH` e `node_modules` (fail-closed; SC-005/FR-013 (g)) (U1)
 
@@ -233,7 +233,7 @@ Nota de terminologia: headings em PT usam 'quadro'; identificadores, caminhos e 
 
 - [ ] T036 [P] [US3] Implementar `scripts/ci-trailers.mjs` conforme o contrato do stub (validação fail-closed de trailers `Authored-With`/`Reviewed-By` e do bloco `review` com `decision: approve` para commits que tocam `media-src/`; forward-only; `fetch-depth: 0`)
 
-- [ ] T037 [US3] Modificar o step de checkout em `.github/workflows/ci.yml` para `fetch-depth: 0` e adicionar o passo executando `node scripts/ci-trailers.mjs` (nunca em `npm run ci`); validar o YAML resultante com `actionlint` (versão pinada no workflow ou instalada via `go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.7`) ou, na ausência, um parser YAML Node (`js-yaml`) como fallback documentado (U5). **Nota (M8)**: PRs que tocam `media-src/` sem sidecar (ou sem `review.decision: approve`) falham no CI (fail-closed) — comportamento intencional; build isolado permanece no-op quando o sidecar está ausente.
+- [ ] T037 [US3] Modificar o step de checkout do job **`gate`** em `.github/workflows/ci.yml` para `fetch-depth: 0` (os jobs `webkit-layout-gate` e `macos-webkit-compositor` permanecem em depth 1) e adicionar, nesse mesmo job, o passo executando `node scripts/ci-trailers.mjs` (nunca em `npm run ci`); validar o YAML resultante com `actionlint` (versão pinada no workflow ou instalada via `go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.7`) ou, na ausência, um parser YAML Node (`js-yaml`) como fallback documentado (U5). **Nota (M8)**: PRs que tocam `media-src/` sem sidecar (ou sem `review.decision: approve`) falham no CI (fail-closed) — comportamento intencional; build isolado permanece no-op quando o sidecar está ausente.
 
 - [ ] T037a [P] [US3] [GATE MANUAL] Verificar pré-requisito de host `librsvg` (necessário para rasterização SVG por sharp): documentar em `docs/authoring.md` (T038) e, se aplicável, adicionar verificação ao preflight (U2/CC2)
 
