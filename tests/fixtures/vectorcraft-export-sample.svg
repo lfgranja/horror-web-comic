@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" width="1200" height="800">
+  <title>vectorcraft synthetic fixture</title>
+  <desc>Synthetic fixture for SVG allow-list validation (remediation A2 / T011b fallback). Not a real vectorcraft export.</desc>
+  <rect x="100" y="100" width="1000" height="600" fill="#1a1a2e" stroke="#e94560" stroke-width="4"/>
+  <text x="600" y="420" text-anchor="middle" font-family="serif" font-size="72" fill="#ffffff">Frame 01</text>
+</svg>
