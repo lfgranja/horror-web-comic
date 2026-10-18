@@ -116,7 +116,7 @@
         },
         "measuredSSIM": {
           "type": "number",
-          "description": "Optional Tier B measured SSIM for the master."
+          "description": "Optional Tier B fidelity measurement (SSIM value; PSNR reported separately when available)."
         }
       }
     }
