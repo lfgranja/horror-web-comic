@@ -145,7 +145,7 @@ package.json                  # Deps pinadas inalteradas; scripts npm opcionais 
 
 | Added Complexity | Justification (Princípio II — Médium Definido) |
 |:---|:---|
-| 3 build-time gates (SVG sanitize, sidecar digest, Tier B fidelity) | Operam exclusively at build time sobre masters em `media-src/`; nenhum código novo no runtime/player. Masters SVG são rasterizados por sharp (já dependência existente). |
+| 3 build-time gates (SVG sanitize, sidecar digest, Tier B fidelity) — implementados por 5 módulos (svg-sanitize, sidecar, delivery-fidelity, atomic-write, ci-trailers) + escrita atômica + passo de CI | Operam exclusively at build time sobre masters em `media-src/`; nenhum código novo no runtime/player. Masters SVG são rasterizados por sharp (já dependência existente). |
 | 5 new scripts modules | Invoked by existing build-images.mjs; sem dependências novas (sharp, ffmpeg, crypto builtin). |
 | CI step (trailers/review enforcement) | Step separado em ci.yml; não altera npm run ci nem o pipeline core. |
 | Atomic write pattern | Write-temp→rename no mesmo filesystem; sem dependências externas. |
