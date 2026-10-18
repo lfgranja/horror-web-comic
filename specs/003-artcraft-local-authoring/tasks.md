@@ -291,7 +291,7 @@ Nota de terminologia: headings em PT usam 'quadro'; identificadores, caminhos e 
   - Confirmação de ausência de binários ArtCraft (PATH/node_modules/git ls-files) (FR-013 (g)) — automatizada por T031a
   - Confirmação de revisão Tier A (SC-007b) por master: sidecar `review` com `decision: approve` + trailer `Reviewed-By` (CG3)
   - Registro **obrigatório** da exceção documentada warn-only light vs Princípio IV, com justificativa (CC1) — ausência reprova o fechamento
-  - **Constituição (remediação C1)**: resultado do PR de emenda SemVer-MINOR ao Princípio IV (proposto fora de `/speckit.implement`) — aceito/rejeitado/pendente; se pendente, a atestação deve registrar o desvio como aberto e reprovar o fechamento até a decisão.
+  - **Constituição (remediação C1)**: emenda SemVer-MINOR aplicada — constituição v2.1.0 (2026-10-18), exceção Tier B light (warn-only) agora normativa no Princípio IV (`.specify/memory/constitution.md`). Atestação deve registrar a versão da constituição (2.1.0) como evidência de fechamento; nenhum desvio aberto remanescente.
   - Confirmação de pré-requisito de host `librsvg` (U2/CC2)
   - Registro de qualquer lacuna de ferramenta (Chrome para T044a, actionlint para T037) com justificativa
   - Bloqueador externo T028 (autoria humana dos 4 quadros) deve estar concluído antes da atestação de SC-001

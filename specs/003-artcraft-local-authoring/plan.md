@@ -64,7 +64,7 @@ Adotar a suíte ArtCraft (vectorcraft, photocraft, designcraft e outros válidos
 - **Princípio afetado**: IV (Performance e Orçamento de Ativos — NÃO NEGOCIÁVEL).
 - **Desvio**: variantes `-light-*` usam comportamento **warn-only** no portão Tier B (SSIM < 0,90 apenas avisa), enquanto variantes standard são fail-fast. SSIM/PSNR são métricas-proxy imperfeitas e a degradação light é intencional.
 - **Justificativa**: orçamento de bytes força qualidade inferior nas variantes light; fail-fast bloquearia builds válidos. Variantes standard permanecem fail-fast, preservando o núcleo do Princípio IV.
-- **Status de aprovação**: documentado e justificado aqui (governança exige "desvios documentados e aprovados"). **Ação pendente**: propor emenda à constituição (SemVer — MINOR, por adição de exceção documentada) em PR separado fora de `/speckit.implement`, registrando a aprovação formal. Até a aprovação, o desvio é rastreado como item de governança, não como silêncio.
+- **Status de aprovação**: emenda aplicada à constituição v2.1.0 (2026-10-18) — SemVer MINOR, por adição de exceção documentada ao Princípio IV (ver `.specify/memory/constitution.md`, Sync Impact Report 2.1.0 e seção IV "Exceção documentada"). O desvio não é mais pendente: a exceção Tier B light (warn-only) é agora parte normativa da constituição. T045 deve registrar a versão da constituição (2.1.0) como evidência de fechamento, em vez de rastrear o desvio como aberto.
 
 ## Project Structure
 

@@ -7,10 +7,31 @@ Sync Impact Report
   - VI. Controle do Usuário e Acessibilidade: cláusula de áudio ajustada para
     coerência ("respeitar a escolha do usuário" em vez de "nunca forçar áudio").
 - Seções modificadas: Fluxo de Desenvolvimento e Portões de Qualidade (teste de
-  áudio passa a cobrir estado ativo por padrão e bloqueio de autoplay).
+  áudio passa a cobrir estado ativa por padrão e bloqueio de autoplay).
 - Seções adicionadas: nenhuma
 - Seções removidas: nenhuma
 - TODOs adiados: nenhum
+---
+Sync Impact Report (emenda 2.1.0 — 2026-10-18)
+- Versão: 2.0.0 → 2.1.0 (MINOR — expansão material de orientação)
+- Princípio modificado:
+  - IV. Performance e Orçamento de Ativos (NÃO NEGOCIÁVEL): adicionada exceção
+    documentada para variantes `-light-*` no portão de fidelidade de entrega
+    (Tier B): o comportamento warn-only (SSIM < 0,90 apenas avisa) é permitido
+    para essas variantes, porque SSIM/PSNR são métricas-proxy imperfeitas e a
+    degradação light é intencional (orçamento de bytes). Variantes standard
+    permanecem fail-fast (SSIM ≥ 0,95; PSNR ≥ 30 dB), preservando o núcleo do
+    princípio. O desvio é justificado por: (a) fail-fast bloquearia builds
+    válidos em que o orçamento força qualidade inferior na variante light;
+    (b) a degradação light é uma decisão de design aceita (Princípio IV
+    permanece fail-fast no caminho crítico — standard).
+- Seções modificadas: IV (exceção Tier B); Fluxo de Desenvolvimento e Portões
+  de Qualidade (portão de fidelidade Tier B adicionado à lista de testes).
+- Seções adicionadas: nenhuma (exceção embutida em IV).
+- Seções removidas: nenhuma.
+- TODOs adiados: nenhum.
+- Origem: specs/003-artcraft-local-authoring/ (FR-007, SC-007a, plan.md
+  "Constitution Deviation Record", tasks.md T045).
 -->
 
 # Constituição do Web Comic de Terror
@@ -55,8 +76,22 @@ críticos DEVEM ser pré-carregados. O projeto DEVE respeitar orçamentos defini
 de peso total, tempo de carregamento (LCP) e tamanho de JavaScript. Código DEVE
 ser minificado e livre de dependências supérfluas.
 
+**Exceção documentada (emenda 2.1.0, 2026-10-18) — portão de fidelidade de
+entrega (Tier B):** o comportamento **warn-only** é permitido para variantes
+`-light-*` no portão Tier B (SSIM < 0,90 apenas avisa, não falha o build),
+porque SSIM/PSNR são métricas-proxy imperfeitas e a degradação light é
+intencional (orçamento de bytes força qualidade inferior nessa variante).
+Variantes **standard** permanecem **fail-fast** (SSIM ≥ 0,95; PSNR ≥ 30 dB),
+preservando o núcleo não negociável do princípio. A exceção é justificada por:
+(a) fail-fast bloquearia builds válidos em que o orçamento de bytes força
+qualidade inferior na variante light; (b) a degradação light é decisão de
+design aceita, enquanto o caminho crítico (standard) permanece fail-fast. Toda
+utilização dessa exceção DEVE ser registrada em T045 (atestação de fechamento)
+com justificativa.
+
 Racional: "altamente otimizada" é requisito explícito; imagens de alta qualidade
-são o maior risco de peso.
+são o maior risco de peso. A exceção Tier B light é a única concessão
+permitida ao princípio e está documentada, justificada e rastreável.
 
 ### V. Qualidade Visual e Sonora
 A arte DEVE ser de alta qualidade, coerente em estilo, resolução e paleta,
@@ -104,6 +139,10 @@ ou usuárias de tecnologias assistivas.
 - O comportamento do áudio (ativo por padrão, bloqueio de reprodução automática e
   desativação imediata) e com `prefers-reduced-motion` DEVE ser testado.
 - O orçamento de peso de imagem DEVE ser conferido a cada novo quadro.
+- A fidelidade de entrega (portão Tier B: SSIM ≥ 0,95 / PSNR ≥ 30 dB para
+  variantes standard, fail-fast; variantes `-light-*` warn-only por exceção
+  documentada na emenda 2.1.0 do Princípio IV) DEVE ser verificada a cada
+  novo quadro autoral.
 - Complexidade adicionada DEVE ser justificada em relação ao Princípio II.
 
 ## Governança
@@ -120,4 +159,4 @@ ou usuárias de tecnologias assistivas.
 - A orientação de desenvolvimento em tempo de execução DEVE residir em
   `AGENTS.md` (quando existir) e estar subordinada a esta constituição.
 
-**Version**: 2.0.0 | **Ratified**: 2026-09-23 | **Last Amended**: 2026-09-23
+**Version**: 2.1.0 | **Ratified**: 2026-09-23 | **Last Amended**: 2026-10-18
