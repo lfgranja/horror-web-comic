@@ -113,7 +113,7 @@ build/                        # Scratch Tier B (git-ignored, NUNCA em assets/)
 docs/
 ├── delivery.md               # Contrato de saída (inalterado)
 ├── authoring.md              # NOVO: fluxo de autoria ArtCraft
-├── authoring-accessibility.md # Companheiro: regra F20 de alt/description/durationMs (criado neste feature; arquivo de trabalho ainda não rastreado — adicionar ao git antes do merge)
+├── authoring-accessibility.md # Companheiro: regra F20 de alt/description/durationMs (criado por T038a — concluído)
 └── image-quality-assessment.md  # Referência de qualidade (existe)
 
 marketing/                    # NOVO: arte promocional (designcraft), fora do pipeline
