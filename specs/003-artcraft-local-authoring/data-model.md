@@ -24,7 +24,7 @@ A master file in `media-src/frames/` or `media-src/audio/` produced by an ArtCra
 
 - **Geometry**: **Authored masters**: larger side > 1200 px → `invalid-master-geometry` throw (fail-fast). **Rigid pipeline ceiling for any master (including fixtures/test masters)**: larger side > 2560 px → `invalid-master-geometry` throw (FR-002). The 2560 px ceiling is therefore the guard for fixture/test masters, while authored masters already fail-fast at 1200 px. No upscaling (`withoutEnlargement: true`).
 - **Format**: frames accept `svg|png|jpg`; audio accepts `wav`. No other formats.
-- **SVG content**: must pass sanitization gate (reject-list floor + allow-list over vectorcraft vocabulary) before rasterization. Internal `url(#…)` allowed. **DoS caps (measurable)**: ver constante `SVG_DOS_CAPS` em `scripts/svg-sanitize.mjs` — violation → throw.
+- **SVG content**: must pass sanitization gate (reject-list floor + allow-list over the minimal vectorcraft vocabulary defined in `plan.md`) before rasterization. Internal `url(#…)` allowed. **DoS caps (measurable)**: ver constante `SVG_DOS_CAPS` em `scripts/svg-sanitize.mjs` — violation → throw.
 - **References**: manifest/sidecar references use `isSafeLocalReference` (a file-path rule; it rejects `#`). SVG URL attributes (`href`, `xlink:href`, `url(...)`) have a **separate** rule: allow fragment-only `#…`; reject absolute, protocol-relative, relative-path, and `data:`.
 - **Audio**: WAV, any stable DAW. `soundcraft` (pre-alpha) is **not** a production dependency.
 
