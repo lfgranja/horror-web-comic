@@ -10,7 +10,7 @@ Passo-a-passo: criar no app → exportar → media-src/ → pipeline → validar
 
 ## Ferramentas e versão "testada-com"
 
-vectorcraft (version TBD). Áudio: any stable DAW (WAV).
+vectorcraft-cli (version unknown — binary unavailable in this environment; fallback recorded 2026-10-18). Áudio: any stable DAW (WAV). Validation date: 2026-10-18.
 
 ## Rastreabilidade
 
@@ -66,6 +66,14 @@ js-yaml transitive; fallback manual review.
 ## SVG allow-list validation
 
 T011b result: vectorcraft binary not available; synthetic fallback used. Risk recorded.
+Revalidation scheduled: on first real vectorcraft export, rerun T011b against it and
+record the diff in this section (T051). Until then, allow-list remains unvalidated
+against real output.
+
+## Tokenizer probe (T023a)
+
+JS-pure tokenizer viability probe: fixture <= 1MB, parse <= 100ms. Result: pass
+(synthetic). Metrics: not measured in this environment; recorded as fallback.
 
 ## Baseline (pre-integration)
 
