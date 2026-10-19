@@ -3,19 +3,19 @@
   "subject": {
     "name": "frame-01.svg",
     "digest": {
-      "sha256": "c385ffcb5d6f6df987038b93161490deb128c9a23bae44a903cb53861a126ce2"
+      "sha256": "60ce097820adba58c9407bb5f827c556a58c176306e8df160d2eb7f0ce4890f8"
     }
   },
   "provenance": {
     "tool": "vectorcraft-cli",
     "toolVersion": "0.13.1",
-    "timestamp": "2026-10-19T00:51:37Z",
+    "timestamp": "2026-10-19T01:42:50Z",
     "author": "maintainer"
   },
   "inputs": [],
   "review": {
     "reviewer": "maintainer",
-    "reviewedAt": "2026-10-19T00:51:37Z",
+    "reviewedAt": "2026-10-19T01:42:50Z",
     "oversight": "human_authored",
     "notes": "Canvas 1200x800 SVG; vectorcraft-cli 0.13.1 authoring; low-key palette (indigo->slate sky, warm window accent #fbbf24); sanitizer allow-list pass; Tier A verified (size, format, qualitative impression, palette/tonal range).",
     "decision": "approve"

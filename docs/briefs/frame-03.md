@@ -35,6 +35,31 @@ or as a caption that feels like an internal voice rather than a label.
 Mood reference: the "don't look" trope; the dread of the unseen behind you.
 Composition should make the viewer want to turn around (meta-dread).
 
+### Art Direction (Professional Craft — Alan Moore / Eddie Campbell register)
+
+Adopt the **Eddie Campbell "From Hell" register**: psychogeography, ambiguity,
+stark black strokes, furious scribbles. The horror lives in the *geometry* and
+the vanishing point.
+
+- **One-point perspective as dread**: converging lines (floor, ceiling, walls)
+  create a tunnel that pulls the eye into the unknown. Use 12+ converging
+  guidelines at varied stroke weights (1px) for texture.
+- **Scratchy, liberated penmanship**: doorframe and banister lines should feel
+  hand-drawn, not CAD-clean. Add scratch marks (short diagonal strokes) on
+  surfaces.
+- **Ambiguity over explicitness**: the shape at the far end must be ≤ 1 stop
+  brighter than surroundings — subtle enough to be missed on first viewing.
+  Use fill-opacity 0.35-0.5.
+- **Grayscale watercolor washes**: floor and ceiling use layered gradients
+  (opacity) to suggest depth, not flat fills.
+- **Stark black strokes**: doorframe and banister are the structural anchors;
+  render with 4-6px strokes, slightly irregular.
+- **Negative space is the horror**: the dark interior beyond the door is where
+  the viewer's fear lives. Do not fill it.
+- **Title as internal voice**: monospaced, small (32px), cool fading color
+  (#cbd5e1, opacity 0.8). Should feel scratched into the doorframe.
+- **Vignette**: darken the edges to intensify the tunnel effect.
+
 ## 3. Technical Specifications
 
 | Parameter | Value |

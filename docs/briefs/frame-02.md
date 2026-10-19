@@ -30,6 +30,27 @@ for the figure; it should not be the first thing noticed.
 Key motif: **presence without identity**. No face, no full body. The horror is
 that the house is occupied by something the viewer cannot fully see.
 
+### Art Direction (Professional Craft — Alan Moore / Eddie Campbell register)
+
+Adopt the **Eddie Campbell "From Hell" register**: ambiguity of faces, confusion
+of identity, scratchy pen-and-ink, grayscale watercolor. The horror lives in
+what is *barely* seen.
+
+- **Ambiguity over explicitness**: the figure must be discoverable only on
+  second look — a luminance difference of 1-2 stops, not a hard edge. Use
+  fill-opacity 0.4-0.9 on near-black shapes.
+- **Scratchy, liberated penmanship**: furniture and doorframe lines should feel
+  hand-drawn with varied stroke width; avoid CAD-clean rectangles.
+- **Grayscale watercolor washes**: walls and floor are layered semi-transparent
+  gradients, not flat fills. Moonlight and lamp glow are the only bright areas.
+- **Psychogeography**: the interior should feel like a real, inhabited, decaying
+  space — dust motes, worn furniture, imperfect alignment.
+- **Negative space is the horror**: large dark areas (unlit parts of the room)
+  are where the viewer's imagination works. Do not fill them.
+- **Title as whisper**: thin, receding, low opacity (0.7). It should feel like
+  an internal voice, not a headline.
+- **Vignette**: darken the edges to trap the viewer inside.
+
 Mood reference: the "something in the background" trope — the figure should be
 discoverable on second look, rewarding attentive viewers and creating dread on
 replay.

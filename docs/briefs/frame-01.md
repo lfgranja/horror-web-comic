@@ -32,6 +32,29 @@ crooked fence on the right. The title lettering is integrated into the scene as
 part of the environment (painted on the door or as a title card at the bottom),
 not pasted on top.
 
+### Art Direction (Professional Craft — Alan Moore / Eddie Campbell register)
+
+Adopt the **Eddie Campbell "From Hell" register**: stark black strokes, furious
+scribbles, varied line weight, ambiguity over explicitness. The horror lives in
+what is *not* drawn. Apply these craft rules:
+
+- **Scratchy, liberated penmanship**: lines should feel hand-drawn, not CAD-clean.
+  Vary stroke width (1px hairlines for detail, 6-8px for structural elements).
+  Use short, broken strokes for texture (bark, cracks, fence grain).
+- **Stark black strokes + furious scribbles**: the dead tree and fence should be
+  rendered with aggressive, irregular marks — not smooth bezier curves.
+- **Grayscale watercolor washes**: the sky and ground use layered, semi-transparent
+  gradients (opacity 0.08-0.55) to suggest atmosphere, not flat fills.
+- **Ambiguity over explicitness**: the ajar door implies presence; do not draw a
+  figure. Let negative space do the work.
+- **Psychogeography**: the house, tree, fence and path form a "place" that feels
+  historically weighted — asymmetry, imperfection, decay.
+- **Vignette**: darken the edges to focus the eye on the lit window (the focal point).
+- **No gore, no jump-scare**: restraint is the horror. The single warm accent
+  (#fbbf24) against the cool, low-key surroundings carries all the dread.
+- **Title integration**: lettering should feel painted/carved into the scene, not
+  overlaid. Slight opacity reduction (0.9) and a worn display face.
+
 Mood reference: classic haunted-house establishing shot, but restrained — no
 gore, no jump-scare imagery. The horror lives in the **absence** and the
 **light**.

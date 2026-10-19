@@ -37,6 +37,28 @@ Mood reference: the "rain on the window" ending — melancholy, inescapable,
 quietly terrifying. Think of the final shot of a slow-burn horror film: no
 monster, just weather and a house that will not let you leave.
 
+### Art Direction (Professional Craft — Alan Moore / Eddie Campbell register)
+
+Adopt the **Eddie Campbell "From Hell" register**: scratchy pen-and-ink,
+grayscale watercolor, ambiguity, psychogeography. The horror lives in the
+*barrier* (the glass) and the *weather*.
+
+- **Rain as texture, not decoration**: 28+ streaks at varied opacity (0.3-0.55)
+  and slight horizontal drift (x2 = x1 ± 8). Mix thick (1.5px) and thin (1px)
+  strokes. Rain should feel relentless and slightly chaotic, not uniform.
+- **Grayscale watercolor washes**: the glass layer is a semi-transparent
+  gradient (#1e293b → #0f172a, opacity 0.55-0.75), not a flat fill.
+- **Stark black strokes**: the house beyond the glass should be nearly black
+  (#020617, #0a0a0a) — a silhouette, not a detailed drawing. The single
+  faint light (#fbbf24, opacity 0.18) is the only warm accent.
+- **Scratchy, liberated penmanship**: the title should feel like condensation
+  — thin, faded, barely legible (opacity 0.65). Use a sans-serif at 34px.
+- **Negative space is the horror**: the dark house beyond the glass is where
+  the viewer's fear lives. Do not illuminate it.
+- **Bookend with frame 01**: this frame inverts frame 01 (interior view, rain
+  instead of dusk sky). The house silhouette should echo frame 01's composition.
+- **Vignette**: darken the edges to intensify the trapped, claustrophobic feel.
+
 ## 3. Technical Specifications
 
 | Parameter | Value |

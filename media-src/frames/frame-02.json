@@ -3,19 +3,19 @@
   "subject": {
     "name": "frame-02.svg",
     "digest": {
-      "sha256": "7dcf55796cdd3277412114516ba7c9d5b588b43a28ad5d0e0cd20d7d23bd9962"
+      "sha256": "bf970dc23e881a7425a7dc5004896583b44bc5d57eedd0ec189759380c72b11f"
     }
   },
   "provenance": {
     "tool": "vectorcraft-cli",
     "toolVersion": "0.13.1",
-    "timestamp": "2026-10-19T01:12:48Z",
+    "timestamp": "2026-10-19T01:42:50Z",
     "author": "maintainer"
   },
   "inputs": [],
   "review": {
     "reviewer": "maintainer",
-    "reviewedAt": "2026-10-19T01:12:48Z",
+    "reviewedAt": "2026-10-19T01:42:50Z",
     "oversight": "human_authored",
     "notes": "Canvas 1200x800 SVG; interior low-key (walls #1e293b, floor #020617); moonlight window #cbd5e1, lamp glow #fbbf24 radial; figure silhouette barely visible (#020617, fill-opacity 0.85). Tier A verified.",
     "decision": "approve"
