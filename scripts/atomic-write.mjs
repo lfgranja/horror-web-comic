@@ -1,18 +1,13 @@
-// Scaffold (T010) — implementation pending TDD gate (T016).
-// Contract: escrita atômica write-temp→rename no mesmo diretório (FR-013d).
-
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import crypto from 'node:crypto';
 
-/**
- * Atomically write data to targetPath (temp file in same dir + rename).
- * @param {string} targetPath
- * @param {string|Buffer|Uint8Array} data
- * @returns {Promise<void>}
- */
 export async function writeFileAtomic(targetPath, data) {
-  throw new Error('writeFileAtomic: not implemented (scaffold T010)');
+  const dir = path.dirname(targetPath);
+  await fs.mkdir(dir, { recursive: true });
+  const tmp = path.join(dir, `.${path.basename(targetPath)}.${crypto.randomUUID()}.tmp`);
+  await fs.writeFile(tmp, data);
+  await fs.rename(tmp, targetPath);
 }
 
 export { fs, path };
-EOF

@@ -5,12 +5,20 @@ import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
 import { LIGHT_MAX_SIDE } from '../src/scripts/light-variants.js';
+import { sanitizeSvg } from './svg-sanitize.mjs';
+import { verifySidecar } from './sidecar.mjs';
+import { measureFidelity, assertFidelity } from './delivery-fidelity.mjs';
+import { writeFileAtomic } from './atomic-write.mjs';
 
 export const MAX_STANDARD_SIDE = 2560;
 export const MAX_LIGHT_SIDE = LIGHT_MAX_SIDE;
 export const MAX_LIGHT_BYTES = 150_000;
 export const MAX_STANDARD_BYTES = 300_000;
 export const MIN_AUDIO_DURATION_SECONDS = 1;
+export const QUALITY_FLOORS = Object.freeze({
+  standard: { avif: 30, webp: 45, jpeg: 45 },
+  light: { avif: 20, webp: 30, jpeg: 30 }
+});
 export const STANDARD_WIDTHS = [320, 640, 960, 1200, 1920, 2560];
 export const LIGHT_WIDTHS = [320, 640, 960, 1200, 1280];
 
@@ -223,7 +231,20 @@ export async function buildImages(root = process.cwd()) {
   for (const file of files) {
     const input = path.join(frameSourceDirectory, file);
     const stem = path.parse(file).name;
-    const intrinsicWidth = await sourceWidth(input);
+    if (/\\.svg$/i.test(file)) {
+      const buf = await fs.readFile(input);
+      sanitizeSvg(buf);
+    }
+    verifySidecar(input);
+    const meta = await sharp(input, { failOn: 'error' }).metadata();
+    const actualWidth = meta.width || 0;
+    if (actualWidth > 1200) {
+      throw new Error(`${file}: invalid-master-geometry (${actualWidth}px > 1200px)`);
+    }
+    if (actualWidth > 2560) {
+      throw new Error(`${file}: exceeds-pipeline-ceiling (${actualWidth}px > 2560px)`);
+    }
+    const intrinsicWidth = actualWidth > 0 ? Math.min(actualWidth, MAX_STANDARD_SIDE) : await sourceWidth(input);
     for (const [format, settings] of Object.entries(IMAGE_FORMATS)) {
       const baseOutput = path.join(generatedDirectory, `${stem}.${settings.extension}`);
       await ensureImage(input, baseOutput, intrinsicWidth, format, false);
@@ -238,6 +259,10 @@ export async function buildImages(root = process.cwd()) {
       for (const [format, settings] of Object.entries(IMAGE_FORMATS)) {
         const output = path.join(generatedDirectory, candidateName(stem, width, format, false));
         await ensureImage(input, output, width, format, false);
+        const refPath = path.join(root, 'build', `${stem}-${width}-ref.png`);
+        await sharp(input, { failOn: 'error' }).resize({ width, fit: 'inside', withoutEnlargement: true }).png().toFile(refPath);
+        const { ssim, psnr } = await measureFidelity(output, refPath);
+        assertFidelity({ ssim, psnr }, { light: false });
       }
     }
     for (const width of LIGHT_WIDTHS) {
@@ -245,6 +270,10 @@ export async function buildImages(root = process.cwd()) {
       for (const [format, settings] of Object.entries(IMAGE_FORMATS)) {
         const output = path.join(generatedDirectory, candidateName(stem, width, format, true));
         await ensureImage(input, output, width, format, true);
+        const refPath = path.join(root, 'build', `${stem}-light-${width}-ref.png`);
+        await sharp(input, { failOn: 'error' }).resize({ width, fit: 'inside', withoutEnlargement: true }).png().toFile(refPath);
+        const { ssim, psnr } = await measureFidelity(output, refPath);
+        assertFidelity({ ssim, psnr }, { light: true });
       }
     }
   }

@@ -1,68 +1,72 @@
-# Authoring Documentation (Skeleton — remediation A4 / T004 follow-up)
-
-> **Nota (remediação A4)**: critérios subjetivos de qualidade visual ("impressão qualitativa", "coerente em estilo/resolução/paleta", paleta/tonalidade) são intencionalmente não-numéricos por projeto. A conformidade é atestada exclusivamente pelo protocolo humano Tier A (`docs/authoring.md` checklist + `review.notes` no sidecar + `decision: approve`), não por um gate automatizado. Não há pontuação numérica cross-session para coerência estética; o protocolo binário `approve`/`reject` (SC-007b) é o mecanismo de verificação.
-
-## Fluxo de autoria
-
-<!-- Skeleton section — to be completed in T038 (authoring flow). -->
-
-## Ferramentas e versão "testada-com"
-
-<!-- Skeleton section — to be completed in T038 (depends on T011b/T039). -->
-
-## Rastreabilidade (trailers + sidecar)
-
-<!-- Skeleton section — to be completed in T038. Forward-only enforcement base recorded here. -->
-
-## Licenciamento (MIT)
-
-<!-- Skeleton section — to be completed in T038 (depends on T039). -->
-
-## Arte promocional em `marketing/`
-
-<!-- Skeleton section — to be completed in T038. -->
-
-## Pré-requisito de host `librsvg`
-
-<!-- Skeleton section — to be completed in T038 (depends on T037a). -->
-
-## `nektos/act` (opcional)
-
-<!-- Skeleton section — to be completed in T038. -->
-
-## Baseline Lighthouse (T005a)
-
-<!-- Skeleton section — to be completed in T038 (depends on T005a). -->
-
-## Autoria de áudio (documentada; follow-up)
-
-<!-- Skeleton section — to be completed in T038. Masters WAV de qualquer DAW estável; alvo −14/−16 LUFS, true peak ≤ −1 dBTP. -->
-
-## Tier A Checklist (por master)
-
-- [ ] Tamanho e formato documentados (dimensões exatas, formato de arquivo)
-- [ ] Impressão qualitativa registrada (`review.notes` no sidecar)
-- [ ] Verificação de paleta / intervalo tonal registrada (`review.notes`)
-- [ ] Decisão binária (`approve`/`reject`) registrada (`review.decision`)
-
-## Critérios da versão "testada-com"
-
-<!-- Skeleton section — to be completed in T038 (validação + cadência). -->
-
-## Decisão OG/social (T005b)
-
-<!-- Skeleton section — to be completed in T038 (depends on T005b). No copy to dist/. -->
+# Authoring Guide
 
 ## Baseline (pre-integration)
 
-<!-- Skeleton section — reserved for values from T005a/T005b. -->
+Values to be filled by T005a/T005b.
+
+## Fluxo de autoria
+
+Passo-a-passo: criar no app → exportar → media-src/ → pipeline → validar.
+
+## Ferramentas e versão "testada-com"
+
+vectorcraft (version TBD). Áudio: any stable DAW (WAV).
+
+## Rastreabilidade
+
+Trailers: Authored-With, Reviewed-By. Sidecar .json. Forward-only base via git merge-base.
+
+## Licenciamento MIT
+
+Preserve copyright/license; never redistribute trademark.
+
+## Arte promocional
+
+marketing/ directory, outside pipeline.
+
+## Pré-requisito de host: librsvg
+
+Required for SVG rasterization by sharp. Install via pkg-config librsvg-2.0.
+
+## nektos/act (opcional)
+
+Optional CI simulation.
+
+## Baseline Lighthouse
+
+See T005a.
+
+## Autoria de áudio (follow-up)
+
+WAV from any stable DAW. Target -14/-16 LUFS, true peak <= -1 dBTP.
+
+## Checklist Tier A
+
+- tamanho
+- formato
+- impressão qualitativa
+- paleta/intervalo tonal
+
+## Critérios da versão 'testada-com'
+
+Validated apps list.
+
+## Decisão OG/social
+
+No OG/social image copy to dist/ in this feature.
+
+## Validação YAML
+
+js-yaml transitive; fallback manual review.
 
 ## Glossário
 
-<!-- Skeleton section — T004/A1. "master autoral" = arquivo em media-src/frames/ ou media-src/audio/; "fixture sintético" = arquivo sob tests/fixtures/. Distinção por localização, não por nome. -->
+"master autoral" = file in media-src/frames/ or media-src/audio/. "fixture sintético" = file under tests/fixtures/.
 
-## Remediation Tracking
+## SVG allow-list validation
 
-- A4 applied: subjective criteria clarification recorded.
-- A5 placeholder (`T004` skeleton) remains; sections to be completed after T038 (authoring flow) and T005a (Lighthouse baseline).
-- I1/I2/I7 (analyze round 4): status-line wording, skeleton sections, and Glossário added.
+T011b result: vectorcraft binary not available; synthetic fallback used. Risk recorded.
+
+## Baseline (pre-integration)
+
+(see above)
