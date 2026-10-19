@@ -128,9 +128,9 @@
             "width": 1200,
             "height": 800
           },
-          "alt": "Janela aberta na chuva com “A CHUVA NÃO PARA”.",
+          "alt": "Janela coberta de chuva com a inscrição “A CHUVA NÃO PARA”.",
           "description": "Uma janela alta de moldura clara está escancarada para a noite, com a chuva grossa atravessando o quadro em fios prateados. A cortina encharcada cola-se à parede e depois se ergue sozinha, como erguida por uma mão invisível, revelando um quintal afogado no breu. No rodapé da imagem, em letras frias e espaçadas, lê-se “A CHUVA NÃO PARA”. O áudio traz a chuva batendo sem trégua no parapeito e nas folhas, cortada por um sino distante que dobra uma única vez, marcando o fim da narrativa.",
-          "durationMs": 2000,
+          "durationMs": 3100,
           "transition": {
             "type": "cut",
             "durationMs": 0,

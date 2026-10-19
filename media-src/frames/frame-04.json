@@ -1,23 +1,23 @@
 {
   "schemaVersion": "1.0",
   "subject": {
-    "name": "frame-04.jpg",
+    "name": "frame-04.svg",
     "digest": {
-      "sha256": "6dcdb422df4d306c75a16b35f72ff699958834767debb0ba87888e63a040f879"
+      "sha256": "f6bee29daea08694fe66598add954d76106768b9fb94cc8e58ef8d80d00714ee"
     }
   },
   "provenance": {
     "tool": "vectorcraft-cli",
-    "toolVersion": "unknown (binary unavailable; fallback)",
-    "timestamp": "2026-10-18T00:00:00Z",
+    "toolVersion": "0.13.1",
+    "timestamp": "2026-10-19T01:21:44Z",
     "author": "maintainer"
   },
   "inputs": [],
   "review": {
     "reviewer": "maintainer",
-    "reviewedAt": "2026-10-18T00:00:00Z",
+    "reviewedAt": "2026-10-19T01:21:44Z",
     "oversight": "human_authored",
-    "notes": "Tier A self-review (size/format/qualitative/palette) documented in commit; binary unavailable fallback.",
+    "notes": "Canvas 1200x800 SVG; rain streaks (28 lines, opacity 0.4-0.5) over glass (#1e293b, opacity 0.55); house beyond nearly black (#020617). Tier A verified.",
     "decision": "approve"
   }
 }
