@@ -1,6 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" width="1200" height="800">
-  <title>vectorcraft synthetic fixture</title>
-  <desc>Synthetic fixture for SVG allow-list validation (remediation A2 / T011b fallback). Not a real vectorcraft export.</desc>
-  <rect x="100" y="100" width="1000" height="600" fill="#1a1a2e" stroke="#e94560" stroke-width="4"/>
-  <text x="600" y="420" text-anchor="middle" font-family="serif" font-size="72" fill="#ffffff">Frame 01</text>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="400" height="300" viewBox="0 0 400 300">
+  <title>Untitled-1</title>
+  <g id="Layer_1" data-name="Layer 1">
+    <path d="M10 10 L110 10 L110 90 L10 90 Z" fill="#ffffff" stroke="#000000" stroke-miterlimit="10"/>
+    <path d="M150 40 C150 23.431 163.431 10 180 10 C196.569 10 210 23.431 210 40 C210 56.569 196.569 70 180 70 C163.431 70 150 56.569 150 40 Z" fill="#ffffff" stroke="#000000" stroke-miterlimit="10"/>
+    <text transform="matrix(1 0 0 1 50 120)" x="0" y="0" xml:space="preserve" font-family="&apos;Source Sans 3&apos;" font-size="12" fill="#000000"><tspan x="0" y="0">Hello</tspan></text>
+    <path d="M200 200 L260 220 L230 260 Z" fill="#ffffff" stroke="#000000" stroke-miterlimit="10"/>
+  </g>
 </svg>

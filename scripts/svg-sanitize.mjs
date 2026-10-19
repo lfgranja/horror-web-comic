@@ -18,15 +18,15 @@ export const ALLOWED_SVG_ELEMENTS = Object.freeze([
 ]);
 
 export const ALLOWED_SVG_ATTRIBUTES = Object.freeze([
-  'id', 'class', 'd', 'x', 'y', 'x1', 'y1', 'x2', 'y2', 'cx', 'cy', 'r',
+  'id', 'class', 'data-name', 'xml:space', 'd', 'x', 'y', 'x1', 'y1', 'x2', 'y2', 'cx', 'cy', 'r',
   'rx', 'ry', 'width', 'height', 'points', 'transform', 'transform-origin',
   'fill', 'fill-opacity', 'fill-rule', 'stroke', 'stroke-width', 'stroke-opacity',
   'stroke-linecap', 'stroke-linejoin', 'stroke-dasharray', 'stroke-dashoffset',
-  'stroke-miterlimit', 'opacity', 'viewBox', 'preserveAspectRatio', 'xmlns',
+  'stroke-miterlimit', 'opacity', 'viewbox', 'preserveaspectratio', 'xmlns',
   'xmlns:xlink', 'font-family', 'font-size', 'font-weight', 'font-style',
-  'text-anchor', 'dominant-baseline', 'letter-spacing', 'gradientUnits',
-  'gradientTransform', 'offset', 'stop-color', 'stop-opacity', 'clip-path',
-  'mask', 'patternUnits', 'patternTransform', 'href', 'xlink:href'
+  'text-anchor', 'dominant-baseline', 'letter-spacing', 'gradientunits',
+  'gradienttransform', 'offset', 'stop-color', 'stop-opacity', 'clip-path',
+  'mask', 'patternunits', 'patterntransform', 'href', 'xlink:href'
 ]);
 
 const DANGEROUS_ELEMENTS = new Set([
@@ -61,7 +61,10 @@ function tokenize(text) {
     if (/<\s*!DOCTYPE/i.test(text)) throw fail('svg-doctype', 'DOCTYPE is not allowed');
     // reject other <! constructs except comments
   }
-  // processing instructions
+  // Allow only a leading XML declaration (<?xml ...?>); reject all other
+  // processing instructions (XXE / stylesheet injection surface).
+  const xmlDeclMatch = text.match(/^<\?xml[^?]*\?>/i);
+  if (xmlDeclMatch) text = text.slice(xmlDeclMatch[0].length);
   if (/<\?/.test(text)) throw fail('svg-processing-instruction', 'processing instructions are not allowed');
 
   let i = 0;
