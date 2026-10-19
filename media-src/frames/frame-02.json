@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "1.0",
+  "subject": {
+    "name": "frame-02.jpg",
+    "digest": {
+      "sha256": "cba5f601e94901f5765864923bd0c9a31f3968b3f17d405b848018c7cf837859"
+    }
+  },
+  "provenance": {
+    "tool": "vectorcraft-cli",
+    "toolVersion": "unknown (binary unavailable; fallback)",
+    "timestamp": "2026-10-18T00:00:00Z",
+    "author": "maintainer"
+  },
+  "inputs": [],
+  "review": {
+    "reviewer": "maintainer",
+    "reviewedAt": "2026-10-18T00:00:00Z",
+    "oversight": "human_authored",
+    "notes": "Tier A self-review (size/format/qualitative/palette) documented in commit; binary unavailable fallback.",
+    "decision": "approve"
+  }
+}
