@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1200" height="800" viewBox="0 0 1200 800">
+  <defs>
+    <linearGradient id="sky" x1="600" y1="800" x2="600" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1e1b4b"/>
+      <stop offset="0.4" stop-color="#312e81"/>
+      <stop offset="0.75" stop-color="#475569"/>
+      <stop offset="0.92" stop-color="#94a3b8"/>
+      <stop offset="1" stop-color="#cbd5e1"/>
+    </linearGradient>
+    <radialGradient id="windowglow" cx="555" cy="365" r="60" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fef3c7"/>
+      <stop offset="0.4" stop-color="#fbbf24"/>
+      <stop offset="1" stop-color="#f59e0b" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="pathgrad" x1="600" y1="640" x2="600" y2="780" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#374151"/>
+      <stop offset="1" stop-color="#1f2937"/>
+    </linearGradient>
+    <radialGradient id="vignette" cx="600" cy="400" r="700" gradientUnits="userSpaceOnUse">
+      <stop offset="0.6" stop-color="#000000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#000000" stop-opacity="0.55"/>
+    </radialGradient>
+  </defs>
+  <title>frame-01</title>
+  <g id="Layer_1" data-name="Layer 1">
+    <!-- sky -->
+    <path d="M0 0 L1200 0 L1200 800 L0 800 Z" fill="url(#sky)"/>
+    <!-- sickly horizon band -->
+    <rect x="0" y="600" width="1200" height="200" fill="#fbbf24" fill-opacity="0.08"/>
+    <!-- ground -->
+    <path d="M0 640 L1200 640 L1200 800 L0 800 Z" fill="#111827"/>
+    <!-- dead tree left -->
+    <path d="M180 640 L180 380" fill="none" stroke="#0a0a0a" stroke-width="8" stroke-linecap="round"/>
+    <path d="M180 420 L120 360" fill="none" stroke="#0a0a0a" stroke-width="5" stroke-linecap="round"/>
+    <path d="M180 420 L240 370" fill="none" stroke="#0a0a0a" stroke-width="5" stroke-linecap="round"/>
+    <path d="M180 470 L140 420" fill="none" stroke="#0a0a0a" stroke-width="4" stroke-linecap="round"/>
+    <path d="M180 470 L220 430" fill="none" stroke="#0a0a0a" stroke-width="4" stroke-linecap="round"/>
+    <path d="M180 520 L150 490" fill="none" stroke="#0a0a0a" stroke-width="3" stroke-linecap="round"/>
+    <path d="M180 520 L210 495" fill="none" stroke="#0a0a0a" stroke-width="3" stroke-linecap="round"/>
+    <path d="M175 380 L165 350" fill="none" stroke="#0a0a0a" stroke-width="2" stroke-linecap="round"/>
+    <path d="M185 380 L195 355" fill="none" stroke="#0a0a0a" stroke-width="2" stroke-linecap="round"/>
+    <!-- crooked fence right -->
+    <path d="M1000 640 L1000 520" fill="none" stroke="#1f2937" stroke-width="6" stroke-linecap="round"/>
+    <path d="M1040 640 L1040 510" fill="none" stroke="#1f2937" stroke-width="6" stroke-linecap="round"/>
+    <path d="M1080 640 L1080 525" fill="none" stroke="#1f2937" stroke-width="6" stroke-linecap="round"/>
+    <path d="M980 560 L1100 550" fill="none" stroke="#1f2937" stroke-width="4" stroke-linecap="round"/>
+    <path d="M980 590 L1100 582" fill="none" stroke="#1f2937" stroke-width="4" stroke-linecap="round"/>
+    <!-- cracked path -->
+    <path d="M500 640 L540 780 L660 780 L700 640 Z" fill="url(#pathgrad)"/>
+    <path d="M560 660 L575 690 L565 720 L580 750" fill="none" stroke="#0f172a" stroke-width="2"/>
+    <path d="M620 665 L610 695 L625 725 L615 755" fill="none" stroke="#0f172a" stroke-width="2"/>
+    <path d="M600 645 L598 670 L602 700 L600 730 L603 760" fill="none" stroke="#0f172a" stroke-width="1.5"/>
+    <!-- house body -->
+    <path d="M380 260 L820 260 L820 660 L380 660 Z" fill="#111827"/>
+    <path d="M380 260 L820 260 L820 660 L380 660 Z" fill="none" stroke="#1f2937" stroke-width="3"/>
+    <!-- roof -->
+    <path d="M340 260 L600 150 L860 260 Z" fill="#0f172a"/>
+    <path d="M340 260 L600 150 L860 260" fill="none" stroke="#1f2937" stroke-width="3"/>
+    <!-- upstairs window (lit) -->
+    <path d="M510 300 L590 300 L590 395 L510 395 Z" fill="url(#windowglow)"/>
+    <path d="M510 300 L590 300 L590 395 L510 395 Z" fill="none" stroke="#f59e0b" stroke-width="2" stroke-opacity="0.6"/>
+    <path d="M550 300 L550 395" fill="none" stroke="#78350f" stroke-width="2"/>
+    <path d="M510 347 L590 347" fill="none" stroke="#78350f" stroke-width="2"/>
+    <!-- door ajar -->
+    <path d="M540 500 L640 500 L640 660 L540 660 Z" fill="#3f3f46"/>
+    <path d="M540 500 L600 500 L600 660 L540 660 Z" fill="#18181b"/>
+    <path d="M540 500 L640 500 L640 660 L540 660 Z" fill="none" stroke="#27272a" stroke-width="2"/>
+    <!-- scratch marks on door -->
+    <path d="M545 520 L555 540" fill="none" stroke="#52525b" stroke-width="1"/>
+    <path d="M548 560 L558 580" fill="none" stroke="#52525b" stroke-width="1"/>
+    <path d="M550 600 L560 620" fill="none" stroke="#52525b" stroke-width="1"/>
+    <!-- title lettering on door -->
+    <text transform="matrix(1 0 0 1 600 760)" x="0" y="0" xml:space="preserve" font-family="sans-serif" font-size="42" fill="#e5e7eb" text-anchor="middle" opacity="0.9"><tspan x="0" y="0">VOLTE QUANDO A CASA ACORDAR</tspan></text>
+    <!-- vignette -->
+    <path d="M0 0 L1200 0 L1200 800 L0 800 Z" fill="url(#vignette)"/>
+  </g>
+</svg>

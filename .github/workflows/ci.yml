@@ -9,6 +9,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # trailers/review enforcement (T037) needs full history
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -91,6 +93,8 @@ jobs:
       - name: Performance budgets (non-skippable)
         run: npm run test:perf
 
+      - name: Commit trailers and Tier A review enforcement
+        run: node scripts/ci-trailers.mjs
       # Lighthouse delivery gate: performance >= 0.9, accessibility >= 0.95,
       # CLS <= 0.1, LCP <= 2500ms (see lighthouserc.json). Runs against dist/,
       # which the production build step above produces. ubuntu-latest ships

@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://horror-web-comic.local/schemas/provenance-sidecar.json",
+  "title": "Provenance Sidecar",
+  "description": "Provenance sidecar for an AuthoredMaster in media-src/. Path = master path with extension replaced by .json (extension-swap). Strict: unknown fields are rejected. Validation is fail-fast in build-images.mjs; no-op when sidecar absent; an orphan sidecar (no corresponding master in media-src/) is a fail-fast error (orphan-sidecar), symmetric with findUnreferencedAssets === []. Tier A review block is optional in schema but required (with decision=approve) for master-integration commits, enforced fail-closed in the CI step (fetch-depth: 0, forward-only).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "subject", "provenance"],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "const": "1.0",
+      "description": "Schema version identifier. Current value: \"1.0\"."
+    },
+    "subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "digest"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Basename of the master (e.g. frame-01.svg). Must match the master basename."
+        },
+        "digest": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["sha256"],
+          "properties": {
+            "sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$",
+              "description": "SHA-256 of the master bytes, 64 lowercase hex."
+            }
+          }
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tool", "toolVersion", "timestamp", "author"],
+      "properties": {
+        "tool": {
+          "type": "string",
+          "description": "Authoring tool name (e.g. vectorcraft-cli)."
+        },
+        "toolVersion": {
+          "type": "string",
+          "description": "Tool version (e.g. 0.12.0)."
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|\\+00:00)$",
+          "description": "ISO-8601 UTC timestamp of authoring (Z or +00:00)."
+        },
+        "author": {
+          "type": "string",
+          "description": "Author name."
+        }
+      }
+    },
+    "inputs": {
+      "type": "array",
+      "description": "Optional list of input assets used to produce the master.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["uri", "digest"],
+        "properties": {
+          "uri": {
+            "type": "string",
+            "description": "Safe local reference (must satisfy isSafeLocalReference)."
+          },
+          "digest": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["sha256"],
+            "properties": {
+              "sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              }
+            }
+          }
+        }
+      }
+    },
+    "review": {
+      "type": "object",
+      "description": "Optional Tier A human review block. Required (with decision=approve) for master-integration commits touching media-src/, enforced in CI.",
+      "additionalProperties": false,
+      "required": ["reviewer", "reviewedAt", "oversight", "notes", "decision"],
+      "properties": {
+        "reviewer": {
+          "type": "string",
+          "description": "Reviewer name (self-review acceptable for solo maintainer)."
+        },
+        "reviewedAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|\\+00:00)$",
+          "description": "ISO-8601 UTC review timestamp (Z or +00:00)."
+        },
+        "oversight": {
+          "type": "string",
+          "enum": ["human_authored", "human_assisted", "human_reviewed"],
+          "description": "Project-defined vocabulary for human-authored masters (not C2PA's humanOversightLevel, which applies only to AI-generated content)."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Side-by-side notes: size, format, qualitative impression, palette/tonal-range verification."
+        },
+        "decision": {
+          "type": "string",
+          "enum": ["approve", "reject"]
+        },
+        "measuredSSIM": {
+          "type": "number",
+          "description": "Optional Tier B fidelity measurement (SSIM value; PSNR reported separately when available)."
+        }
+      }
+    }
+  }
+}

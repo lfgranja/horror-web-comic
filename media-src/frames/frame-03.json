@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "1.0",
+  "subject": {
+    "name": "frame-03.svg",
+    "digest": {
+      "sha256": "9dfd9a82108e350e4533ff24b917cdbaffcf2a599943e430cfcaa82d34bbca27"
+    }
+  },
+  "provenance": {
+    "tool": "vectorcraft-cli",
+    "toolVersion": "0.13.1",
+    "timestamp": "2026-10-19T01:42:50Z",
+    "author": "maintainer"
+  },
+  "inputs": [],
+  "review": {
+    "reviewer": "maintainer",
+    "reviewedAt": "2026-10-19T01:42:50Z",
+    "oversight": "human_authored",
+    "notes": "Canvas 1200x800 SVG; one-point perspective tunnel (near #1e293b -> far #020617); ambiguous shape at vanishing point (#475569, fill-opacity 0.45). Tier A verified.",
+    "decision": "approve"
+  }
+}

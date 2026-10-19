@@ -40,7 +40,7 @@
           },
           "alt": "Porta do vestíbulo com a placa “VOLTE QUANDO A CASA ACORDAR”.",
           "description": "O vestíbulo escuro se abre diante de uma antiga porta de madeira trancada, com a maçaneta enferrujada e uma fresta de luz fria vazando pela soleira. No alto da porta, uma placa de metal gasta traz em letras altas a inscrição “VOLTE QUANDO A CASA ACORDAR”. Uma sombra atravessa a fresta sem corpo que a projete, enquanto o ar parado pesa com poeira. Ao fundo, cada ranger que desce da escada parece responder à respiração da casa, e a madeira da porta estala como se acordasse.",
-          "durationMs": 1500,
+          "durationMs": 3500,
           "transition": {
             "type": "fade",
             "durationMs": 600,
@@ -60,9 +60,9 @@
             "width": 1200,
             "height": 800
           },
-          "alt": "Fotografia empoeirada com a legenda “ELA AINDA ESTÁ EM CASA”.",
+          "alt": "Corredor escuro com janela iluminada pela lua e a legenda “ELA AINDA ESTÁ EM CASA”.",
           "description": "Uma fotografia antiga emoldurada domina o corredor, com o vidro embaçado pela poeira e as bordas carcomidas pelo tempo. A imagem mostra o mesmo corredor vazio da casa, e na parte inferior uma legenda datilografada declara “ELA AINDA ESTÁ EM CASA”. O papel amarelado contrasta com um vulto feminino desfocado ao fundo, parado entre duas portas. O silêncio é cortado por um estalo seco vindo do assoalho, seguido por um passo, depois outro, que avançam e param de repente no escuro.",
-          "durationMs": 1800,
+          "durationMs": 3500,
           "transition": {
             "type": "dissolve",
             "durationMs": 700,
@@ -100,9 +100,9 @@
             "width": 1200,
             "height": 800
           },
-          "alt": "Escada escura com o aviso “NÃO OLHE PARA TRÁS”.",
+          "alt": "Escada escura em perspectiva com o aviso “NÃO OLHE PARA TRÁS”.",
           "description": "Uma escada estreita de pedra desce em espiral para um patamar escuro onde a luz não alcança. Cada degrau brilha úmido, refletindo um clarão frio que vem do alto. Pintada na parede do patamar, em letras brancas trêmulas, a frase “NÃO OLHE PARA TRÁS” domina o enquadramento. Uma silhueta sem rosto surge no fundo escuro, com as mãos roçando o corrimão. O som que existe só no áudio é um arrastar pesado e ritmado, como um corpo sendo puxado degrau por degrau, subindo junto com a respiração ofegante da casa.",
-          "durationMs": 1600,
+          "durationMs": 3100,
           "transition": {
             "type": "slide-left",
             "durationMs": 700,
@@ -128,9 +128,9 @@
             "width": 1200,
             "height": 800
           },
-          "alt": "Janela aberta na chuva com “A CHUVA NÃO PARA”.",
+          "alt": "Janela coberta de chuva com a inscrição “A CHUVA NÃO PARA”.",
           "description": "Uma janela alta de moldura clara está escancarada para a noite, com a chuva grossa atravessando o quadro em fios prateados. A cortina encharcada cola-se à parede e depois se ergue sozinha, como erguida por uma mão invisível, revelando um quintal afogado no breu. No rodapé da imagem, em letras frias e espaçadas, lê-se “A CHUVA NÃO PARA”. O áudio traz a chuva batendo sem trégua no parapeito e nas folhas, cortada por um sino distante que dobra uma única vez, marcando o fim da narrativa.",
-          "durationMs": 2000,
+          "durationMs": 3100,
           "transition": {
             "type": "cut",
             "durationMs": 0,

@@ -27,6 +27,7 @@ export const CHECK_IDS = Object.freeze([
   'tesseract',
   'playwright-browsers',
   'browser-launch',
+  'librsvg',
   'chrome',
   'lhci',
   'pinned-dependencies',
@@ -52,6 +53,7 @@ const USED_BY = Object.freeze({
   tesseract: ['test:e2e', 'ci'],
   'playwright-browsers': ['test', 'test:e2e', 'test:perf', 'ci'],
   'browser-launch': ['test', 'test:e2e', 'test:perf', 'ci'],
+  'librsvg': ['build:images', 'test:unit'],
   chrome: ['lhci', 'ci:lighthouse'],
   lhci: ['lhci', 'ci:lighthouse'],
   'pinned-dependencies': ['npm ci', 'ci'],
@@ -84,6 +86,7 @@ const REMEDIES = Object.freeze({
   ffprobe: 'install ffprobe 5 or newer (Debian/Ubuntu: sudo apt-get install -y ffmpeg; macOS: brew install ffmpeg); npm run build:images and npm run build probe every published track with it',
   browsers: 'download the browser executables the matrix needs with `npx playwright install chromium firefox webkit` (add --with-deps on Debian/Ubuntu) and re-run npm run preflight',
   launch: 'install the shared libraries the browsers need with `sudo npx playwright install-deps` on Debian/Ubuntu (or re-run `npx playwright install --with-deps chromium firefox webkit`), then re-run npm run preflight; a downloaded browser that cannot launch fails every test in the matrix',
+  librsvg: 'install librsvg (Debian/Ubuntu: sudo apt-get install -y librsvg2-dev; macOS: brew install librsvg) so sharp can rasterize SVG masters; fallback: probe SVG decode via sharp',
   chrome: 'point CHROME_PATH at a Chrome or Chromium executable, or install Google Chrome, so `npm run lhci` can drive the Lighthouse audit',
   lhci: 'install the declared toolchain with `npm ci` so node_modules/.bin/lhci exists, then re-run npm run preflight',
   pinned: 'replace every range in package.json with the exact version currently installed, then run `npm install --package-lock-only` and commit the regenerated package-lock.json',
@@ -356,6 +359,7 @@ export function evaluatePreflight(context, project) {
     versionEntry({ id: 'tesseract', label: 'tesseract', found: host.tesseract ? host.tesseract.version : null, minimum: REQUIREMENTS.tesseract }),
     browsersEntry(host),
     browserLaunchEntry(host),
+    binaryEntry({ id: 'librsvg', found: host.librsvg, expected: 'librsvg host library (pkg-config librsvg-2.0) or sharp SVG decode support', foundLabel: 'librsvg', command: 'npm run build:images' }),
     binaryEntry({ id: 'chrome', found: host.chrome, expected: 'a Chrome or Chromium executable for the Lighthouse audit', foundLabel: 'Chrome', command: 'npm run lhci' }),
     binaryEntry({ id: 'lhci', found: host.lhci, expected: 'a resolvable lhci executable from the pinned toolchain', foundLabel: 'Lighthouse CI (lhci)', command: 'npm run lhci' }),
     pinnedEntry(target),
@@ -489,6 +493,23 @@ async function probeLaunch(browserType) {
   }
 }
 
+async function probeLibrsvg() {
+  try {
+    execFileSync('pkg-config', ['--exists', 'librsvg-2.0'], { stdio: 'ignore' });
+    return 'pkg-config:librsvg-2.0';
+  } catch {
+    try {
+      const sharpMod = await import('sharp');
+      const sharp = sharpMod.default || sharpMod;
+      const svg = Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="2" height="2"><rect width="2" height="2" fill="red"/></svg>');
+      await sharp(svg).png().toBuffer();
+      return 'sharp-svg-decode';
+    } catch {
+      return null;
+    }
+  }
+}
+
 function probeChrome(environment = process.env) {
   const candidates = [environment.CHROME_PATH, 'google-chrome-stable', 'google-chrome', 'chromium', 'chromium-browser', 'chrome'];
   for (const candidate of candidates) {
@@ -504,6 +525,7 @@ export async function buildContext(options = {}) {
   const binDirectory = path.join(root, 'node_modules', '.bin');
   const lhci = ['lhci', 'lhci.cmd'].map((name) => path.join(binDirectory, name)).find((candidate) => fs.existsSync(candidate)) || null;
   const { browsers, launches } = await probeBrowsers();
+  const librsvg = await probeLibrsvg();
   return {
     node: process.versions.node || null,
     npm: run('npm', ['--version']),
@@ -514,6 +536,7 @@ export async function buildContext(options = {}) {
     browsers,
     browserLaunch: launches,
     chrome: probeChrome(options.environment || process.env),
+    librsvg,
     lhci
   };
 }
