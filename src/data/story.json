@@ -60,9 +60,9 @@
             "width": 1200,
             "height": 800
           },
-          "alt": "Fotografia empoeirada com a legenda “ELA AINDA ESTÁ EM CASA”.",
+          "alt": "Corredor escuro com janela iluminada pela lua e a legenda “ELA AINDA ESTÁ EM CASA”.",
           "description": "Uma fotografia antiga emoldurada domina o corredor, com o vidro embaçado pela poeira e as bordas carcomidas pelo tempo. A imagem mostra o mesmo corredor vazio da casa, e na parte inferior uma legenda datilografada declara “ELA AINDA ESTÁ EM CASA”. O papel amarelado contrasta com um vulto feminino desfocado ao fundo, parado entre duas portas. O silêncio é cortado por um estalo seco vindo do assoalho, seguido por um passo, depois outro, que avançam e param de repente no escuro.",
-          "durationMs": 1800,
+          "durationMs": 3500,
           "transition": {
             "type": "dissolve",
             "durationMs": 700,
