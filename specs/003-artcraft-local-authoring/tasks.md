@@ -461,3 +461,35 @@ Os IDs de remediação referenciados em tarefas e artefatos (ex.: T045) são ori
 
 Rodadas posteriores (`/speckit.analyze` subsequentes) podem acrescentar novos IDs; este índice é um snapshot da rodada 2026-10-18.
 - **F2 (MEDIUM — resolved)**: IDs históricos removidos (T031, T022a, T077, T027-verification-1/2) documentados; nenhuma tarefa ativa depende deles; tabela de mapeamento usa apenas IDs ativos.
+
+## Phase 8: Convergence (2026-10-18)
+
+> Findings from speckit.converge assessment. Ordered by severity (HIGH → MEDIUM → LOW). IDs continue from T045 (no reuse/renumbering). Each item references the governing spec/plan/task source.
+
+### Convergence Findings (summary)
+
+| ID | Severity | Gap type | Finding (short) |
+|:---|:---:|:---|:---|
+| T046 | HIGH | missing | Sidecars absent for all 4 masters in `media-src/frames/` |
+| T047 | HIGH | missing | No `Authored-With`/`Reviewed-By` trailers on commit touching `media-src/` |
+| T048 | HIGH | missing | Phase 3 TDD test files (T012–T022c) not present despite completion marks |
+| T049 | MEDIUM | partial | `scripts/preflight.mjs` lacks librsvg host check (T037a claimed complete) |
+| T050 | MEDIUM | partial | `docs/authoring.md` contains placeholders (version TBD, baseline unfilled) |
+| T051 | MEDIUM | partial | T011b synthetic-fallback risk recorded but revalidation not scheduled/evidenced |
+| T052 | MEDIUM | missing-verification | SC-006 (Lighthouse) only preliminarily attested; final pending |
+| T053 | MEDIUM | missing-documentation | T023a tokenizer viability probe evidence not recorded |
+| T054 | LOW | external-blocker | T039 `ASSETS.md` unavailable fallback; license verification manual |
+
+Metrics: 9 findings — 0 CRITICAL, 3 HIGH, 5 MEDIUM, 1 LOW.
+
+### Convergence Tasks
+
+- [ ] T046 [HIGH] [gap: missing] Sidecars absent for all 4 masters in `media-src/frames/` (no `frame-0X.json`); FR-014/FR-008/SC-001 require a sidecar with `review.decision: approve` per master. Source-ref: spec.md §FR-014, §FR-008; tasks.md T028. Action: author sidecars with correct SHA-256 digest + review block for frame-01…frame-04.
+- [ ] T047 [HIGH] [gap: missing] No `Authored-With`/`Reviewed-By` trailers on the commit touching `media-src/` (commit 012c7a7); FR-008/FR-013(e). Source-ref: spec.md §FR-008, §FR-013(e); tasks.md T029. Action: amend/record trailers (forward-only base recorded in docs/authoring.md).
+- [ ] T048 [HIGH] [gap: missing] Phase 3 TDD test files (T012–T022c) are not present under `tests/unit/` despite tasks marked complete; verification coverage for svg-sanitize, sidecar, delivery-fidelity, atomic-write, build-images gates, artcraft-* integration, trailers, absence, and story-metadata is absent. Source-ref: tasks.md Phase 3; plan.md §Testing. Action: create the 12 Node test files (5 pure unit + 7 integration) + property helper usage and confirm Red→Green.
+- [ ] T049 [MEDIUM] [gap: partial] `scripts/preflight.mjs` lacks the librsvg host check even though T037a is marked complete. Source-ref: plan.md §Technical Context; tasks.md T037a. Action: implement the check id via `pkg-config --exists librsvg-2.0` (fallback: sharp SVG decode probe), updating CHECK_IDS/USED_BY/docs together.
+- [ ] T050 [MEDIUM] [gap: partial] `docs/authoring.md` contains placeholders (version "TBD", baseline unfilled) while SC-004 requires complete sections. Source-ref: spec.md §SC-004; tasks.md T038, T005a, T005b. Action: fill "testada-com" version + validation date, baseline values, and Tier A checklist evidence.
+- [ ] T051 [MEDIUM] [gap: partial] T011b synthetic-fallback risk is recorded but revalidation against a real vectorcraft export is not scheduled/evidenced; allow-list remains unvalidated against real output. Source-ref: tasks.md T011b; spec.md §FR-002. Action: schedule revalidation on first real export (or before T023 follow-up) and record diff in docs/authoring.md §"SVG allow-list validation".
+- [ ] T052 [MEDIUM] [gap: missing-verification] SC-006 (Lighthouse) is only preliminarily attested; final attestation after master integration is pending. Source-ref: spec.md §SC-006; tasks.md T044a. Action: rerun `npm run lhci` on final masters and record final result in attestation.md.
+- [ ] T053 [MEDIUM] [gap: missing-documentation] T023a tokenizer viability probe evidence (metrics ≤100 ms for ≤1 MB fixture, pass/fail verdict) is not recorded in docs/authoring.md. Source-ref: plan.md §Technical Context; tasks.md T023a. Action: record probe metrics and verdict (or constitution amendment if failed).
+- [ ] T054 [LOW] [gap: external-blocker] T039 `ASSETS.md` unavailable fallback; license verification remains manual with no automation, risk tracked. Source-ref: tasks.md T039; spec.md §FR-005. Action: record checksums/version when the suite is available; keep fallback justification in attestation.md.
