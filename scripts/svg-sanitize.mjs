@@ -13,8 +13,8 @@ export const SVG_DOS_CAPS = Object.freeze({
 
 export const ALLOWED_SVG_ELEMENTS = Object.freeze([
   'svg', 'g', 'defs', 'title', 'desc', 'path', 'rect', 'circle', 'ellipse',
-  'line', 'polyline', 'polygon', 'text', 'tspan', 'use', 'linearGradient',
-  'radialGradient', 'stop', 'clipPath', 'mask', 'pattern', 'symbol'
+  'line', 'polyline', 'polygon', 'text', 'tspan', 'use', 'lineargradient',
+  'radialgradient', 'stop', 'clippath', 'mask', 'pattern', 'symbol'
 ]);
 
 export const ALLOWED_SVG_ATTRIBUTES = Object.freeze([
@@ -35,7 +35,7 @@ const DANGEROUS_ELEMENTS = new Set([
   'animate', 'set', 'animateMotion', 'animateTransform', 'discard'
 ]);
 
-const CSS_DANGER = /url\s*\(|@import|image-set\s*\(|expression\s*\(|-moz-binding|behavior\s*:/i;
+const CSS_DANGER = /url\s*\(\s*(?!#)|@import|image-set\s*\(|expression\s*\(|-moz-binding|behavior\s*:/i;
 const EXTERNAL_HREF = /^(https?:|\/\/|\/|\.\.\/|\.\/|data:)/i;
 
 function fail(code, message) {
