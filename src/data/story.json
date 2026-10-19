@@ -100,9 +100,9 @@
             "width": 1200,
             "height": 800
           },
-          "alt": "Escada escura com o aviso “NÃO OLHE PARA TRÁS”.",
+          "alt": "Escada escura em perspectiva com o aviso “NÃO OLHE PARA TRÁS”.",
           "description": "Uma escada estreita de pedra desce em espiral para um patamar escuro onde a luz não alcança. Cada degrau brilha úmido, refletindo um clarão frio que vem do alto. Pintada na parede do patamar, em letras brancas trêmulas, a frase “NÃO OLHE PARA TRÁS” domina o enquadramento. Uma silhueta sem rosto surge no fundo escuro, com as mãos roçando o corrimão. O som que existe só no áudio é um arrastar pesado e ritmado, como um corpo sendo puxado degrau por degrau, subindo junto com a respiração ofegante da casa.",
-          "durationMs": 1600,
+          "durationMs": 3100,
           "transition": {
             "type": "slide-left",
             "durationMs": 700,

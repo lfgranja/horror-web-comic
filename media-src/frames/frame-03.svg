@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1200" height="800" viewBox="0 0 1200 800">
+  <title>frame-03</title>
+  <g id="Layer_1" data-name="Layer 1">
+    <path d="M0 0 L1200 0 L1200 800 L0 800 Z" fill="#1e293b"/>
+    <path d="M0 0 L1200 0 L1200 400 L0 400 Z" fill="#0f172a"/>
+    <path d="M0 400 L1200 400 L1200 800 L0 800 Z" fill="#020617"/>
+    <path d="M100 800 L540 400 L660 400 L1100 800 Z" fill="#1e1b4b"/>
+    <path d="M100 0 L540 400 L660 400 L1100 0 Z" fill="#0f172a"/>
+    <path d="M560 380 L640 380 L640 440 L560 440 Z" fill="#475569" fill-opacity="0.45"/>
+    <path d="M540 0 L660 0 L660 800 L540 800 Z" fill="#3f3f46"/>
+    <path d="M540 400 L660 400 L660 800 L540 800 Z" fill="#52525b"/>
+    <path d="M570 395 L630 395 L630 405 L570 405 Z" fill="#64748b"/>
+    <text transform="matrix(1 0 0 1 600 760)" x="0" y="0" xml:space="preserve" font-family="monospace" font-size="32" fill="#cbd5e1" text-anchor="middle"><tspan x="0" y="0">NÃO OLHE PARA TRÁS</tspan></text>
+  </g>
+</svg>
