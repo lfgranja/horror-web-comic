@@ -28,7 +28,8 @@ const HOST = {
     webkit: { ok: true, version: '26.0' }
   },
   chrome: '/opt/google/chrome/chrome',
-  lhci: '/workspace/node_modules/.bin/lhci'
+  lhci: '/workspace/node_modules/.bin/lhci',
+  librsvg: 'pkg-config:librsvg-2.0'
 };
 
 const MANIFEST = {
@@ -83,7 +84,8 @@ function hostContext(overrides = {}) {
     browsers: { ...HOST.browsers, ...(overrides.browsers || {}) },
     ffmpeg: 'ffmpeg' in overrides ? overrides.ffmpeg : HOST.ffmpeg,
     ffprobe: 'ffprobe' in overrides ? overrides.ffprobe : HOST.ffprobe,
-    tesseract: 'tesseract' in overrides ? overrides.tesseract : HOST.tesseract
+    tesseract: 'tesseract' in overrides ? overrides.tesseract : HOST.tesseract,
+    librsvg: 'librsvg' in overrides ? overrides.librsvg : HOST.librsvg
   };
 }
 
@@ -343,7 +345,7 @@ test('main reports every missing prerequisite with a remedy and returns non-zero
   const preflight = await loadPreflight();
   const lines = [];
   const code = preflight.main({
-    context: hostContext({ node: null, python3: null, ffmpeg: null, ffprobe: null, tesseract: null, chrome: null, lhci: null, browsers: { chromium: null, firefox: null, webkit: null }, browserLaunch: {} }),
+    context: hostContext({ node: null, python3: null, ffmpeg: null, ffprobe: null, tesseract: null, chrome: null, librsvg: null, lhci: null, browsers: { chromium: null, firefox: null, webkit: null }, browserLaunch: {} }),
     project: projectFixture({ lockfile: null }),
     out: (text) => lines.push(text)
   });
