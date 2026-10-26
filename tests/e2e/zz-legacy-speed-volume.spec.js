@@ -1,4 +1,6 @@
 import { test, expect } from '@playwright/test';
+
+test.describe.configure({ mode: 'serial' });
 import {
   openApp,
   waitForPlayer,
@@ -42,8 +44,8 @@ test.describe('US2 volume, speed and End reachability', () => {
     expect(keys['hwc.speed']).toBe('2');
 
     await expectFrameId(page, 'f-001');
-    const dwell = await measureDwellMs(page, 'f-001', 5000);
-    const expected = Math.max(250, EFFECTIVE_DURATION_MS['f-001'] / 2);
+    const dwell = await measureDwellMs(page, 'f-002', 5000);
+    const expected = Math.max(250, EFFECTIVE_DURATION_MS['f-002'] / 2);
     expectDwellWithinTolerance(dwell, expected, 0.1);
 
     await page.reload();

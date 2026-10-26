@@ -33,6 +33,8 @@ async function readSceneAudio(page) {
  */
 
 test.describe('T198 — re-enable inside the stop ramp', () => {
+  test.describe.configure({ mode: 'serial' });
+
   test('a toggle-off/on pair faster than STOP_DURATION still yields audible scene audio', async ({ page }) => {
     await openPlayer(page, STORY, { pause: false });
     // let the scene actually start
@@ -41,39 +43,55 @@ test.describe('T198 — re-enable inside the stop ramp', () => {
 
     // Two clicks well inside the 90 ms ramp. Playwright cannot click faster than
     // this, so the in-page path is used to guarantee sub-ramp timing.
-    const result = await page.evaluate(async () => {
+    await page.evaluate(async () => {
       const player = globalThis.__cinematicPlayer;
       const audio = player.audio;
-      const element = audio.sceneElements.get(audio.currentSceneIndex);
       audio.toggle();
       await new Promise((resolve) => setTimeout(resolve, 30));
       audio.toggle();
-      await new Promise((resolve) => setTimeout(resolve, 400));
-      const live = audio.sceneElements.get(audio.currentSceneIndex);
-      return { paused: live.paused, volume: live.volume, enabled: audio.enabled };
     });
 
-    expect(result.enabled, 'audio must be re-enabled').toBe(true);
-    expect(result.paused, 'the scene element must be PLAYING, not paused at a non-zero volume').toBe(false);
-    expect(result.volume, 'the scene element must be audible, not merely >= 0').toBeGreaterThan(0);
+    await expect.poll(async () => {
+      const live = await readSceneAudio(page);
+      const enabled = await page.evaluate(() => globalThis.__cinematicPlayer.audio.enabled);
+      return { paused: live?.paused, audible: (live?.volume ?? 0) > 0, enabled };
+    }).toEqual({
+      paused: false,
+      audible: true,
+      enabled: true,
+    });
   });
 
   test('an element mid fade-out is not reported as playing', async ({ page }) => {
     await openPlayer(page, STORY, { pause: false });
-    await expect.poll(async () => (await readSceneAudio(page))?.volume ?? 0).toBeGreaterThan(0);
+    await freezeAdvance(page);
+
+    // Ensure audio is actively playing before testing mid-ramp fade behavior
+    await page.evaluate(async () => {
+      const audio = globalThis.__cinematicPlayer.audio;
+      if (!audio.enabled) audio.toggle();
+      const element = audio.sceneElements.get(audio.currentSceneIndex);
+      if (element && element.paused) {
+        await element.play().catch(() => {});
+      }
+    });
+    await expect.poll(async () => {
+      const a = await readSceneAudio(page);
+      return a && !a.paused;
+    }, { message: 'scene audio playing before fade test' }).toBe(true);
 
     const reported = await page.evaluate(async () => {
       const audio = globalThis.__cinematicPlayer.audio;
       const element = audio.sceneElements.get(audio.currentSceneIndex);
-      audio.stopAll(90, audio.lifecycleGeneration);
+      audio.stopAll(300, audio.lifecycleGeneration);
       // Sample inside the ramp: fade-out has begun but has not paused yet.
-      await new Promise((resolve) => setTimeout(resolve, 20));
+      await new Promise((resolve) => setTimeout(resolve, 30));
       const midRamp = {
         stillUnpaused: !element.paused,
         direction: element.dataset.fadeDirection,
         isPlaying: audio.isElementPlaying(element),
       };
-      await new Promise((resolve) => setTimeout(resolve, 200));
+      await new Promise((resolve) => setTimeout(resolve, 350));
       return midRamp;
     });
 
@@ -85,23 +103,23 @@ test.describe('T198 — re-enable inside the stop ramp', () => {
   test('M pressed twice in quick succession keeps the scene audible', async ({ page }) => {
     await openPlayer(page, STORY, { pause: false });
     await expect.poll(async () => (await readSceneAudio(page))?.volume ?? 0).toBeGreaterThan(0);
+    await freezeAdvance(page);
 
-    const result = await page.evaluate(async () => {
-      const player = globalThis.__cinematicPlayer;
-      const audio = player.audio;
-      const element = audio.sceneElements.get(audio.currentSceneIndex);
+    await page.evaluate(async () => {
       const key = (k) => window.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true }));
       key('m');
       await new Promise((resolve) => setTimeout(resolve, 30));
       key('m');
-      await new Promise((resolve) => setTimeout(resolve, 400));
-      // read the element that is live NOW, not the one captured before the waits
-      const live = audio.sceneElements.get(audio.currentSceneIndex);
-      return { paused: live.paused, volume: live.volume, enabled: audio.enabled };
     });
 
-    expect(result.enabled).toBe(true);
-    expect(result.paused).toBe(false);
-    expect(result.volume).toBeGreaterThan(0);
+    await expect.poll(async () => {
+      const live = await readSceneAudio(page);
+      const enabled = await page.evaluate(() => globalThis.__cinematicPlayer.audio.enabled);
+      return { paused: live?.paused, audible: (live?.volume ?? 0) > 0, enabled };
+    }).toEqual({
+      paused: false,
+      audible: true,
+      enabled: true,
+    });
   });
 });

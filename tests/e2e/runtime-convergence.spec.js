@@ -1,6 +1,8 @@
 import { test, expect } from '@playwright/test';
 import { openPlayer } from './helpers.js';
 
+test.describe.configure({ mode: 'serial' });
+
 test('does not preload the next frame when data saver is active', async ({ page }) => {
   await page.addInitScript(() => {
     Object.defineProperty(navigator, 'connection', {

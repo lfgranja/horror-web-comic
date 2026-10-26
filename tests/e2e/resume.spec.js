@@ -1,6 +1,8 @@
 import { test, expect } from '@playwright/test';
 import { openPlayer, waitForFrame } from './helpers.js';
 
+test.describe.configure({ mode: 'serial' });
+
 test('resumes a saved frame and does not persist paused state', async ({ page }) => {
   await page.addInitScript(() => {
     localStorage.setItem('hwc.schemaVersion', '1');
