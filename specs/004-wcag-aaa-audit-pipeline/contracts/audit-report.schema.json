@@ -1,0 +1,276 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://horror-web-comic.local/contracts/audit-report.schema.json",
+  "title": "AxeWCAGAAAAuditReport",
+  "description": "Esquema formal do artefato de auditoria de acessibilidade gerado e anexado aos relatórios do Playwright via testInfo.attach().",
+  "type": "object",
+  "required": [
+    "metadata",
+    "theme",
+    "state",
+    "metrics",
+    "violations",
+    "incomplete",
+    "targetSizeSummary"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "required": [
+        "engine",
+        "engineVersion",
+        "playwrightVersion",
+        "browser",
+        "viewport",
+        "timestamp",
+        "classification",
+        "targetStandard",
+        "tags",
+        "assertor",
+        "disclaimer"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "engine": {
+          "type": "string",
+          "const": "@axe-core/playwright"
+        },
+        "engineVersion": {
+          "type": "string",
+          "const": "4.13.0"
+        },
+        "playwrightVersion": {
+          "type": "string"
+        },
+        "browser": {
+          "type": "string",
+          "enum": ["desktop-chromium", "mobile-chromium"]
+        },
+        "viewport": {
+          "type": "object",
+          "required": ["width", "height"],
+          "properties": {
+            "width": { "type": "integer", "minimum": 320 },
+            "height": { "type": "integer", "minimum": 480 }
+          }
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "classification": {
+          "type": "string",
+          "const": "Machine-Verifiable Automated Regression Gate"
+        },
+        "targetStandard": {
+          "type": "string",
+          "const": "W3C WCAG 2.2 (Automated Subset)"
+        },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1
+        },
+        "assertor": {
+          "type": "object",
+          "required": ["type", "name", "operator"],
+          "properties": {
+            "type": { "type": "string", "const": "earl:Software" },
+            "name": { "type": "string" },
+            "operator": { "type": "string" }
+          }
+        },
+        "disclaimer": {
+          "type": "string"
+        }
+      }
+    },
+    "theme": {
+      "type": "string",
+      "enum": ["cinema", "noir", "eldritch", "industrial", "shadow-props"]
+    },
+    "state": {
+      "type": "string",
+      "enum": ["resting", "dynamic-traversal", "interactive-audio", "end-state"]
+    },
+    "metrics": {
+      "type": "object",
+      "required": [
+        "passesCount",
+        "violationsCount",
+        "incompleteCount",
+        "inapplicableCount",
+        "durationMs"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "passesCount": { "type": "integer", "minimum": 0 },
+        "violationsCount": { "type": "integer", "minimum": 0 },
+        "incompleteCount": { "type": "integer", "minimum": 0 },
+        "inapplicableCount": { "type": "integer", "minimum": 0 },
+        "durationMs": { "type": "number", "minimum": 0 }
+      }
+    },
+    "violations": {
+      "type": "array",
+      "description": "Violações normativas confirmadas. No portão de CI este array DEVE estar vazio.",
+      "items": {
+        "type": "object",
+        "required": ["id", "impact", "description", "help", "helpUrl", "tags", "nodes"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string" },
+          "impact": { "type": "string", "enum": ["minor", "moderate", "serious", "critical"] },
+          "description": { "type": "string" },
+          "help": { "type": "string" },
+          "helpUrl": { "type": "string", "format": "uri" },
+          "tags": { "type": "array", "items": { "type": "string" } },
+          "nodes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["target", "html", "failureSummary"],
+              "additionalProperties": false,
+              "properties": {
+                "target": { "type": "array", "items": { "type": "string" } },
+                "html": { "type": "string" },
+                "failureSummary": { "type": "string" }
+              }
+            }
+          },
+          "truncated": {
+            "type": "boolean",
+            "description": "True if nodes array was truncated to comply with payload size limits"
+          },
+          "totalNodes": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Total count of offending nodes before truncation"
+          }
+        }
+      }
+    },
+    "incomplete": {
+      "type": "array",
+      "description": "Diagnósticos inconclusivos que requerem inspeção humana manual (ex.: sobreposição de gradientes ou imagens).",
+      "items": {
+        "type": "object",
+        "required": ["id", "description", "nodes"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string" },
+          "impact": {
+            "type": ["string", "null"],
+            "enum": ["minor", "moderate", "serious", "critical", null]
+          },
+          "description": { "type": "string" },
+          "help": { "type": "string" },
+          "helpUrl": { "type": "string", "format": "uri" },
+          "tags": { "type": "array", "items": { "type": "string" } },
+          "nodes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["target", "html"],
+              "additionalProperties": false,
+              "properties": {
+                "target": { "type": "array", "items": { "type": "string" } },
+                "html": { "type": "string" },
+                "failureSummary": { "type": "string" }
+              }
+            }
+          },
+          "truncated": {
+            "type": "boolean",
+            "description": "True if nodes array was truncated to comply with payload size limits"
+          },
+          "totalNodes": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Total count of inconclusive nodes before truncation"
+          }
+        }
+      }
+    },
+    "targetSizeSummary": {
+      "type": "object",
+      "required": [
+        "tested",
+        "status",
+        "tier1Status",
+        "tier2Status",
+        "compliantCount",
+        "nonCompliantCount",
+        "smallestTarget",
+        "controls",
+        "isCompliantAAA"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "tested": {
+          "type": "boolean"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["pass", "fail"]
+        },
+        "tier1Status": {
+          "type": "string",
+          "enum": ["pass", "fail", "not-applicable"]
+        },
+        "tier2Status": {
+          "type": "string",
+          "enum": ["pass", "fail", "not-applicable"]
+        },
+        "compliantCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "nonCompliantCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "smallestTarget": {
+          "type": ["object", "null"],
+          "required": ["id", "width", "height"],
+          "additionalProperties": false,
+          "properties": {
+            "id": { "type": "string" },
+            "width": { "type": "number", "minimum": 0 },
+            "height": { "type": "number", "minimum": 0 }
+          }
+        },
+        "controls": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["selector", "width", "height", "isCompliant", "box"],
+            "additionalProperties": false,
+            "properties": {
+              "selector": { "type": "string" },
+              "id": { "type": "string" },
+              "width": { "type": "number", "minimum": 0 },
+              "height": { "type": "number", "minimum": 0 },
+              "isCompliant": { "type": "boolean" },
+              "box": {
+                "type": "object",
+                "required": ["x", "y", "width", "height"],
+                "additionalProperties": false,
+                "properties": {
+                  "x": { "type": "number" },
+                  "y": { "type": "number" },
+                  "width": { "type": "number" },
+                  "height": { "type": "number" }
+                }
+              }
+            }
+          }
+        },
+        "isCompliantAAA": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

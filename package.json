@@ -24,11 +24,13 @@
     "ci:lighthouse": "npm run lhci"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
     "@lhci/cli": "0.15.1",
     "@playwright/test": "1.64.0",
     "ajv": "8.20.0",
     "ajv-formats": "3.0.1",
     "esbuild": "0.28.2",
+    "fast-check": "3.23.2",
     "sharp": "0.35.5"
   }
 }

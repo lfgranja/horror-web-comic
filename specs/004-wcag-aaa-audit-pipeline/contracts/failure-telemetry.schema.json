@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://horror-web-comic.local/contracts/failure-telemetry.schema.json",
+  "title": "AuditFailureTelemetry",
+  "description": "Esquema formal do payload de telemetria de falha capturado pelo gancho test.afterEach via captureFailureArtifacts() e anexado aos relatórios do Playwright.",
+  "type": "object",
+  "required": [
+    "timestamp",
+    "theme",
+    "state",
+    "url",
+    "domState"
+  ],
+  "properties": {
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Carimbo de data/hora ISO 8601 UTC do momento da captura da falha."
+    },
+    "theme": {
+      "type": "string",
+      "enum": [
+        "cinema",
+        "noir",
+        "eldritch",
+        "industrial",
+        "shadow-props"
+      ],
+      "description": "Tema visual ativo no momento da falha."
+    },
+    "state": {
+      "type": "string",
+      "enum": [
+        "resting",
+        "dynamic-traversal",
+        "interactive-audio",
+        "end-state"
+      ],
+      "description": "Estado do teste no momento da falha."
+    },
+    "url": {
+      "type": "string",
+      "description": "URL corrente da página no momento da falha."
+    },
+    "playerState": {
+      "type": "object",
+      "description": "Telemetria opcional do estado interno do player narrativo.",
+      "properties": {
+        "currentFrameIndex": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "totalFrames": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "isPlaying": {
+          "type": "boolean"
+        },
+        "isPaused": {
+          "type": "boolean"
+        },
+        "audioActive": {
+          "type": "boolean"
+        },
+        "inert": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "domState": {
+      "type": "object",
+      "required": [
+        "activeElementSelector",
+        "modalVisible"
+      ],
+      "description": "Estado do DOM e foco no momento da falha.",
+      "properties": {
+        "activeElementSelector": {
+          "type": "string",
+          "description": "Seletor CSS ou identificador do elemento atualmente focado no DOM."
+        },
+        "modalVisible": {
+          "type": "boolean",
+          "description": "Indica se algum diálogo modal está visível no instante da falha."
+        },
+        "overlayId": {
+          "type": ["string", "null"],
+          "description": "ID do overlay atualmente visível (#blocked-overlay, #resume-overlay, #end-overlay) ou null."
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

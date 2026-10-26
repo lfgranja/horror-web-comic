@@ -1,0 +1,19 @@
+{
+  "timestamp": "2026-10-25T21:05:00.000Z",
+  "theme": "cinema",
+  "state": "interactive-audio",
+  "url": "http://127.0.0.1:8080/",
+  "playerState": {
+    "currentFrameIndex": 2,
+    "totalFrames": 4,
+    "isPlaying": false,
+    "isPaused": true,
+    "audioActive": false,
+    "inert": true
+  },
+  "domState": {
+    "activeElementSelector": "#continue-silent",
+    "modalVisible": true,
+    "overlayId": "#blocked-overlay"
+  }
+}
