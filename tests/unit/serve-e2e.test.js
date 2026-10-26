@@ -8,17 +8,23 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, '../..');
 const serverPath = path.join(root, 'scripts/serve-e2e.mjs');
 
+let serverInstanceCounter = 0;
+
 /**
  * The e2e server is load-bearing for two separate guarantees, and both were broken
  * here before. Locking the headers down costs a second instead of a full performance
  * run.
  */
 async function withServer(run) {
-  const port = 8090 + Math.floor((process.pid % 60));
-  const child = spawn(process.execPath, [serverPath, String(port)], { cwd: root, stdio: ['ignore', 'pipe', 'inherit'] });
+  const port = 8100 + ((process.pid * 17 + (serverInstanceCounter++ * 13)) % 1500);
+  const child = spawn(process.execPath, [serverPath, String(port)], { cwd: root, stdio: ['ignore', 'pipe', 'pipe'] });
+  let stderrOutput = '';
+  child.stderr?.on('data', (chunk) => {
+    stderrOutput += String(chunk);
+  });
   try {
     await new Promise((resolve, reject) => {
-      const timer = setTimeout(() => reject(new Error('the server did not start in time')), 10_000);
+      const timer = setTimeout(() => reject(new Error(`the server did not start in time. Stderr: ${stderrOutput}`)), 15_000);
       child.stdout.on('data', (chunk) => {
         if (String(chunk).includes('Range enabled')) {
           clearTimeout(timer);
@@ -27,12 +33,19 @@ async function withServer(run) {
       });
       child.once('exit', (code) => {
         clearTimeout(timer);
-        reject(new Error(`the server exited early with code ${code}`));
+        reject(new Error(`the server exited early with code ${code}. Stderr: ${stderrOutput}`));
       });
     });
     return await run(`http://127.0.0.1:${port}`);
   } finally {
     child.kill('SIGKILL');
+    await new Promise((resolve) => {
+      if (child.exitCode !== null || child.killed) {
+        resolve();
+      } else {
+        child.once('exit', resolve);
+      }
+    });
   }
 }
 

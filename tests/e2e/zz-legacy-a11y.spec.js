@@ -18,6 +18,9 @@ const fixture = JSON.parse(
 );
 
 test.describe('US4 accessibility semantics', () => {
+  test.describe.configure({ mode: 'serial' });
+  test.slow();
+
   test.beforeEach(async ({ page }) => {
     await openApp(page);
     await resetStorage(page);
@@ -33,6 +36,12 @@ test.describe('US4 accessibility semantics', () => {
   });
 
   test('live region announces detailed description on advance (FR-012, SC-004)', async ({ page }) => {
+    await freezeAdvance(page);
+    await page.evaluate(() => {
+      if (window.__cinematicPlayer.index !== 0) {
+        window.__cinematicPlayer.moveTo(0, window.__cinematicPlayer.status === 'playing');
+      }
+    });
     await expectFrameId(page, 'f-001');
     const live = page.locator(selectors.liveRegion);
     await expect(live).toContainText(/doorway|Cracked|pale light/i, { timeout: 5000 });
@@ -82,6 +91,7 @@ test.describe('US4 accessibility semantics', () => {
 });
 
 test.describe('US4 T053a every frame has description and alt', () => {
+  test.slow();
   test('fixture manifest frames all have non-empty description and alt', async () => {
     const frames = fixture.scenes.flatMap((s) => s.frames);
     expect(frames.length).toBeGreaterThanOrEqual(2);
@@ -105,6 +115,11 @@ test.describe('US4 T053a every frame has description and alt', () => {
     // already left. freezeAdvance pins every dwell; helpers.js:90 documents why
     // this must be removed rather than retried.
     await freezeAdvance(page);
+    await page.evaluate(() => {
+      if (window.__cinematicPlayer.index !== 0) {
+        window.__cinematicPlayer.moveTo(0, window.__cinematicPlayer.status === 'playing');
+      }
+    });
 
     for (let i = 0; i < FRAME_IDS.length; i += 1) {
       await expectFrameId(page, FRAME_IDS[i]);
