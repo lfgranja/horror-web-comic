@@ -1,0 +1,10 @@
+{
+  "metadata": {
+    "engine": "@axe-core/playwright",
+    "engineVersion": "3.0.0",
+    "browser": "safari"
+  },
+  "theme": "invalid-theme",
+  "state": "unknown-state",
+  "unexpectedField": true
+}

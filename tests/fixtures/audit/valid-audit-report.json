@@ -1,0 +1,62 @@
+{
+  "metadata": {
+    "engine": "@axe-core/playwright",
+    "engineVersion": "4.13.0",
+    "playwrightVersion": "1.64.0",
+    "browser": "desktop-chromium",
+    "viewport": {
+      "width": 1280,
+      "height": 720
+    },
+    "timestamp": "2026-10-25T21:00:00.000Z",
+    "classification": "Machine-Verifiable Automated Regression Gate",
+    "targetStandard": "W3C WCAG 2.2 (Automated Subset)",
+    "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa", "wcag2aaa"],
+    "assertor": {
+      "type": "earl:Software",
+      "name": "Playwright A11y Runner",
+      "operator": "Automated"
+    },
+    "disclaimer": "Automated checks certify machine-verifiable rules only."
+  },
+  "theme": "cinema",
+  "state": "resting",
+  "metrics": {
+    "passesCount": 42,
+    "violationsCount": 0,
+    "incompleteCount": 0,
+    "inapplicableCount": 10,
+    "durationMs": 1250.5
+  },
+  "violations": [],
+  "incomplete": [],
+  "targetSizeSummary": {
+    "tested": true,
+    "status": "pass",
+    "tier1Status": "pass",
+    "tier2Status": "not-applicable",
+    "compliantCount": 4,
+    "nonCompliantCount": 0,
+    "smallestTarget": {
+      "id": "play-pause-button",
+      "width": 48.0,
+      "height": 48.0
+    },
+    "controls": [
+      {
+        "selector": "#play-pause",
+        "id": "play-pause-button",
+        "width": 48.0,
+        "height": 48.0,
+        "isCompliant": true,
+        "box": {
+          "x": 10.0,
+          "y": 10.0,
+          "width": 48.0,
+          "height": 48.0
+        }
+      }
+    ],
+    "isCompliantAAA": true
+  }
+}
