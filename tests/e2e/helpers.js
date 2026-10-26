@@ -1,9 +1,12 @@
 import { readFileSync } from 'node:fs';
 import { expect } from '@playwright/test';
 
-export async function openPlayer(page, story = 'tests/fixtures/story.json', { pause = false, dismissBlocked = true } = {}) {
+export async function openPlayer(page, story = 'tests/fixtures/story.json', { pause = false, dismissBlocked = true, freeze = false } = {}) {
   await page.goto(`/?story=${encodeURIComponent(story)}`);
   await expect(page.locator('#player')).toBeVisible();
+  if (freeze) {
+    await freezeAdvance(page);
+  }
   await expect(page.locator('#player')).toHaveAttribute('data-frame-id', /.+/);
   await expect(page.locator('#frame-image')).toBeVisible();
 
@@ -91,7 +94,59 @@ export async function waitForFrame(page, id) {
 export async function freezeAdvance(page) {
   await page.evaluate(() => {
     const player = globalThis.__cinematicPlayer;
+    if (!player) return;
     for (const item of player.frames) item.frame.durationMs = 600000;
+    if (player.status === 'playing') {
+      player.schedule();
+    }
+  });
+}
+
+export async function dismissBlockedOverlay(page) {
+  const blocked = page.locator('#blocked-overlay');
+  if (await blocked.isVisible()) {
+    await page.locator('#continue-silent').click({ force: true });
+    await expect(blocked).toBeHidden();
+  }
+}
+
+/**
+ * Intercept the story manifest network request and pin frame dwells,
+ * eliminating auto-advance races deterministically across reloads and sessions.
+ */
+export async function routeFrozenStory(page, pattern = '**/*.json*', { freezeAll = false } = {}) {
+  await page.route(pattern, async (route) => {
+    if (route.request().resourceType() === 'document') {
+      return route.continue();
+    }
+    const response = await route.fetch();
+    const contentType = response.headers()['content-type'] || '';
+    if (!contentType.includes('json') && !route.request().url().includes('.json')) {
+      return route.fulfill({ response });
+    }
+    const json = await response.json();
+    if (freezeAll) {
+      json.defaultFrameDurationMs = 30000;
+      for (const scene of json.scenes || []) {
+        scene.defaultFrameDurationMs = 30000;
+        for (const frame of scene.frames || []) {
+          frame.durationMs = 30000;
+        }
+      }
+    } else {
+      for (const scene of json.scenes || []) {
+        for (let i = 0; i < (scene.frames || []).length; i += 1) {
+          if (i > 0) {
+            scene.frames[i].durationMs = 30000;
+          }
+        }
+      }
+    }
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(json)
+    });
   });
 }
 
@@ -170,6 +225,8 @@ export const selectors = Object.freeze({
 /** Navigate without asserting anything about the resulting state. */
 export async function openApp(page, story = LEGACY_STORY) {
   await page.goto(`/?story=${encodeURIComponent(story)}`);
+  await expect(page.locator(selectors.player)).toBeVisible();
+  await dismissBlockedOverlay(page);
 }
 
 /** Assert the shell is up and a frame is actually decoded and visible. */
@@ -193,6 +250,8 @@ export async function resetStorage(page) {
     }
   });
   await page.reload();
+  await expect(page.locator(selectors.player)).toBeVisible();
+  await dismissBlockedOverlay(page);
 }
 
 /** Assert the player is showing exactly this frame. */

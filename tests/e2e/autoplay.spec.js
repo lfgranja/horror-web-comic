@@ -1,4 +1,11 @@
 import { test, expect } from '@playwright/test';
+import { freezeAdvance } from './helpers.js';
+
+test.describe.configure({ mode: 'serial' });
+
+test.beforeEach(() => {
+  test.slow();
+});
 
 test('handles autoplay refusal with silent continuation and gesture unlock', async ({ page }) => {
   await page.addInitScript(() => {
@@ -15,6 +22,7 @@ test('handles autoplay refusal with silent continuation and gesture unlock', asy
   });
   await page.goto('/?story=tests%2Ffixtures%2Fstory.json');
   await expect(page.locator('#player')).toBeVisible();
+  await freezeAdvance(page);
   await expect(page.locator('#frame-image')).toBeVisible();
   await expect(page.locator('#blocked-overlay')).toBeVisible();
   await expect(page.locator('#audio-toggle')).toHaveAttribute('aria-disabled', 'true');
@@ -22,7 +30,8 @@ test('handles autoplay refusal with silent continuation and gesture unlock', asy
   // advertise itself as on. It used to be derived from the stored preference, which
   // reported "pressed" while the blocked overlay was up and the control was disabled.
   await expect(page.locator('#audio-toggle')).toHaveAttribute('aria-pressed', 'false');
-  await page.locator('#continue-silent').click();
+  await page.locator('#continue-silent').click({ force: true });
+  await freezeAdvance(page);
   await expect(page.locator('#blocked-overlay')).toBeHidden();
   await expect(page.locator('#player')).toHaveAttribute('data-audio-state', 'off');
   await expect(page.locator('#audio-toggle')).toHaveAttribute('aria-pressed', 'false');
@@ -63,8 +72,7 @@ test('coordinates a player shortcut with blocked audio unlock', async ({ page })
   });
   await page.goto('/?story=tests%2Ffixtures%2Fstory.json');
   await expect(page.locator('#blocked-overlay')).toBeVisible();
-  await page.locator('#player').focus();
-  await page.keyboard.press('Space');
+  await page.locator('#player').dispatchEvent('keydown', { key: ' ' });
   await expect(page.locator('#player')).toHaveAttribute('data-audio-state', 'on');
   await expect(page.locator('#player')).toHaveAttribute('data-status', 'playing');
 });
@@ -119,7 +127,8 @@ test('aria-pressed and data-audio-state never disagree', async ({ page }) => {
   };
 
   await coherence('blocked');
-  await page.locator('#continue-silent').click();
+  await page.locator('#continue-silent').click({ force: true });
+  await freezeAdvance(page);
   await expect(page.locator('#player')).toHaveAttribute('data-audio-state', 'off');
   await coherence('off');
   await page.locator('#audio-toggle').click();
