@@ -124,6 +124,25 @@ export class CinematicPlayer {
     // covers the navigation controls (FR-033).
     this.descriptionResizeObserver = new ResizeObserver(() => this.publishControlBarHeight());
     if (this.description) this.descriptionResizeObserver.observe(this.description);
+    this.resumeOverlayKeydownHandler = (event) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        this.resumeFromOverlay();
+        return;
+      }
+      if (event.key === 'Tab') {
+        const focusables = Array.from(
+          this.resumeOverlay.querySelectorAll(
+            'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+          )
+        );
+        if (focusables.length <= 1) {
+          event.preventDefault();
+          focusables[0]?.focus();
+        }
+      }
+    };
+    this.resumeOverlay?.addEventListener('keydown', this.resumeOverlayKeydownHandler);
     // T214: the element-level keydown listener that used to live here is gone.
     // It was registered on #player, so its target could only ever be #player
     // itself (tabindex="0") or a descendant — and every descendant is a
@@ -352,6 +371,9 @@ export class CinematicPlayer {
    * already visible — and repeated on the next frame.
    */
   showEndOverlay() {
+    this.resumeRequired = false;
+    if (this.resumeOverlay) this.resumeOverlay.hidden = true;
+    if (this.root) this.root.inert = false;
     const wasHidden = this.endOverlay.hidden;
     this.endOverlay.hidden = false;
     this.endOverlayShown = true;
@@ -434,6 +456,9 @@ export class CinematicPlayer {
   }
 
   pauseForFocusLoss() {
+    if (this.status === 'ended' || (this.endOverlay && !this.endOverlay.hidden)) {
+      return;
+    }
     this.status = 'paused';
     clearTimeout(this.autoStartTimer);
     this.autoStartTimer = 0;
@@ -447,6 +472,11 @@ export class CinematicPlayer {
     this.storage.saveProgress(this.frames[this.index].frame.id);
     this.resumeRequired = true;
     this.resumeOverlay.hidden = false;
+    if (this.resumeOverlayKeydownHandler) {
+      this.resumeOverlay.removeEventListener('keydown', this.resumeOverlayKeydownHandler);
+      this.resumeOverlay.addEventListener('keydown', this.resumeOverlayKeydownHandler);
+    }
+    if (this.root) this.root.inert = true;
     this.setControlsSuspended(true);
     this.updateStatus();
     this.focusOverlay(this.resumeOverlay);
@@ -455,19 +485,22 @@ export class CinematicPlayer {
   resumeFromOverlay() {
     if (!this.resumeRequired) return;
     this.resumeRequired = false;
+    if (this.resumeOverlayKeydownHandler) {
+      this.resumeOverlay?.removeEventListener('keydown', this.resumeOverlayKeydownHandler);
+    }
+    if (this.root) this.root.inert = false;
     this.setControlsSuspended(false);
     this.resume();
     this.root?.focus({ preventScroll: true });
   }
 
   /**
-   * T208: while the resume overlay is up, every navigation control is a no-op
-   * (`moveTo` returns early while resumeRequired). With `aria-modal` removed
-   * from the overlay — these are deliberately non-modal status notices, because
-   * FR-016 needs the page to stay interactive and FR-033 needs the navigation
-   * bar to stay live — focus can legitimately land on those controls. Marking
-   * them `aria-disabled` is what tells a screen-reader user why they do
-   * nothing, instead of leaving an enabled-looking button that silently fails.
+   * Spec 004 Modal Shielding Architecture:
+   * While the resume overlay is displayed with aria-modal="true", the underlying player
+   * container is shielded with inert (#player.inert = true) and navigation controls are marked
+   * aria-disabled. When dismissed/resumed, inert is restored to false and focus returns to #player.
+   * In contrast, #end-overlay remains strictly non-modal without aria-modal to preserve natural
+   * traversal into the unobstructed control bar per FR-014, FR-033, and SC 2.4.12.
    */
   setControlsSuspended(suspended) {
     for (const selector of NAVIGATION_CONTROLS) {
@@ -479,8 +512,14 @@ export class CinematicPlayer {
   }
 
   replay() {
+    if (this.endOverlay) this.endOverlay.hidden = true;
+    this.endOverlayShown = false;
+    this.resumeRequired = false;
+    if (this.resumeOverlay) this.resumeOverlay.hidden = true;
+    if (this.root) this.root.inert = false;
     this.queueNavigation(() => {
       this.moveTo(0, true);
+      this.root?.focus({ preventScroll: true });
     });
   }
 
@@ -777,6 +816,8 @@ export class CinematicPlayer {
     if (this.resizeHandler) globalThis.removeEventListener('resize', this.resizeHandler);
     if (this.scrollHandler) globalThis.removeEventListener('scroll', this.scrollHandler);
     this.descriptionResizeObserver?.disconnect();
+    if (this.resumeOverlayKeydownHandler) this.resumeOverlay?.removeEventListener('keydown', this.resumeOverlayKeydownHandler);
+    if (this.root) this.root.inert = false;
     if (this.imageLoadHandler) this.image.removeEventListener('load', this.imageLoadHandler);
     if (this.imageErrorHandler) this.image.removeEventListener('error', this.imageErrorHandler);
     this.audio.destroy?.();

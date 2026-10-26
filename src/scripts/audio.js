@@ -204,6 +204,27 @@ export class AudioManager {
     this.player = player;
     toggle?.addEventListener('click', () => this.toggle());
     silent?.addEventListener('click', () => this.continueSilently());
+    const blockedOverlay = document.querySelector('#blocked-overlay');
+    this.blockedOverlay = blockedOverlay;
+    this.blockedOverlayKeydownHandler = (event) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        this.continueSilently();
+        return;
+      }
+      if (event.key === 'Tab') {
+        const focusables = Array.from(
+          blockedOverlay.querySelectorAll(
+            'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+          )
+        );
+        if (focusables.length <= 1) {
+          event.preventDefault();
+          focusables[0]?.focus();
+        }
+      }
+    };
+    blockedOverlay?.addEventListener('keydown', this.blockedOverlayKeydownHandler);
     this.gestureHandler = (event) => {
       const target = event.target;
       if (this.isElementTarget(target) && target.closest('#continue-silent')) return;
@@ -444,11 +465,20 @@ export class AudioManager {
   }
 
   showBlocked() {
+    this.sessionBlocked = true;
+    this.awaitingUnlock = true;
+    this.silentContinuation = false;
     const overlay = document.querySelector('#blocked-overlay');
+    const player = document.querySelector('#player');
     const hint = document.querySelector('#audio-hint');
     const status = document.querySelector('#audio-status');
     if (overlay) {
       overlay.hidden = false;
+      if (this.blockedOverlayKeydownHandler) {
+        overlay.removeEventListener('keydown', this.blockedOverlayKeydownHandler);
+        overlay.addEventListener('keydown', this.blockedOverlayKeydownHandler);
+      }
+      if (player) player.inert = true;
       const focusTarget = overlay.querySelector('button, [href], input, select, textarea, [tabindex]') || overlay;
       if (!overlay.contains(document.activeElement)) focusTarget.focus({ preventScroll: true });
     }
@@ -474,9 +504,13 @@ export class AudioManager {
     this.awaitingUnlock = false;
     this.sessionBlocked = false;
     const overlay = document.querySelector('#blocked-overlay');
-    if (overlay) overlay.hidden = true;
-    this.stopAll(STOP_DURATION, generation);
     const player = document.querySelector('#player');
+    if (overlay) {
+      if (this.blockedOverlayKeydownHandler) overlay.removeEventListener('keydown', this.blockedOverlayKeydownHandler);
+      overlay.hidden = true;
+    }
+    if (player) player.inert = false;
+    this.stopAll(STOP_DURATION, generation);
     if (document.activeElement?.closest?.('#blocked-overlay')) player?.focus({ preventScroll: true });
     this.emit();
   }
@@ -512,8 +546,12 @@ export class AudioManager {
     this.silentContinuation = false;
     this.sessionBlocked = false;
     const overlay = document.querySelector('#blocked-overlay');
-    if (overlay) overlay.hidden = true;
     const player = document.querySelector('#player');
+    if (overlay) {
+      if (this.blockedOverlayKeydownHandler) overlay.removeEventListener('keydown', this.blockedOverlayKeydownHandler);
+      overlay.hidden = true;
+    }
+    if (player) player.inert = false;
     if (document.activeElement?.closest?.('#blocked-overlay')) player?.focus({ preventScroll: true });
     this.emit();
     try {
@@ -783,6 +821,10 @@ export class AudioManager {
   destroy() {
     if (this.destroyed) return;
     this.destroyed = true;
+    if (this.player) this.player.inert = false;
+    if (this.blockedOverlayKeydownHandler) {
+      this.blockedOverlay?.removeEventListener('keydown', this.blockedOverlayKeydownHandler);
+    }
     this.invalidateLifecycle();
     for (const eventName of ['pointerup', 'touchend', 'keydown', 'click']) {
       this.player?.removeEventListener(eventName, this.gestureHandler);
