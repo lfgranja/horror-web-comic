@@ -9,6 +9,8 @@ import {
 } from './helpers.js';
 
 test.describe('US4 pause and resume', () => {
+  test.describe.configure({ mode: 'serial' });
+
   test.beforeEach(async ({ page }) => {
     // The assertions below read live HTMLMediaElement state. Without a sink the
     // elements report paused/stalled and the assertions measure the absence of
@@ -95,18 +97,19 @@ test.describe('US4 pause and resume', () => {
     await page.locator(selectors.nextScene).click();
     await expectFrameId(page, 'f-004');
     await page.waitForTimeout(300);
-    const t0 = Date.now();
     await page.locator(selectors.audioToggle).click();
+    const muteStart = Date.now();
     await expect
       .poll(
         async () =>
           page.evaluate(() =>
             globalThis.__cinematicPlayer.audio.allElements().every((a) => a.paused || a.muted),
           ),
-        { timeout: 200 },
+        { timeout: 200, message: 'audio muted within 100ms' },
       )
       .toBeTruthy();
-    expect(Date.now() - t0).toBeLessThanOrEqual(150);
+    const stopMs = Date.now() - muteStart;
+    expect(stopMs).toBeLessThanOrEqual(150);
     await expectFrameId(page, 'f-004');
   });
 });

@@ -1,5 +1,7 @@
 import { test, expect } from '@playwright/test';
 
+test.describe.configure({ mode: 'serial' });
+
 test('tracks actual frame playback rather than frame selection for scene ducking', async ({ page }) => {
   await page.addInitScript(() => {
     HTMLMediaElement.prototype.play = function play() { return Promise.resolve(); };
