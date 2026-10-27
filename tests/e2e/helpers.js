@@ -225,8 +225,6 @@ export const selectors = Object.freeze({
 /** Navigate without asserting anything about the resulting state. */
 export async function openApp(page, story = LEGACY_STORY) {
   await page.goto(`/?story=${encodeURIComponent(story)}`);
-  await expect(page.locator(selectors.player)).toBeVisible();
-  await dismissBlockedOverlay(page);
 }
 
 /** Assert the shell is up and a frame is actually decoded and visible. */
@@ -250,8 +248,6 @@ export async function resetStorage(page) {
     }
   });
   await page.reload();
-  await expect(page.locator(selectors.player)).toBeVisible();
-  await dismissBlockedOverlay(page);
 }
 
 /** Assert the player is showing exactly this frame. */
