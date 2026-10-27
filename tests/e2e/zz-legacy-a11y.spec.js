@@ -10,6 +10,7 @@ import {
   selectors,
   FRAME_IDS,
   freezeAdvance,
+  dismissBlockedOverlay,
 } from './helpers.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -26,6 +27,7 @@ test.describe('US4 accessibility semantics', () => {
     await resetStorage(page);
     await openApp(page);
     await waitForPlayer(page);
+    await dismissBlockedOverlay(page);
   });
 
   test('live region is polite and atomic before changes (FR-012)', async ({ page }) => {
@@ -108,6 +110,7 @@ test.describe('US4 T053a every frame has description and alt', () => {
     await resetStorage(page);
     await openApp(page);
     await waitForPlayer(page);
+    await dismissBlockedOverlay(page);
     // This loop walks the whole story asserting one live-region update at a time.
     // The legacy fixture authors dwells of 800-2500ms, so on a loaded engine the
     // auto-advance can cross into the next frame while the test is still reading
