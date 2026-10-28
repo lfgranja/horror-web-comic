@@ -46,4 +46,4 @@
 - [ ] T035 Implement `#sensory-advisory-badge` 5s auto-hide and audio-state text in `src/scripts/main.js` per FR-013 (partial)
 - [ ] T036 Implement catalog progress bars/badges and Escape close in `#catalog-dialog` per FR-005/FR-014 (partial)
 - [ ] T037 Attenuate memory illusion audio sting to 20% on revisit in `src/scripts/player.js`/`audio.js` per FR-007 (partial)
-- [ ] T038 Run full `npm run ci` verification gate (verification)
+- [X] T038 Run full `npm run ci` verification gate (verification)
