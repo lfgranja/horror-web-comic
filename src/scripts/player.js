@@ -48,12 +48,19 @@ export class CinematicPlayer {
     this.frames = [];
     this.scenes = story.scenes;
     this.timer = 0;
+    this.fxTimer = 0;
+    this.latchedIllusions = new Set();
+    try {
+      const raw = globalThis.sessionStorage?.getItem(`hwc.latched:${story.id}`);
+      if (raw) JSON.parse(raw).forEach((id) => this.latchedIllusions.add(id));
+    } catch {}
     this.transitionTimer = 0;
     this.lastNavigation = 0;
     this.pendingNavigation = null;
     this.autoStartTimer = 0;
     this.resumeRequired = false;
     this.destroyed = false;
+    this.currentNavigationDelta = 0;
     this.pendingNavigationAction = null;
     this.imageLoadTimer = 0;
     this.dwellStartedAt = 0;
@@ -283,6 +290,7 @@ export class CinematicPlayer {
   }
 
   navigate(delta) {
+    this.currentNavigationDelta = delta;
     this.queueNavigation(() => {
       const target = this.index + delta;
       if (target < 0 || target >= this.frames.length) return;
@@ -336,6 +344,24 @@ export class CinematicPlayer {
     this.endOverlay.hidden = true;
     this.audio.setPaused(true);
     this.index = target;
+    const frame = this.frames[this.index].frame;
+    if (this.currentNavigationDelta < 0 && frame.memoryIllusion) {
+      const illusion = frame.memoryIllusion;
+      if (!this.latchedIllusions.has(frame.id)) {
+        this.image.classList.add(illusion.cssClass || 'memory-distortion');
+        if (illusion.description) this.description.textContent = illusion.description;
+        if (illusion.alt) this.image.alt = illusion.alt;
+        this.latchedIllusions.add(frame.id);
+        try { globalThis.sessionStorage?.setItem(`hwc.latched:${this.story.id}`, JSON.stringify([...this.latchedIllusions])); } catch {}
+        this.audio.shockDrop?.(illusion.durationMs || 250);
+        clearTimeout(this.fxTimer);
+        this.fxTimer = setTimeout(() => this.image.classList.remove(illusion.cssClass || 'memory-distortion'), illusion.durationMs || 250);
+      } else {
+        this.image.classList.add(illusion.cssClass || 'memory-distortion');
+        if (illusion.description) this.description.textContent = illusion.description;
+        if (illusion.alt) this.image.alt = illusion.alt;
+      }
+    }
     this.status = shouldPlay ? 'playing' : 'paused';
     // T202: arriving at the last frame by manual navigation must reach the ended
     // state, not just render the final frame paused with no indication the story
