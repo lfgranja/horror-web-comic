@@ -165,6 +165,7 @@ async function boot() {
       audio?.stopAll?.(0);
     });
     document.querySelector('#story-title').textContent = story.title;
+    player.schedule();
     player.setAudioState(audio.state());
     // T215: test-only hook, stripped from the production bundle by the
     // globalThis.__CINEMATIC_PRODUCTION__ define. Over 40 browser specs read
