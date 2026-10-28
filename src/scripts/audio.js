@@ -480,7 +480,7 @@ export class AudioManager {
       }
       if (player) player.inert = true;
       const focusTarget = overlay.querySelector('button, [href], input, select, textarea, [tabindex]') || overlay;
-      if (!overlay.contains(document.activeElement)) focusTarget.focus({ preventScroll: true });
+      if (!overlay.contains(document.activeElement)) focusTarget.focus();
     }
     if (hint) hint.textContent = 'O navegador bloqueou o som. Toque na página para ativar.';
     if (status) status.textContent = 'Som bloqueado pelo navegador';
