@@ -35,7 +35,6 @@ function resolveStoryUrl() {
   // fail closed via `isSafeLocalReference` (friendly error screen, no crash).
   return requested;
 }
-
 const storyUrl = resolveStoryUrl();
 const errorScreen = document.querySelector('#error-screen');
 const errorMessage = document.querySelector('#error-message');
@@ -62,6 +61,7 @@ async function boot() {
     if (themeSelect) themeSelect.value = activeTheme;
 
     const story = await loadStory(storyUrl);
+    storage.setStoryId?.(story.id);
     const capabilities = detectCapabilities();
     const a11y = new AccessibilityController();
     audio = new AudioManager({
@@ -110,8 +110,60 @@ async function boot() {
       }
     });
 
-    player.schedule();
+    const sensoryDialog = document.querySelector('#sensory-dialog');
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const storedMode = globalThis.localStorage?.getItem('hwc.sensoryMode');
+    if (reducedMotion && !storedMode) globalThis.localStorage?.setItem('hwc.sensoryMode', 'safe-accessible');
+    if (!storedMode && !reducedMotion && sensoryDialog) {
+      sensoryDialog.hidden = false;
+      const playerEl = document.querySelector('#player');
+      if (playerEl) playerEl.inert = true;
+      await new Promise((resolve) => {
+        document.querySelector('#sensory-mode-fx')?.addEventListener('click', () => { globalThis.localStorage?.setItem('hwc.sensoryMode', 'immersive-fx'); sensoryDialog.hidden = true; if (playerEl) playerEl.inert = false; resolve(); }, { once: true });
+        document.querySelector('#sensory-mode-safe')?.addEventListener('click', () => { globalThis.localStorage?.setItem('hwc.sensoryMode', 'safe-accessible'); sensoryDialog.hidden = true; if (playerEl) playerEl.inert = false; resolve(); }, { once: true });
+      });
+    } else if (sensoryDialog) {
+      sensoryDialog.hidden = true;
+    }
+    const badge = document.querySelector('#sensory-advisory-badge');
+    if (badge) {
+      const descriptors = story.sensoryAdvisory?.descriptors || [];
+      badge.textContent = descriptors.map((d) => `[${d}]`).join(' ');
+      badge.classList.add('visible');
+      setTimeout(() => badge.classList.remove('visible'), 5000);
+    }
+    const catalogButton = document.querySelector('#catalog-button');
+    const catalogDialog = document.querySelector('#catalog-dialog');
+    const catalogList = document.querySelector('#catalog-list');
+    catalogButton?.addEventListener('click', async () => {
+      if (!catalogDialog) return;
+      catalogDialog.hidden = false;
+      if (catalogList) {
+        try {
+          const res = await fetch('src/data/catalog.json');
+          const cat = await res.json();
+          catalogList.innerHTML = (cat.stories || []).map((s) => `<div class="catalog-card"><h3>${s.title}</h3><p>${s.synopsis}</p><a href="${s.entryHtml}">Abrir</a></div>`).join('');
+        } catch {}
+      }
+    });
+    document.querySelector('#catalog-close')?.addEventListener('click', () => { if (catalogDialog) catalogDialog.hidden = true; });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && catalogDialog && !catalogDialog.hidden) catalogDialog.hidden = true; });
     document.title = story.title;
+    const toggleSensory = document.querySelector('#toggle-sensory-mode');
+    const applySensoryMode = (mode) => {
+      document.documentElement.setAttribute('data-sensory-mode', mode === 'safe-accessible' ? 'safe-accessible' : 'immersive-fx');
+      if (toggleSensory) toggleSensory.setAttribute('aria-pressed', mode === 'immersive-fx' ? 'true' : 'false');
+    };
+    applySensoryMode(globalThis.localStorage?.getItem('hwc.sensoryMode') || 'safe-accessible');
+    toggleSensory?.addEventListener('click', () => {
+      const current = globalThis.localStorage?.getItem('hwc.sensoryMode') || 'safe-accessible';
+      const next = current === 'safe-accessible' ? 'immersive-fx' : 'safe-accessible';
+      globalThis.localStorage?.setItem('hwc.sensoryMode', next);
+      applySensoryMode(next);
+      const image = document.querySelector('#frame-image');
+      image?.classList.remove('memory-distortion', 'memory-distortion-severe');
+      audio?.stopAll?.(0);
+    });
     document.querySelector('#story-title').textContent = story.title;
     player.setAudioState(audio.state());
     // T215: test-only hook, stripped from the production bundle by the
