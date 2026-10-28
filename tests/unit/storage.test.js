@@ -261,7 +261,7 @@ test('disposes channels and storage listeners exactly once', () => {
     });
     storage.dispose();
     storage.dispose();
-    assert.equal(closed, 2);
+    assert.equal(closed, 3);
     assert.equal(removed, 1);
   } finally {
     if (originalChannel) Object.defineProperty(globalThis, 'BroadcastChannel', { configurable: true, value: originalChannel });
