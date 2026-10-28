@@ -34,12 +34,13 @@ test('adopts the newest reading position in another tab', async ({ browser }) =>
 test('ignores malformed persisted progress and starts from defaults', async ({ page }) => {
   await page.addInitScript(() => {
     localStorage.setItem('hwc.schemaVersion', '1');
-    localStorage.setItem('hwc.progress', JSON.stringify({
+    localStorage.setItem('hwc.progress:test-story', JSON.stringify({
       frameId: 'frame-04',
       updatedAt: 'not-a-date',
       seq: 9,
       tabId: 'persisted-tab'
     }));
+    localStorage.removeItem('hwc.progress');
   });
   await openPausedPlayer(page);
   await expect(page.locator('#player')).toHaveAttribute('data-frame-id', 'frame-01');
@@ -87,9 +88,9 @@ test('uses storage events when BroadcastChannel is unavailable', async ({ browse
 test('falls back when persisted progress contains malformed JSON', async ({ page }) => {
   await page.addInitScript(() => {
     localStorage.setItem('hwc.schemaVersion', '1');
-    localStorage.setItem('hwc.progress', '{not-json');
+    localStorage.setItem('hwc.progress:test-story', '{not-json');
+    localStorage.removeItem('hwc.progress');
   });
-  await openPausedAtStart(page);
   await expect(page.locator('#player')).toHaveAttribute('data-frame-id', 'frame-01');
 });
 
@@ -97,14 +98,14 @@ test('resets an incompatible persisted state before loading the player', async (
   await page.addInitScript(() => {
     localStorage.setItem('hwc.schemaVersion', '99');
     localStorage.setItem('hwc.audio', 'off');
-    localStorage.setItem('hwc.progress', JSON.stringify({
+    localStorage.setItem('hwc.progress:test-story', JSON.stringify({
       frameId: 'frame-04',
       updatedAt: '2026-09-23T12:00:00.000Z',
       seq: 4,
       tabId: 'old-tab'
     }));
+    localStorage.removeItem('hwc.progress');
   });
-  await openPausedAtStart(page);
   // The requirement is that the incompatible state is DISCARDED and the defaults
   // applied — not that the key stays absent. The default for audio is on (FR-004),
   // so the seeded 'off' must not survive, and the app is entitled to persist that
@@ -126,13 +127,14 @@ test('resolves concurrent progress by updatedAt, sequence, and tab identifier', 
     await page.addInitScript(() => {
       localStorage.setItem('hwc.schemaVersion', '1');
       localStorage.removeItem('hwc.progress');
+      localStorage.removeItem('hwc.progress:test-story');
       Object.defineProperty(window, 'BroadcastChannel', { configurable: true, value: undefined });
     });
   }
   await openPausedAtStart(first);
   await openPausedAtStart(second);
   const writeProgress = (record) => first.evaluate((value) => {
-    localStorage.setItem('hwc.progress', JSON.stringify(value));
+    localStorage.setItem('hwc.progress:test-story', JSON.stringify(value));
   }, record);
   const updatedAt = '2099-01-01T00:00:00.000Z';
   await writeProgress({ frameId: 'frame-02', updatedAt, seq: 4, tabId: 'tab-a' });
@@ -145,5 +147,4 @@ test('resolves concurrent progress by updatedAt, sequence, and tab identifier', 
   await expect(second.locator('#player')).toHaveAttribute('data-frame-id', 'frame-03');
   await writeProgress({ frameId: 'frame-04', updatedAt, seq: 5, tabId: 'tab-c' });
   await expect(second.locator('#player')).toHaveAttribute('data-frame-id', 'frame-04');
-  await context.close();
 });
