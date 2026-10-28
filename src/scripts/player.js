@@ -608,6 +608,10 @@ export class CinematicPlayer {
     this.stage.dataset.imageError = 'false';
     this.stage.style.setProperty('--transition-duration', `${transition.durationMs}ms`);
     this.stage.style.setProperty('--transition-easing', transition.easing);
+    // Force a style recalculation so consumers (e.g. SC-018 measurement) read
+    // the freshly published --transition-duration synchronously instead of 0.
+    void this.stage.offsetHeight;
+    void this.image.offsetHeight;
     this.pendingTransition = transition;
     this.stage.style.setProperty('--frame-aspect', `${frame.image.width} / ${frame.image.height}`);
     this.image.dataset.frameId = frame.id;
