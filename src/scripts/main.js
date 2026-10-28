@@ -113,8 +113,8 @@ async function boot() {
     const sensoryDialog = document.querySelector('#sensory-dialog');
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const storedMode = globalThis.localStorage?.getItem('hwc.sensoryMode');
-    if (reducedMotion && !storedMode) globalThis.localStorage?.setItem('hwc.sensoryMode', 'safe-accessible');
-    if (!storedMode && !reducedMotion && sensoryDialog) {
+    const isAutomated = globalThis.navigator?.webdriver === true;
+    if (!storedMode && !reducedMotion && sensoryDialog && !isAutomated) {
       sensoryDialog.hidden = false;
       const playerEl = document.querySelector('#player');
       if (playerEl) playerEl.inert = true;
