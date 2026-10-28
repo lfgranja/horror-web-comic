@@ -17,6 +17,9 @@ export async function openPlayer(page, story = 'tests/fixtures/story.json', { pa
   // playing path.
   if (dismissBlocked && !(await page.evaluate(() => !!window.__audioInstrument))) {
     const blocked = page.locator('#blocked-overlay');
+    // The blocked overlay appears asynchronously once autoplay is rejected.
+    // Wait briefly for it to settle before checking visibility.
+    await page.waitForTimeout(500);
     if (await blocked.isVisible()) {
       await page.locator('#continue-silent').click({ force: true });
       await expect(blocked).toBeHidden();
