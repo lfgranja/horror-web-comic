@@ -3,7 +3,7 @@ import { lightAudioSource } from './light-variants.js';
 const FADE_IN_DURATION = 300;
 const SCENE_FADE_DURATION = 500;
 const FRAME_FADE_DURATION = 300;
-const STOP_DURATION = 90;
+const STOP_DURATION = 40;
 
 // T199: volume used for the autoplay probe, immediately before play().
 // Chromium (and the other engines) treat a media element with volume === 0 as
@@ -690,6 +690,12 @@ export class AudioManager {
 
   stopAll(duration = STOP_DURATION, generation = this.lifecycleGeneration) {
     for (const element of this.allElements()) this.fadeOut(element, duration, generation);
+  }
+
+  shockDrop(durationMs = 250) {
+    const gen = this.lifecycleGeneration;
+    this.stopAll(30, gen);
+    setTimeout(() => { if (!this.destroyed) this.applyMix(); }, Math.max(30, durationMs));
   }
 
   scheduleFadeCompletion(element, fade, duration, complete) {

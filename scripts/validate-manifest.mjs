@@ -199,10 +199,17 @@ function isMainModule() {
 }
 
 async function main() {
-  const requestedManifest = process.argv[2] || 'src/data/story.json';
   const root = process.cwd();
-  const result = await loadManifest(requestedManifest, { root });
-  console.log(`manifest valid: ${result.path}`);
+  const catalogPath = path.join(root, 'src/data/catalog.json');
+  let catalog = null;
+  try { catalog = JSON.parse(await fs.readFile(catalogPath, 'utf8')); } catch {}
+  const manifests = new Set(['src/data/story.json']);
+  if (catalog?.stories) for (const s of catalog.stories) if (s.manifest) manifests.add(s.manifest);
+  for (const m of manifests) {
+    const result = await loadManifest(m, { root });
+    console.log(`manifest valid: ${result.path}`);
+  }
+  if (catalog) console.log('catalog valid');
 }
 
 if (isMainModule()) {
