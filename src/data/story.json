@@ -139,5 +139,10 @@
         }
       ]
     }
-  ]
+  ],
+  "sensoryAdvisory": {
+    "descriptors": [
+      "psychological-distress"
+    ]
+  }
 }

@@ -2,9 +2,9 @@ import { isSafeLocalReference as _isSafeLocalReference } from './safe-reference.
 
 const TRANSITION_TYPES = new Set(['cut', 'fade', 'zoom-in', 'zoom-out', 'dissolve', 'slide-left', 'slide-right', 'none']);
 const EASINGS = new Set(['linear', 'ease-in', 'ease-out', 'ease-in-out']);
-const STORY_KEYS = new Set(['schemaVersion', 'id', 'title', 'defaultFrameDurationMs', 'defaultTransition', 'scenes']);
+const STORY_KEYS = new Set(['schemaVersion', 'id', 'title', 'defaultFrameDurationMs', 'defaultTransition', 'scenes', 'sensoryAdvisory']);
 const SCENE_KEYS = new Set(['id', 'title', 'defaultFrameDurationMs', 'defaultTransition', 'audio', 'frames']);
-const FRAME_KEYS = new Set(['id', 'description', 'alt', 'durationMs', 'transition', 'audio', 'image']);
+const FRAME_KEYS = new Set(['id', 'description', 'alt', 'durationMs', 'transition', 'audio', 'image', 'fx', 'memoryIllusion']);
 const TRANSITION_KEYS = new Set(['type', 'durationMs', 'easing']);
 const IMAGE_KEYS = new Set(['avif', 'webp', 'fallback', 'srcset', 'avifSrcset', 'webpSrcset', 'fallbackSrcset', 'sizes', 'width', 'height']);
 const AUDIO_KEYS = new Set(['id', 'src', 'loop', 'volume']);
@@ -146,12 +146,37 @@ function audio(value, field) {
   if (value.volume !== undefined && (typeof value.volume !== 'number' || !Number.isFinite(value.volume) || value.volume < 0 || value.volume > 1)) fail(`${field}.volume is invalid`);
 }
 
+const FX_KEYS = new Set(['type', 'durationMs', 'intensity', 'audioCue']);
+const MEMORY_ILLUSION_KEYS = new Set(['description', 'alt', 'audioCue', 'durationMs', 'cssClass']);
+function fx(value, field) {
+  if (value === undefined) return;
+  if (!value || typeof value !== 'object') fail(`${field} is invalid`);
+  assertKeys(value, FX_KEYS, field);
+  if (!['glitch', 'optical-distortion', 'flash-reveal'].includes(value.type)) fail(`${field}.type is invalid`);
+  if (value.durationMs !== undefined) duration(value.durationMs, `${field}.durationMs`, 50, 500);
+  if (value.intensity !== undefined && !['subtle', 'moderate'].includes(value.intensity)) fail(`${field}.intensity is invalid`);
+  if (value.audioCue !== undefined) { text(value.audioCue, `${field}.audioCue`); validateReference(value.audioCue, `${field}.audioCue`); }
+}
+function memoryIllusion(value, field) {
+  if (value === undefined) return;
+  if (!value || typeof value !== 'object') fail(`${field} is invalid`);
+  assertKeys(value, MEMORY_ILLUSION_KEYS, field);
+  text(value.description, `${field}.description`);
+  if (value.alt !== undefined) text(value.alt, `${field}.alt`);
+  if (value.audioCue !== undefined) { text(value.audioCue, `${field}.audioCue`); validateReference(value.audioCue, `${field}.audioCue`); }
+  if (value.durationMs !== undefined) duration(value.durationMs, `${field}.durationMs`, 50, 500);
+  if (value.cssClass !== undefined && !['memory-distortion', 'memory-distortion-severe'].includes(value.cssClass)) fail(`${field}.cssClass is invalid`);
+}
+
 export function validateStory(story) {
   if (!story || typeof story !== 'object' || Array.isArray(story)) fail('manifest must be an object');
   assertKeys(story, STORY_KEYS, 'manifest');
   if (story.schemaVersion !== 1) fail('unsupported schemaVersion', 'manifest-incompatible');
   text(story.id, 'id');
   text(story.title, 'title');
+  if (story.sensoryAdvisory !== undefined) {
+    if (!story.sensoryAdvisory || typeof story.sensoryAdvisory !== 'object' || Array.isArray(story.sensoryAdvisory)) fail('sensoryAdvisory is invalid');
+  }
   if (story.defaultFrameDurationMs !== undefined) duration(story.defaultFrameDurationMs, 'defaultFrameDurationMs', 500, 30000);
   transition(story.defaultTransition, 'defaultTransition');
   if (!Array.isArray(story.scenes) || story.scenes.length < 1) fail('scenes must contain at least one scene');
@@ -182,6 +207,8 @@ export function validateStory(story) {
       transition(frame.transition, `${framePrefix}.transition`);
       image(frame.image, `${framePrefix}.image`);
       audio(frame.audio, `${framePrefix}.audio`);
+      fx(frame.fx, `${framePrefix}.fx`);
+      memoryIllusion(frame.memoryIllusion, `${framePrefix}.memoryIllusion`);
     }
   }
   return story;

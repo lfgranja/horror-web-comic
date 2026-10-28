@@ -15,7 +15,7 @@ const STANDARD_MAX_BYTES = 300 * 1024;
 const STANDARD_AUDIO_RANGE = Object.freeze({ min: 96000, max: 128000 });
 const LIGHT_AUDIO_RANGE = Object.freeze({ min: 48000, max: 64000 });
 const PUBLISHABLE_ROOTS = Object.freeze(['src', 'assets']);
-const PUBLISHABLE_ROOT_FILES = Object.freeze(['index.html', 'favicon.svg', 'manifest.webmanifest', 'robots.txt', 'sitemap.xml']);
+const PUBLISHABLE_ROOT_FILES = Object.freeze(['index.html', 'alojamento.html', 'favicon.svg', 'manifest.webmanifest', 'robots.txt', 'sitemap.xml']);
 const TEXT_EXTENSIONS = new Set([
   '.css', '.csv', '.gif', '.htm', '.html', '.js', '.json', '.mjs', '.svg', '.txt', '.webmanifest', '.xml'
 ]);
@@ -636,7 +636,10 @@ async function copyPublishableFiles(root, story) {
   const dist = path.join(root, 'dist');
   await fs.rm(dist, { recursive: true, force: true });
   await fs.mkdir(path.join(dist, 'src/data'), { recursive: true });
-  await fs.copyFile(path.join(root, 'index.html'), path.join(dist, 'index.html'));
+  for (const file of PUBLISHABLE_ROOT_FILES) {
+    const src = path.join(root, file);
+    try { await fs.copyFile(src, path.join(dist, file)); } catch (e) { if (!isMissing(e)) throw e; }
+  }
   await fs.cp(path.join(root, 'src/data'), path.join(dist, 'src/data'), { recursive: true });
   const allowed = new Set([...collectPublishableAssetReferences(story)].map((reference) => toPosix(reference)));
   const files = (await scanDirectory(path.join(root, 'assets'), root)).filter((file) => allowed.has(file));
@@ -695,15 +698,53 @@ export async function build(options = {}) {
     const details = findings.map((finding) => `${finding.file}: ${finding.reference}`).join('; ');
     throw mediaError(`external or protocol-relative reference found in publishable resources: ${details}`, 'external-origin');
   }
-  const manifestPath = path.join(root, 'src/data/story.json');
-  const manifest = await readJson(manifestPath, 'src/data/story.json');
-  await validateManifestMedia(manifest, { root });
-  const budget = await loadBudget(root);
-  const assetSizes = await validateDeliveryBudgets(manifest, budget, root);
-  const dist = await copyPublishableFiles(root, manifest);
+  let catalog = null;
+  try { catalog = JSON.parse(await fs.readFile(path.join(root, 'src/data/catalog.json'), 'utf8')); } catch {}
+  const entries = catalog?.stories?.length ? catalog.stories : [{ id: 'main-story', entryHtml: 'index.html', manifest: 'src/data/story.json' }];
+  const manifests = [];
+  for (const entry of entries) {
+    const rel = entry.manifest || 'src/data/story.json';
+    const manifest = await readJson(path.join(root, rel), rel);
+    await validateManifestMedia(manifest, { root });
+    const budget = await loadBudget(root);
+    await validateDeliveryBudgets(manifest, budget, root);
+    manifests.push({ entry, manifest });
+  }
+  const combined = { scenes: manifests.flatMap((item) => item.manifest.scenes || []) };
+  const dist = await copyPublishableFiles(root, combined);
   await buildBundles(root);
-  const codeSizes = await writeIndex(root, dist, manifest);
-  return { ...assetSizes, ...codeSizes };
+  const scriptDir = path.join(dist, 'src/scripts');
+  const styleDir = path.join(dist, 'src/styles');
+  const scriptFiles = (await fs.readdir(scriptDir)).filter((file) => file.endsWith('.js'));
+  const styleFiles = (await fs.readdir(styleDir)).filter((file) => file.endsWith('.css'));
+  if (scriptFiles.length !== 1) throw mediaError('production script bundle is missing or ambiguous', 'build-invalid');
+  const scriptFile = scriptFiles[0];
+  const budget = await loadBudget(root);
+  let codeSizes = null;
+  for (const { entry, manifest } of manifests) {
+    const htmlName = entry.entryHtml || 'index.html';
+    const htmlPath = path.join(dist, htmlName);
+    let html = await fs.readFile(htmlPath, 'utf8');
+    html = injectFirstFramePicture(html, manifest);
+    for (const file of styleFiles) {
+      const baseName = file.replace(/-.*\.css$/, '.css');
+      html = html.replaceAll(`src/styles/${path.basename(baseName, '.css')}.css`, `src/styles/${file}`);
+    }
+    html = html.replace('src/scripts/main.js', `src/scripts/${scriptFile}`);
+    await fs.writeFile(htmlPath, html);
+  }
+  const scriptOutput = await fs.readFile(path.join(scriptDir, scriptFile));
+  const compressedScriptSize = gzipSync(scriptOutput).byteLength;
+  const cssBuffers = [];
+  for (const file of styleFiles) cssBuffers.push(await fs.readFile(path.join(styleDir, file)));
+  const totalCssSize = cssBuffers.reduce((total, buffer) => total + buffer.byteLength, 0);
+  const compressedStyleSize = gzipSync(Buffer.concat(cssBuffers)).byteLength;
+  const compressedCodeSize = compressedScriptSize + compressedStyleSize;
+  if (compressedScriptSize > budget.compressedScriptBytes) throw mediaError(`compressed script budget exceeded: ${compressedScriptSize} > ${budget.compressedScriptBytes}`, 'code-budget-exceeded');
+  if (compressedStyleSize > budget.compressedStyleBytes) throw mediaError(`compressed style budget exceeded: ${compressedStyleSize} > ${budget.compressedStyleBytes}`, 'code-budget-exceeded');
+  if (compressedCodeSize > budget.compressedCodeBytes) throw mediaError(`compressed code budget exceeded: ${compressedCodeSize} > ${budget.compressedCodeBytes}`, 'code-budget-exceeded');
+  const combinedAssetSizes = await validateDeliveryBudgets(combined, budget, root);
+  return { initialAssets: combinedAssetSizes.initialAssets, maxFrameAssets: combinedAssetSizes.maxFrameAssets, totalAssets: combinedAssetSizes.totalAssets, compressedScriptSize, compressedStyleSize, compressedCodeSize, totalCssSize };
 }
 
 function isMainModule() {
