@@ -94,6 +94,8 @@ function hasWindow() {
 export class StorageManager {
   constructor(storage = getBrowserStorage()) {
     this.storage = storage || null;
+    this.storyId = null;
+    this.progressKey = () => (this.storyId ? `hwc.progress:${this.storyId}` : 'hwc.progress');
     this.memory = new Map();
     this.seq = 0;
     this.tabId = createTabId();
@@ -109,7 +111,7 @@ export class StorageManager {
     this.progress = null;
     this.handleStorage = (event) => {
       try {
-        if (event?.key === 'hwc.progress') {
+        if (event?.key === this.progressKey()) {
           const record = parseProgress(event?.newValue);
           if (record) this.receiveProgress(record);
         } else if (event?.key === 'hwc.theme') {
@@ -129,7 +131,7 @@ export class StorageManager {
     this.themeChannel = this.createThemeChannel();
     this.ensureVersion();
     this.attachStorageListener();
-    if (!this.defaultsOnly) this.progress = parseProgress(this.get('hwc.progress'));
+    if (!this.defaultsOnly) this.progress = parseProgress(this.get(this.progressKey()));
     if (this.progress?.tabId === this.tabId && this.progress.seq > this.seq) this.seq = this.progress.seq;
   }
 
@@ -266,7 +268,7 @@ export class StorageManager {
   }
 
   remove(key) {
-    if (key === 'hwc.progress') this.progress = null;
+    if (key === this.progressKey()) this.progress = null;
     if (this.storage) {
       try {
         this.storage.removeItem(key);
@@ -357,12 +359,18 @@ export class StorageManager {
     return () => this.themeListeners.delete(listener);
   }
 
+  setStoryId(id) {
+    this.storyId = id || null;
+    if (!this.defaultsOnly) this.progress = parseProgress(this.get(this.progressKey()));
+    if (this.progress?.tabId === this.tabId && this.progress.seq > this.seq) this.seq = this.progress.seq;
+  }
+
   saveProgress(frameId) {
     this.seq += 1;
     const record = { frameId, updatedAt: new Date().toISOString(), seq: this.seq, tabId: this.tabId };
     this.progress = record;
     this.defaultsOnly = false;
-    this.set('hwc.progress', JSON.stringify(record));
+    this.set(this.progressKey(), JSON.stringify(record));
     if (!this.disposed) {
       const channel = this.channel;
       if (channel) {
@@ -386,7 +394,7 @@ export class StorageManager {
     this.defaultsOnly = false;
     if (comparison > 0) {
       this.progress = candidate;
-      this.set('hwc.progress', JSON.stringify(candidate));
+    this.set(this.progressKey(), JSON.stringify(candidate));
     }
     if (candidate.tabId === this.tabId && candidate.seq > this.seq) this.seq = candidate.seq;
     this.notify(candidate);

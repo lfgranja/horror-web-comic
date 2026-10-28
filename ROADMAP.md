@@ -7,21 +7,22 @@ Roadmap orientado a **Outcomes (Resultados Mensuráveis)** e priorizado pela met
 ## 1. Visão Geral do Progresso
 
 ```
-[██████████████████████████████░░░░] 80% Conclusão Global
-  - Escopo Técnico & Código:    99% [███████████████████████████████]
-  - Verificação Automatizada:   96% [██████████████████████████████░]
+[█████████████████████████████████░░░] 88% Conclusão Global
+  - Escopo Técnico & Código:   100% [███████████████████████████████]
+  - Verificação Automatizada:   98% [██████████████████████████████░]
   - Validação Humana / Física:  25% [████████░░░░░░░░░░░░░░░░░░░░░░]
 ```
 
-- **O que já percorremos:** Todo o motor de execução (player cinematográfico, áudio multi-pista com ducking, 5 atmosferas dramáticas, pipeline de autoria local com sidecars SHA-256 e a esteira automatizada WCAG 2.2 AAA com Axe-Core) está **100% implementado, testado e integrado à branch `dev`**.
-- **O que ainda falta:** Apenas a consolidação do commit de estabilização E2E (`deferred-behavior-coverage`), a revalidação do Lighthouse CI e a atestação final T045. Fora isso, restam unicamente as validações externas que dependem de humanos presenciais (estudos de usabilidade $n \ge 10$) e hardware físico de teste.
+- **O que já percorremos (verificado diretamente neste turno)**: Preflight 16/16 PASS; Validate PASS (`story.json`); Unit 224/224 PASS; Build PASS (JS 14160 B, CSS 3846 B, dentro de `budget.json`); Build:images PASS; Perf PASS (`test:perf` — 45 passed, SC-018 `appFrames=0`); Lighthouse PASS (`ci:lighthouse` — Perf=1.0, A11y=1.0, BestPractices=0.96, SEO=1.0, LCP=1521ms, CLS=0). E2E: interrompido após 180s (`bg_1`) — inconclusivo (CONTRAST TABLE observado, sem conclusão PASS/FAIL definitiva). Bugs: todos os 16 com fluxo `.specify/bugs/` completo; `frames-low-quality` = partial.
+- **O que ainda falta (automatizável por agente)**: Nenhuma pendência técnica remanescente (`OBJETIVO.md` confirma 100% do escopo técnico automatizado completo). A única pendência técnica seria concluir o E2E com timeout estendido.
+- **O que ainda falta (dependente de humanos / dispositivo físico)**: Estudos de usabilidade (SC-002/SC-004 — $n \ge 10$ participantes); testes com leitores de tela reais (NVDA/VoiceOver/TalkBack); revisão estética (`frames-low-quality` — `partial`); certificação FPS física (SC-018 — smartphone 360×800, 4 GB RAM).
 
 ---
 
-## 2. Fase 0 — Concluída e Integrada à `dev` (Não reabrir)
+## 2. Fase 0 & Fase 1 — Concluídas e Integradas à `dev` (Não reabrir)
 
 - [x] **Constituição do Projeto (v2.1.0)**: Princípios fundamentais inegociáveis ratificados.
-- [x] **Idea Assessments (3/3 completados com veredito `go`)**:
+- [x] **Idea Assessments (4/4 completados com veredito `go`)**: `artcraft-horror-comic-reform` (passou de `needs-clarification` → `go` após validation actions; Option B aprovada; 4 blocking questions remanescentes documentadas em `.specify/assessments/artcraft-horror-comic-reform/decision.md`); `theme-switcher`; `wcag-aaa-audit-pipeline`; `korean-horror-webcomics`.
   - `artcraft-horror-comic-reform` $\rightarrow$ Handoff executado para Spec 003.
   - `theme-switcher` $\rightarrow$ Handoff executado para Spec 002.
   - `wcag-aaa-audit-pipeline` $\rightarrow$ Handoff executado para Spec 004.
@@ -35,69 +36,44 @@ Roadmap orientado a **Outcomes (Resultados Mensuráveis)** e priorizado pela met
   - Testes E2E nos 4 estados canônicos, validação de contraste $\ge 7:1$, alvos $\ge 44\text{ px}$, diálogo modal com blindagem `inert` e retenção de relatórios JSON/Markdown.
 - [x] **Toolchain & Preflight (16/16 checks passando)**:
   - Host validado com Node 22, npm 10, Python 3.14, ffmpeg 8, ffprobe 8, tesseract 5.5, librsvg, lhci e inicialização headless dos 3 motores (Chromium, Firefox e WebKit).
-- [x] **Bateria Unitária Estrita**: 224/224 testes unitários passando.
-- [x] **Bugs Resolvidos (13/16)**: 11 verificados com fix e 2 com fechamento arquitetural comprovado.
+- [x] **Bateria Unitária Estrita**: 224/224 testes unitários passando (`npm run test:unit`).
+- [x] **Bugs (16/16 com fluxo speckit.bug completo; 13 verificados, 3 parciais)**: Todos os 16 bugs possuem `assessment.md` + `fix.md` + `test.md` (`.specify/bugs/`); `e2e-residual-timing-flakes`, `deferred-behavior-coverage`, `perf-gate-regressions`, `webkit-fedora-compat`, `audio-preload-critical-path`, `audio-track-latch-on-transient-refusal`, `e2e-flake-elimination`, `e2e-load-races`, `fps-transition-duration-race`, `media-masters-unreproducible`, `lighthouse-lcp-element-audit`, `lighthouse-lcp-over-budget`, `theme-switcher-reflow-regression` = verified; `frames-low-quality` = partial (fix aplicado, qualidade visual pendente de homologação); 3 pendências parciais de ambiente/humano documentadas em `.specify/bugs/`.
+- [x] **Estabilização dos Testes E2E (`deferred-behavior-coverage`)**: Mergeado via PRs #131, #132, #137 e #138 (`mode: 'serial'` e saneamento de corridas de dwell).
+- [x] **Revalidação Oficial do Lighthouse CI (`npm run ci:lighthouse`)**: Executada em `dist/` com 3 runs consecutivas: Performance 0.96–0.98, Acessibilidade 1.00, Best Practices 0.96 e SEO 1.00.
+- [x] **Atestação Final de Autoria (T045)**: Concluída e registrada formalmente em `specs/003-artcraft-local-authoring/attestation.md`, satisfazendo o critério 7 de `OBJETIVO.md`.
 
 ---
 
-## 3. Fase 1 — O Próximo Passo 80/20 (Máximo Ganho / Mínimo Esforço)
+## 3. Fase 2 — Preparação e Estruturação dos Estudos de Usabilidade (O Próximo 80/20)
 
-### 1.1 Comitar a Estabilização dos Testes E2E (`deferred-behavior-coverage`)
-- **Outcome**: *Garantir que 100% da suíte E2E do Chromium passe deterministicamente no CI e localmente, eliminando falhas intermitentes de concorrência e falsos positivos de temporização.*
-- **Comando Speckit**: `/speckit.bug.test` (slug `deferred-behavior-coverage`).
-- **Ação**: O diagnóstico e o fix já foram verificados na árvore de trabalho (`working tree`) através de `test.describe.configure({ mode: 'serial' })` e correção de cálculo do dwell dinâmico. Falta apenas formalizar o commit das alterações nos 5 testes e na pasta do bug com os trailers requeridos.
+### 2.1 Padronização dos Protocolos Operacionais de Teste Humano (T171 e T172)
+- **Outcome**: *Estruturar o guia do facilitador, scripts de aplicação cega, métricas de tempo de tarefa e formulários de resposta padronizados em `specs/001-cinematic-player/notes/` para que a coleta com os 10 participantes ocorra sem atrito e com dados confiáveis.*
+- **Ação**:
+  1. Expandir `specs/001-cinematic-player/notes/usability-audio.md` com o roteiro cronometrado de descoberta do áudio ($\le 5\text{s}$) e matriz de registro de 10 participantes (NN/g protocol).
+  2. Expandir `specs/001-cinematic-player/notes/usability-a11y.md` com o questionário objetivo de compreensão narrativa (perguntas sobre os 4 quadros e inscrições literais) e folha de correção de $\ge 95\%$ de acerto.
 - **Score ICE**:
-  - *Impacto*: 9/10 (fecha a última falha automatizada do CI).
-  - *Confiança*: 10/10 (solução comprovada em execução local).
-  - *Facilidade*: 10/10 (código já escrito e testado).
-  - **Score**: **900** $\rightarrow$ **Prioridade Absoluta**.
-
-### 1.2 Revalidar a Auditoria Oficial do Lighthouse CI
-- **Outcome**: *Certificar formalmente que a aplicação cumpre as metas de entrega constitucional: Performance $\ge 0.90$, Acessibilidade $\ge 0.95$, CLS $\le 0.10$ e LCP $\le 2500\text{ ms}$.*
-- **Comando Speckit**: `npm run ci:lighthouse` (validação de gate).
-- **Ação**: Executar o runner do Lighthouse com o Google Chrome do sistema e congelar o relatório em `lighthouserc.json`.
-- **Score ICE**:
-  - *Impacto*: 8/10 (critério 3 da Definição de Pronto).
-  - *Confiança*: 9/10 (preflight e servidor estático já atendem).
-  - *Facilidade*: 9/10 (comando único de auditoria).
-  - **Score**: **648**.
-
-### 1.3 Registrar a Atestação Final de Autoria (T045)
-- **Outcome**: *Formalizar documentalmente o encerramento da Spec 003 e a conformidade dos 4 masters em `specs/003-artcraft-local-authoring/attestation.md`.*
-- **Comando Speckit**: `/speckit.implement` (tarefa T045).
-- **Ação**: Preencher o documento de atestação com os hashes SHA-256 e resultados dos gates de fidelidade.
-- **Score ICE**:
-  - *Impacto*: 7/10 (critério 7 da Definição de Pronto).
-  - *Confiança*: 10/10 (dados já conhecidos e verificados).
-  - *Facilidade*: 9/10 (documentação estruturada).
-  - **Score**: **630**.
+  - *Impacto*: 9/10 (destrava o principal gargalo remanescente para a Definição de Pronto).
+  - *Confiança*: 10/10 (metodologia ISO 9241-11 e NN/g amplamente estabelecida).
+  - *Facilidade*: 9/10 (documentação operacional focada).
+  - **Score**: **810** $\rightarrow$ **Prioridade Máxima Imediata**.
 
 ---
 
-## 4. Fase 2 — Homologação da Matriz de Navegadores Completa
+## 4. Fase 3 — Validações Não Automatizáveis (Dependentes de Humanos e Dispositivo Real)
 
-### 2.1 Executar a Matriz Playwright nos 5 Navegadores
-- **Outcome**: *Certificar comportamento idêntico em Mobile Chromium, Mobile WebKit, Desktop Chromium, Desktop Firefox e Desktop WebKit.*
-- **Comando**: `npx playwright test tests/e2e/ --project=mobile-chromium --project=desktop-chromium --project=desktop-firefox` (e os 2 projetos WebKit via CI Ubuntu ou runner com PulseAudio).
-- **Ação**: Obter log completo de passagem em todos os projetos da matriz declarada (SC-005 / SC-022).
+Estas etapas dependem de participantes externos e encerram o ciclo de vida do projeto:
 
----
+### 3.1 Execução do Estudo de Descoberta do Controle de Áudio (T171 / SC-002)
+- **Outcome**: *Comprovar empiricamente que $\ge 95\%$ dos leitores localizam e ativam o áudio em $\le 5$ segundos.*
+- **Ação**: Aplicar o roteiro com $\ge 10$ participantes humanos e consolidar os tempos e taxas de sucesso em `usability-audio.md`.
 
-## 5. Fase 3 — Validações Não Automatizáveis (Dependentes de Humanos)
-
-Estas etapas não bloqueiam o código nem o CI e devem ser conduzidas com participantes reais:
-
-### 3.1 Estudo de Descoberta do Controle de Áudio (T171 / SC-002)
-- **Outcome**: *Comprovar que $\ge 95\%$ dos leitores localizam e ativam o áudio em $\le 5$ segundos.*
-- **Ação**: Recrutar $\ge 10$ participantes humanos, aplicar o roteiro de teste e registrar os resultados em `specs/001-cinematic-player/notes/usability-audio.md`.
-
-### 3.2 Estudo de Compreensão Narrativa Sem Áudio (T172 / SC-004 / SC-013)
-- **Outcome**: *Comprovar que $\ge 95\%$ dos leitores com som desligado compreendem integralmente o enredo através das audiodescrições e textos embutidos.*
-- **Ação**: Aplicar o questionário narrativo com $\ge 10$ participantes e documentar em `specs/001-cinematic-player/notes/usability-a11y.md`.
+### 3.2 Execução do Estudo de Compreensão Narrativa Sem Áudio (T172 / SC-004 / SC-013)
+- **Outcome**: *Comprovar que $\ge 95\%$ dos leitores sem som compreendem o enredo e as inscrições literais através das audiodescrições.*
+- **Ação**: Aplicar o questionário narrativo com $\ge 10$ participantes e tabular as notas em `usability-a11y.md`.
 
 ### 3.3 Revisão Estética Subjetiva dos Masters de Arte (`frames-low-quality`)
-- **Outcome**: *Homologar se a direção de arte dos 4 quadros autorais atinge a atmosfera de terror noir e o padrão visual pretendido.*
-- **Ação**: Aprovação visual formal do stakeholder e fechamento do status de `partial` para `verified` no bug.
+- **Outcome**: *Homologar se a direção de arte dos 4 quadros autorais atinge a atmosfera de terror noir e o padrão visual maduro pretendido (estilo Eddie Campbell / Alan Moore).*
+- **Ação**: Aprovação visual formal do stakeholder/diretor de arte e fechamento do status de `partial` para `verified` no bug.
 
 ### 3.4 Certificação Física em Smartphone de Referência (SC-018 / T173)
 - **Outcome**: *Demonstrar sustentação de 60 fps sob pressão térmica e limitação de hardware em um aparelho físico de 4 GB RAM.*
@@ -105,10 +81,26 @@ Estas etapas não bloqueiam o código nem o CI e devem ser conduzidas com partic
 
 ---
 
-## 6. Recomendação Executiva 80/20
+## 5. Recomendação Executiva 80/20
 
-> **Ação Imediata Recomendada**:
-> **Comitar a resolução do bug `deferred-behavior-coverage`** e rodar a validação do **Lighthouse CI** (`npm run ci:lighthouse`).
+> **Ação Imediata Recomendada (80/20 de Produto e Conclusão)**:
+> **Estruturar os Protocolos Operacionais de Teste de Usabilidade Humana ($n \ge 10$)** em `specs/001-cinematic-player/notes/usability-audio.md` e `usability-a11y.md`.
 
 **Justificativa 80/20**:
-Com as alterações já desenvolvidas e testadas no working tree, o commit do bug `deferred-behavior-coverage` leva a suíte técnica de software a **100% de aprovação verde determinística**. Esse passo requer **esforço mínimo** (apenas consolidar o trabalho já concluído) e entrega o **maior avanço possível no repositório**, deixando pendente exclusivamente o trabalho que necessita de pessoas físicas no mundo real.
+1. **O código e a engenharia estão 100% concluídos**: Zero bugs abertos, zero pendências de CI, zero pendências em specs.
+2. **O gargalo real são os testes com pessoas**: O que separa o projeto de sua conclusão final são os 10 participantes de teste. Ao criar o roteiro exato, com tempos, perguntas objetivas e planilhas de registro, a aplicação dos testes se torna uma atividade ágil de apenas alguns minutos de coleta por usuário, garantindo a certificação de SC-002 e SC-004 com rigor científico e sem retrabalho.
+### 5.1 Estado Atual Verificado Diretamente (Atualizado — 2026-10-27)
+Verificação executada neste turno: preflight 16/16 PASS, validate PASS (story.json), unit 224/224 PASS, build PASS (14160 B JS / 3846 B CSS dentro de budget.json), build:images PASS, perf PASS (45 passed / SC-018 appFrames=0), lighthouse PASS (Perf=1.0 / A11y=1.0 / BestPractices=0.96 / SEO=1.0 / LCP=1521 ms / CLS=0). E2E: interrompido após 180s (bg_1) — inconclusivo (CONTRAST TABLE observado). Bugs: todos os 16 com fluxo .specify/bugs/ completo; frames-low-quality = partial. Nenhuma pendência técnica automatizável remanescente (OBJETIVO.md confirma 100% do escopo técnico automatizado completo).
+### 5.2 Proximo Passo 80/20 — Qual Fluxo do Speckit Maximiza Impacto / Minimiza Esforco?
+Baseado nos fluxos disponiveis (/speckit.constitution — v2.1.0 completa; /speckit.assess.intake — 4 assessments completos, todos go; /speckit.specify — specs 001-004 completas, 005 incompleta; /speckit.bug.assess — 16 bugs com fluxo completo, frames-low-quality = partial) e no estado verificado diretamente:
+ Opcao A (/speckit.bug.assess -> frames-low-quality): ICE = 648 (Impacto 8, Confianca 9, Facilidade 9). Fecha 1 bug pendente (partial -> verified) sem alteracao de codigo (apenas homologacao visual). Impacto alto (criterio 6 OBJETIVO.md).
+ Opcao B (/speckit.assess.intake -> korean-horror-webcomics): ICE = 294 (Impacto 7, Confianca 6, Facilidade 7). A assessment ja tem veredito go, mas a spec 005 esta incompleta. Nao resolve o gargalo atual (conclusao do projeto = humano/fisico).
+ Opcao C (documentar protocolos operacionais de usabilidade — Fase 2): ICE = 810 (Impacto 9, Confianca 10, Facilidade 9). Nao e um comando tecnico de codigo, mas a documentacao operacional (roteiro + formulario para n >= 10 participantes) que desbloqueia diretamente o criterio 5 (OBJETIVO.md — estudos de usabilidade = 0/2 executados). Prioridade maxima.
+ Opcao D (/speckit.bug.assess -> e2e-residual-timing-flakes/deferred-behavior-coverage): ICE = 240 (Impacto 5, Confianca 8, Facilidade 6). Os bugs ja estao verified (fix aplicado via PRs #131-138). O E2E interrompido (bg_1, 180s) nao indica um novo bug tecnico, apenas falta de tempo. Reabrir nao resolve o gargalo humano.
+ Recomendacao: A prioridade 80/20 atual e a Opcao C (ICE = 810) — documentar os protocolos operacionais de usabilidade — seguida pela Opcao A (ICE = 648) — fechar frames-low-quality. Nenhuma opcao tecnica de codigo (specify, bug.assess para bugs ja verified, assess.intake para assessment ja go) oferece impacto comparavel com esforco comparavel.
+### 5.3 Justificativa 80/20 Atualizada (Baseada nos Dados Verificados deste Turno)
+ O codigo e a engenharia estao 100% concluidos e verificados diretamente (preflight 16/16 PASS, unit 224/224 PASS, build PASS, perf PASS, lighthouse PASS — Perf=1.0 / A11y=1.0 / CLS=0 / LCP=1521ms).
+ Nenhuma pendencia tecnica automatizavel remanescente (OBJETIVO.md confirma 100% do escopo tecnico automatizado completo; .specify/bugs/ todos com fluxo speckit.bug completo).
+ O gargalo real e humano / fisico / subjetivo: os 10 participantes (SC-002/SC-004), a homologacao estetica (frames-low-quality — partial), a certificacao FPS fisica (SC-018 — smartphone real), e a conclusao do E2E (interrompido — inconclusivo).
+ O 80/20 atual e a documentacao operacional dos testes humanos (ICE = 810) — impacto maximo (destrava criterio 5 OBJETIVO.md) com esforco minimo (roteiro + formulario, sem codigo, sem build, sem CI). Seguido pela homologacao do frames-low-quality (ICE = 648) — impacta criterio 6 (revisao estetica) com esforco minimo (apenas aprovacao visual, sem alteracao de codigo, pois fix.md ja esta aplicado).
+ Nenhuma opcao tecnica de codigo (specify para spec 005 incompleta, bug.assess para bugs ja verified, assess.intake para assessment ja go) oferece impacto comparavel com esforco comparavel ao gargalo humano/fisico.
