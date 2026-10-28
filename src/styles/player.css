@@ -735,3 +735,47 @@
     min-width: 2.75rem;
   }
 }
+
+@media (max-width: 320px) {
+  .control-bar {
+    gap: 0.1rem;
+    padding: 0.1rem;
+  }
+  .control-group {
+    gap: 0.1rem;
+  }
+  .control-button {
+    min-width: 2.4rem;
+    min-height: 2.4rem;
+    font-size: 0.9rem;
+  }
+  .audio-toggle {
+    min-height: 2.4rem;
+    min-width: 2.4rem;
+    padding-inline: 0.3rem;
+    font-size: 0.7rem;
+  }
+  .range-control,
+  .select-control {
+    min-height: 2.4rem;
+    gap: 0.15rem;
+    padding: 0.15rem 0.25rem;
+  }
+  .range-control span,
+  .select-control span {
+    font-size: 0.65rem;
+  }
+  .theme-select {
+    min-height: 2.4rem;
+    min-width: 4rem;
+    font-size: 0.7rem;
+  }
+  .theme-control {
+    min-height: 2.4rem;
+  }
+  .overlay .control-button,
+  .overlay .primary {
+    min-height: 2.4rem;
+    min-width: 2.4rem;
+  }
+}
