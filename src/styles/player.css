@@ -721,7 +721,11 @@
     font-size: 0.7rem;
   }
   .theme-select {
-    min-height: 2.2rem;
+    min-height: 2.75rem;
+    min-width: 4.5rem;
     font-size: 0.75rem;
+  }
+  .theme-control {
+    min-height: 2.75rem;
   }
 }
