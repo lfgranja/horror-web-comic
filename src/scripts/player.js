@@ -353,13 +353,15 @@ export class CinematicPlayer {
         if (illusion.alt) this.image.alt = illusion.alt;
         this.latchedIllusions.add(frame.id);
         try { globalThis.sessionStorage?.setItem(`hwc.latched:${this.story.id}`, JSON.stringify([...this.latchedIllusions])); } catch {}
-        this.audio.shockDrop?.(illusion.durationMs || 250);
+        try { this.audio.shockDrop?.(illusion.durationMs || 250); } catch {}
         clearTimeout(this.fxTimer);
         this.fxTimer = setTimeout(() => this.image.classList.remove(illusion.cssClass || 'memory-distortion'), illusion.durationMs || 250);
       } else {
         this.image.classList.add(illusion.cssClass || 'memory-distortion');
         if (illusion.description) this.description.textContent = illusion.description;
         if (illusion.alt) this.image.alt = illusion.alt;
+        try { if (typeof this.audio.attenuateSting === 'function') this.audio.attenuateSting(0.2); } catch {}
+        try { this.audio.shockDrop?.(Math.min(illusion.durationMs || 250, 150)); } catch {}
       }
     }
     this.status = shouldPlay ? 'playing' : 'paused';

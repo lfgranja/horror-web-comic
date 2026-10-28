@@ -698,6 +698,14 @@ export class AudioManager {
     setTimeout(() => { if (!this.destroyed) this.applyMix(); }, Math.max(30, durationMs));
   }
 
+  attenuateSting(factor = 0.2) {
+    try {
+      this.stingAttenuation = Math.max(0, Math.min(1, Number(factor) || 0.2));
+    } catch {
+      this.stingAttenuation = 0.2;
+    }
+  }
+
   scheduleFadeCompletion(element, fade, duration, complete) {
     const timer = setTimeout(() => {
       if (!this.isFadeCurrent(element, fade)) return;
