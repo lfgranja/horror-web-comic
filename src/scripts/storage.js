@@ -101,10 +101,13 @@ export class StorageManager {
     this.tabId = createTabId();
     this.listeners = new Set();
     this.themeListeners = new Set();
+    this.sensoryListeners = new Set();
     this.channel = null;
     this.channelMessageHandler = null;
     this.themeChannel = null;
     this.themeChannelMessageHandler = null;
+    this.sensoryChannel = null;
+    this.sensoryChannelMessageHandler = null;
     this.storageListenerAttached = false;
     this.disposed = false;
     this.defaultsOnly = false;
@@ -121,6 +124,12 @@ export class StorageManager {
             this.set('hwc.theme', newTheme);
             this.notifyTheme(newTheme);
           }
+        } else if (event?.key === 'hwc.sensoryMode') {
+          const newMode = event?.newValue;
+          if (newMode === 'safe-accessible' || newMode === 'immersive-fx') {
+            this.defaultsOnly = false;
+            this.notifySensory(newMode);
+          }
         }
 
       } catch {
@@ -129,6 +138,7 @@ export class StorageManager {
     };
     this.channel = this.createChannel();
     this.themeChannel = this.createThemeChannel();
+    this.sensoryChannel = this.createSensoryChannel();
     this.ensureVersion();
     this.attachStorageListener();
     if (!this.defaultsOnly) this.progress = parseProgress(this.get(this.progressKey()));
@@ -343,6 +353,71 @@ export class StorageManager {
     return target;
   }
 
+  createSensoryChannel() {
+    try {
+      if (hasWindow() && typeof globalThis.BroadcastChannel === 'function') {
+        const channel = new globalThis.BroadcastChannel('hwc:sensory');
+        const handler = (event) => {
+          try {
+            const mode = event?.data?.mode;
+            if (mode === 'safe-accessible' || mode === 'immersive-fx') {
+              this.notifySensory(mode);
+            }
+          } catch {
+            return;
+          }
+        };
+        channel.addEventListener('message', handler);
+        this.sensoryChannelMessageHandler = handler;
+        return channel;
+      }
+    } catch {
+      return null;
+    }
+    return null;
+  }
+
+  notifySensory(mode) {
+    for (const listener of this.sensoryListeners) {
+      try {
+        listener(mode);
+      } catch {
+        continue;
+      }
+    }
+  }
+
+  onSensory(listener) {
+    if (this.disposed || typeof listener !== 'function') return () => false;
+    this.sensoryListeners.add(listener);
+    return () => this.sensoryListeners.delete(listener);
+  }
+
+  setSensoryMode(mode) {
+    if (mode !== 'safe-accessible' && mode !== 'immersive-fx') return;
+    this.defaultsOnly = false;
+    this.set('hwc.sensoryMode', mode);
+    if (!this.disposed && this.sensoryChannel) {
+      try {
+        this.sensoryChannel.postMessage({ mode, timestamp: Date.now() });
+      } catch {
+        // ignore
+      }
+    }
+    this.notifySensory(mode);
+    return mode;
+  }
+
+  getSensoryMode() {
+    try {
+      const stored = this.get('hwc.sensoryMode');
+      if (stored === 'safe-accessible' || stored === 'immersive-fx') return stored;
+    } catch {
+      // ignore
+    }
+    return null;
+  }
+
   notifyTheme(themeId) {
     for (const listener of this.themeListeners) {
       try {
@@ -461,12 +536,25 @@ export class StorageManager {
     this.disposed = true;
     this.listeners.clear();
     this.themeListeners.clear();
+    this.sensoryListeners.clear();
     const channel = this.channel;
     this.channel = null;
     this.closeChannel(channel);
     const themeChannel = this.themeChannel;
     this.themeChannel = null;
     this.closeThemeChannel(themeChannel);
+    const sensoryChannel = this.sensoryChannel;
+    this.sensoryChannel = null;
+    if (sensoryChannel) {
+      try {
+        const handler = this.sensoryChannelMessageHandler;
+        if (handler && typeof sensoryChannel.removeEventListener === 'function') sensoryChannel.removeEventListener('message', handler);
+        else if (handler && sensoryChannel.onmessage === handler) sensoryChannel.onmessage = null;
+        if (typeof sensoryChannel.close === 'function') sensoryChannel.close();
+      } catch {
+      }
+    }
+    this.sensoryChannelMessageHandler = null;
     if (this.storageListenerAttached) {
       try {
         if (typeof globalThis.removeEventListener === 'function') globalThis.removeEventListener('storage', this.handleStorage);
