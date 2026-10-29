@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "id": "fixture-story",
+  "title": "Fixture Story",
+  "defaultFrameDurationMs": 1500,
+  "defaultTransition": { "type": "fade", "durationMs": 600 },
+  "scenes": [
+    {
+      "id": "scene-a",
+      "title": "Scene A",
+      "defaultFrameDurationMs": 1200,
+      "frames": [
+        {
+          "id": "f-001",
+          "description": "A cracked doorway leaks pale light into a dust-filled hall.",
+          "alt": "Cracked doorway",
+          "durationMs": 1000,
+          "image": {
+            "avif": "tests/fixtures/legacy-assets/frame-001.avif",
+            "webp": "tests/fixtures/legacy-assets/frame-001.webp",
+            "fallback": "tests/fixtures/legacy-assets/frame-001.jpg",
+            "width": 800,
+            "height": 1200
+          }
+        },
+        {
+          "id": "f-002",
+          "description": "Footprints in ash lead toward a sealed cellar door.",
+          "alt": "Footprints in ash",
+          "durationMs": 2500,
+          "image": {
+            "avif": "tests/fixtures/legacy-assets/frame-002.avif",
+            "webp": "tests/fixtures/legacy-assets/frame-002.webp",
+            "fallback": "tests/fixtures/legacy-assets/frame-002.jpg",
+            "width": 800,
+            "height": 1200
+          }
+        },
+        {
+          "id": "f-003",
+          "description": "A child's silhouette waits at the end of the corridor.",
+          "alt": "Child silhouette",
+          "durationMs": 800,
+          "image": {
+            "avif": "tests/fixtures/legacy-assets/frame-003.avif",
+            "webp": "tests/fixtures/legacy-assets/frame-003.webp",
+            "fallback": "tests/fixtures/legacy-assets/frame-003.jpg",
+            "width": 800,
+            "height": 1200
+          }
+        }
+      ]
+    },
+    {
+      "id": "scene-b",
+      "title": "Scene B",
+      "defaultFrameDurationMs": 1500,
+      "defaultTransition": { "type": "cut", "durationMs": 0 },
+      "audio": {
+        "id": "ambience-b",
+        "src": "tests/fixtures/legacy-assets/scene-b.mp3",
+        "loop": true,
+        "volume": 0.6
+      },
+      "frames": [
+        {
+          "id": "f-004",
+          "description": "Rain hammers a window while a phone rings unanswered.",
+          "alt": "Rain on window",
+          "durationMs": 1500,
+          "audio": {
+            "id": "sting-004",
+            "src": "tests/fixtures/legacy-assets/sting-004.mp3",
+            "loop": false,
+            "volume": 0.8
+          },
+          "image": {
+            "avif": "tests/fixtures/legacy-assets/frame-004.avif",
+            "webp": "tests/fixtures/legacy-assets/frame-004.webp",
+            "fallback": "tests/fixtures/legacy-assets/frame-004.jpg",
+            "width": 800,
+            "height": 1200
+          }
+        },
+        {
+          "id": "f-005",
+          "description": "The hallway collapses into darkness; only red eyes remain.",
+          "alt": "Red eyes in darkness",
+          "durationMs": 1200,
+          "image": {
+            "avif": "tests/fixtures/legacy-assets/frame-005.avif",
+            "webp": "tests/fixtures/legacy-assets/frame-005.webp",
+            "fallback": "tests/fixtures/legacy-assets/frame-005.jpg",
+            "width": 800,
+            "height": 1200
+          }
+        }
+      ]
+    }
+  ]
+}

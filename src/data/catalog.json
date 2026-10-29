@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "catalogTitle": "Horror Web Comic",
+  "defaultStoryId": "main-story",
+  "stories": [
+    {
+      "id": "main-story",
+      "slug": "a-casa-que-respira",
+      "title": "A Casa que Respira",
+      "synopsis": "A casa que respira.",
+      "entryHtml": "index.html",
+      "manifest": "src/data/story.json",
+      "coverImage": "assets/frames/generated/frame-01.jpg",
+      "sensoryAdvisory": {
+        "descriptors": [
+          "psychological-distress"
+        ]
+      }
+    },
+    {
+      "id": "o-alojamento",
+      "slug": "o-alojamento",
+      "title": "O Alojamento",
+      "synopsis": "Confinamento urbano.",
+      "entryHtml": "alojamento.html",
+      "manifest": "src/data/stories/o-alojamento.json",
+      "coverImage": "assets/frames/generated/frame-02.jpg",
+      "sensoryAdvisory": {
+        "descriptors": [
+          "psychological-distress",
+          "sudden-audio"
+        ]
+      }
+    }
+  ]
+}

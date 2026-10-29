@@ -1,0 +1,267 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # trailers/review enforcement (T037) needs full history
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          # Matches the engines.node floor (>=20.0.0) declared in package.json.
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install system media tools
+        # ffmpeg/ffprobe are probed by preflight and used by build:images.
+        # tesseract is required by the published-raster content audit
+        # (tests/e2e/zz-content-audit-published.spec.js, T219): that audit reads
+        # the shipped frames under assets/frames/generated and FAILS rather than
+        # skips when OCR is unavailable, so the tool has to be present.
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg tesseract-ocr
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium firefox webkit
+
+      - name: Provide a null audio sink for headless browsers
+        # Firefox does not tolerate a missing output device. With no cubeb context
+        # it raises OnMediaSinkAudioError; the element's error event then reaches
+        # AudioManager.handleMediaFailure and the track is latched as failed for the
+        # rest of the session, so any assertion that the element actually plays
+        # fails. Chromium and WebKit degrade silently, which is why this presented as
+        # an engine difference.
+        #
+        # The suite must not depend on real audio hardware, so give cubeb a real
+        # output that discards its samples: a PulseAudio null sink. Because it is a
+        # genuine output as far as cubeb is concerned, "currentTime advanced" and
+        # "the element is not paused" stay meaningful assertions instead of being
+        # assertions about a missing device.
+        #
+        # There is no Firefox pref for this: media.cubeb.force_null_context forces
+        # the failure on purpose, and force_mock_context only compiles under
+        # ENABLE_TESTS. The daemon is started as the runner user because PulseAudio
+        # refuses to run as root.
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends pulseaudio pulseaudio-utils
+          pulseaudio --start --exit-idle-time=-1 --load="module-null-sink sink_name=ci_null rate=48000 channels=2"
+          for attempt in $(seq 1 15); do
+            if pactl info 2>/dev/null | grep -q 'Default Sink: ci_null'; then
+              break
+            fi
+            if [ "$attempt" = "15" ]; then
+              echo "::error::the null audio sink never became the default sink"
+              exit 1
+            fi
+            sleep 1
+          done
+          pactl info | grep -E 'Server Name|Default Sink'
+
+      # Production gate in the exact required order declared in AGENTS.md:
+      # preflight && validate && test:unit && build:images && build && test:e2e && test:perf.
+      # Each step invokes the existing npm script (see scripts.ci in package.json).
+      # Failure-masking shell tricks are forbidden here: the preflight
+      # `scripts` check rejects any gate that swallows its exit status.
+      - name: Preflight toolchain gate
+        run: npm run preflight
+
+      - name: Validate story manifest
+        run: npm run validate
+
+      - name: Unit tests
+        run: npm run test:unit
+
+      - name: Build media variants
+        run: npm run build:images
+
+      - name: Production build (asset + code budgets enforced)
+        run: npm run build
+
+      - name: End-to-end browser matrix
+        run: npm run test:e2e
+
+      - name: Performance budgets (non-skippable)
+        run: npm run test:perf
+
+      - name: Commit trailers and Tier A review enforcement
+        run: node scripts/ci-trailers.mjs
+      # Lighthouse delivery gate: performance >= 0.9, accessibility >= 0.95,
+      # CLS <= 0.1, LCP <= 2500ms (see lighthouserc.json). Runs against dist/,
+      # which the production build step above produces. ubuntu-latest ships
+      # Google Chrome, which chrome-launcher discovers automatically.
+      - name: Lighthouse delivery gate
+        run: npm run ci:lighthouse
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
+
+      - name: Upload Lighthouse output
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouseci
+          path: .lighthouseci/
+          if-no-files-found: ignore
+
+  # WebKit LAYOUT gate — the narrow, fast signal for bugs that only WebKit shows.
+  #
+  # The `gate` job above already runs the full five-project matrix, WebKit
+  # included, so nothing here adds coverage it lacks. This job exists for two
+  # reasons that are about feedback, not detection:
+  #
+  #   1. Speed and legibility. The full matrix is ~20 minutes and 1279 tests. A
+  #      defect that reproduces on WebKit and nowhere else — as the 320px /
+  #      200%-text horizontal overflow did, failing 4 tests on two WebKit
+  #      projects while Chromium and Firefox were green — should fail in about
+  #      two minutes under a job whose name says what it checks, instead of
+  #      hiding among 1279 results a reviewer has to diff by hand.
+  #
+  #   2. A claim that can be reviewed. The bug this was added for shipped a
+  #      label whose class existed in the markup and in no stylesheet, and the
+  #      assertion guarding it (`toHaveClass(/sr-only/)`) was green throughout.
+  #      What let that stand is that no single check stated "the theme label must
+  #      not be visible, and the control bar must not overflow at 320px". A named
+  #      job makes that statement explicit and gives it a check to hang on.
+  #
+  # WHY LINUX WEBKIT IS VALID HERE, unlike the macOS job below: that job exists
+  # because the WPE build has no GPU and software-composites, which makes a
+  # FRAME-RATE number a fact about a rasterizer. This gate is LAYOUT — overflow,
+  # reflow, hit-testing, computed geometry — and WPE runs WebKit's real layout
+  # engine. The missing GPU cannot change whether an element's scrollWidth exceeds
+  # its track. Do not add a frame-rate or compositor assertion to this job; that
+  # is what the macOS job is for.
+  #
+  # No null-audio-sink step: none of these specs assert that audio plays, and per
+  # the `gate` job's own note WebKit degrades silently without an output device —
+  # it is Firefox that raises OnMediaSinkAudioError. No `build` or `build:images`
+  # either: these specs drive tests/fixtures/story.json directly and index.html
+  # loads src/scripts/main.js unbundled, so every asset involved is tracked in
+  # the repository.
+  #
+  # Scope: the four specs that carry the theme switcher's layout contract. Keep
+  # this list explicit rather than globbing — a glob would quietly grow the job
+  # into a second full matrix and reintroduce the 20-minute wait.
+  webkit-layout-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # WebKit only. `--with-deps` because ubuntu needs the system libraries.
+      - name: Install Playwright WebKit
+        run: npx playwright install --with-deps webkit
+
+      - name: WebKit layout gate — 320px/200% reflow, end-state overlay, theme a11y
+        run: |
+          npx playwright test \
+            tests/e2e/reflow.spec.js \
+            tests/e2e/zz-css-reflow.spec.js \
+            tests/e2e/zz-end-state-coverage.spec.js \
+            tests/e2e/theme-a11y.spec.js \
+            --project=mobile-webkit \
+            --project=desktop-webkit
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-webkit-layout
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
+
+  # SC-018 on a real compositor.
+  #
+  # The Linux job above runs Playwright's WebKit as the WPE build, which has no
+  # GPU and software-composites. A composited opacity animation then measures at
+  # ~0.18x the host's own idle frame rate there, while chromium and firefox on the
+  # same runner measure ~1.1x. That number is a property of a software rasterizer,
+  # not of WebKit and not of this player, and it is the reason the Linux WebKit
+  # projects fail SC-018. Playwright's docs are explicit that the closest-to-Safari
+  # experience is WebKit on macOS.
+  #
+  # On macOS, headless WebKit creates a real borderless NSWindow that the window
+  # server composites (Core Animation -> Metal), so the same measurement here is
+  # taken against a hardware compositor. The test proves that for itself: it reads
+  # WEBGL_debug_renderer_info and fails if the renderer is a software path, so this
+  # job cannot silently degrade back to the number it was added to disprove and
+  # then appear to confirm it.
+  #
+  # This does NOT certify SC-018's literal requirement, which names a ~4 GB
+  # entry-level phone (spec.md:467). No CI substrate is that device. What it
+  # certifies is that the transition costs the compositor essentially nothing on a
+  # real GPU compositor, which is the part of the requirement that is decidable.
+  #
+  # The label is macos-15 and not macos-14, for a reason that is not obvious and
+  # looks like a cleanup waiting to happen. Playwright's browsers.json pins
+  # webkit's revision to 2251 for mac14 and mac14-arm64 while the default is 2359,
+  # and its client since 1.62.0 sends Page.overrideSetting(PushAPIEnabled) at page
+  # setup — a setting WebKit 2251 does not implement. On macos-14 every page fails
+  # with "Protocol error (Page.overrideSetting): Unknown setting:
+  # PushAPIEnabled" before a test body runs. macos-15 takes the default 2359 build.
+  #
+  # Cost: $0. This repository is public, and GitHub-hosted *standard* runners are
+  # free for public repositories on every OS including macOS; only *larger* runners
+  # bill. See the Actions runner pricing reference.
+  macos-webkit-compositor:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # No --with-deps: there is no apt on macOS, and the browser ships with its
+      # own dependencies. No null audio sink step either — the fps measurement
+      # never plays audio, and macOS has no PulseAudio to load.
+      - name: Install Playwright WebKit
+        run: npx playwright install webkit
+
+      # The perf specs drive tests/fixtures/story.json and src/data/story.json
+      # directly, and index.html loads src/scripts/main.js unbundled, so this
+      # needs neither `build:images` nor `build` — every asset involved is
+      # tracked in the repository.
+      - name: SC-018 transition ratio on a hardware compositor
+        run: npm run test:perf:webkit
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-macos
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore

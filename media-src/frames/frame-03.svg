@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1200" height="800" viewBox="0 0 1200 800">
+  <defs>
+    <linearGradient id="floorgrad" x1="600" y1="400" x2="600" y2="800" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1e293b"/>
+      <stop offset="1" stop-color="#020617"/>
+    </linearGradient>
+    <linearGradient id="ceilgrad" x1="600" y1="0" x2="600" y2="400" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0f172a"/>
+      <stop offset="1" stop-color="#1e1b4b"/>
+    </linearGradient>
+    <radialGradient id="ambig" cx="600" cy="400" r="40" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#64748b" stop-opacity="0.5"/>
+      <stop offset="1" stop-color="#475569" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="vignette" cx="600" cy="400" r="700" gradientUnits="userSpaceOnUse">
+      <stop offset="0.5" stop-color="#000000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#000000" stop-opacity="0.6"/>
+    </radialGradient>
+  </defs>
+  <title>frame-03</title>
+  <g id="Layer_1" data-name="Layer 1">
+    <!-- ceiling -->
+    <path d="M0 0 L1200 0 L660 400 L540 400 Z" fill="url(#ceilgrad)"/>
+    <!-- floor -->
+    <path d="M0 800 L1200 800 L660 400 L540 400 Z" fill="url(#floorgrad)"/>
+    <!-- left wall -->
+    <path d="M0 0 L540 400 L540 400 L0 800 Z" fill="#0f172a"/>
+    <!-- right wall -->
+    <path d="M1200 0 L660 400 L660 400 L1200 800 Z" fill="#0f172a"/>
+    <!-- converging floor lines -->
+    <path d="M0 800 L540 400" fill="none" stroke="#1e293b" stroke-width="1"/>
+    <path d="M200 800 L560 400" fill="none" stroke="#1e293b" stroke-width="1"/>
+    <path d="M400 800 L580 400" fill="none" stroke="#1e293b" stroke-width="1"/>
+    <path d="M800 800 L620 400" fill="none" stroke="#1e293b" stroke-width="1"/>
+    <path d="M1000 800 L640 400" fill="none" stroke="#1e293b" stroke-width="1"/>
+    <path d="M1200 800 L660 400" fill="none" stroke="#1e293b" stroke-width="1"/>
+    <!-- converging ceiling lines -->
+    <path d="M0 0 L540 400" fill="none" stroke="#1e293b" stroke-width="1"/>
+    <path d="M200 0 L560 400" fill="none" stroke="#1e293b" stroke-width="1"/>
+    <path d="M400 0 L580 400" fill="none" stroke="#1e293b" stroke-width="1"/>
+    <path d="M800 0 L620 400" fill="none" stroke="#1e293b" stroke-width="1"/>
+    <path d="M1000 0 L640 400" fill="none" stroke="#1e293b" stroke-width="1"/>
+    <path d="M1200 0 L660 400" fill="none" stroke="#1e293b" stroke-width="1"/>
+    <!-- doorframe -->
+    <path d="M540 0 L540 800" fill="none" stroke="#3f3f46" stroke-width="6"/>
+    <path d="M660 0 L660 800" fill="none" stroke="#3f3f46" stroke-width="6"/>
+    <path d="M540 400 L660 400" fill="none" stroke="#3f3f46" stroke-width="4"/>
+    <!-- ambiguous shape at vanishing point -->
+    <path d="M570 385 L630 385 L630 415 L570 415 Z" fill="url(#ambig)"/>
+    <path d="M585 392 L615 392 L615 408 L585 408 Z" fill="#64748b" fill-opacity="0.35"/>
+    <!-- scratch marks on doorframe -->
+    <path d="M542 200 L552 220" fill="none" stroke="#52525b" stroke-width="1"/>
+    <path d="M542 320 L552 340" fill="none" stroke="#52525b" stroke-width="1"/>
+    <path d="M650 250 L640 270" fill="none" stroke="#52525b" stroke-width="1"/>
+    <path d="M650 360 L640 380" fill="none" stroke="#52525b" stroke-width="1"/>
+    <!-- title -->
+    <text transform="matrix(1 0 0 1 600 760)" x="0" y="0" xml:space="preserve" font-family="monospace" font-size="32" fill="#cbd5e1" text-anchor="middle" opacity="0.8"><tspan x="0" y="0">NÃO OLHE PARA TRÁS</tspan></text>
+    <!-- vignette -->
+    <path d="M0 0 L1200 0 L1200 800 L0 800 Z" fill="url(#vignette)"/>
+  </g>
+</svg>

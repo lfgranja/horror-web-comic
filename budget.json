@@ -1,0 +1,8 @@
+{
+  "initialSceneBytes": 1500000,
+  "frameBytes": 300000,
+  "totalAssetsBytes": 30000000,
+  "compressedScriptBytes": 50000,
+  "compressedStyleBytes": 15000,
+  "compressedCodeBytes": 65000
+}

@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 99,
+  "id": "incompatible",
+  "title": "Incompatible fixture",
+  "scenes": [
+    {
+      "id": "scene",
+      "title": "Scene",
+      "frames": [
+        {
+          "id": "frame",
+          "description": "A deliberately incompatible fixture.",
+          "alt": "Fixture",
+          "image": {
+            "avif": "tests/fixtures/assets/frames/frame-01.svg",
+            "fallback": "tests/fixtures/assets/frames/frame-01.svg",
+            "width": 1200,
+            "height": 800
+          }
+        }
+      ]
+    }
+  ]
+}
