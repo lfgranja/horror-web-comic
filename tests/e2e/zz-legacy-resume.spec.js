@@ -22,8 +22,8 @@ test.describe('US1 reading-position resume', () => {
     await expectFrameId(page, 'f-004');
 
     const keys = await getHwcKeys(page);
-    expect(keys['hwc.progress']).toBeTruthy();
-    const progress = JSON.parse(keys['hwc.progress']);
+    expect(keys['hwc.progress:fixture-story']).toBeTruthy();
+    const progress = JSON.parse(keys['hwc.progress:fixture-story']);
     expect(progress.frameId).toBe('f-004');
     expect(progress.updatedAt).toBeTruthy();
     expect(keys['hwc.schemaVersion']).toBe('1');
@@ -42,7 +42,7 @@ test.describe('US1 reading-position resume', () => {
     await page.locator(selectors.playPause).click();
 
     const keys = await getHwcKeys(page);
-    expect(keys['hwc.progress']).toBeTruthy();
+    expect(keys['hwc.progress:fixture-story']).toBeTruthy();
 
     await page.reload();
     await waitForPlayer(page);
@@ -53,7 +53,7 @@ test.describe('US1 reading-position resume', () => {
   test('invalid saved frameId restarts at first frame', async ({ page }) => {
     await page.evaluate(() => {
       localStorage.setItem(
-        'hwc.progress',
+        'hwc.progress:fixture-story',
         JSON.stringify({
           frameId: 'missing-frame',
           updatedAt: new Date().toISOString(),
@@ -72,7 +72,7 @@ test.describe('US1 reading-position resume', () => {
     await page.evaluate(() => {
       localStorage.setItem('hwc.schemaVersion', '999');
       localStorage.setItem(
-        'hwc.progress',
+        'hwc.progress:fixture-story',
         JSON.stringify({ frameId: 'f-005', updatedAt: new Date().toISOString(), seq: 1, tabId: 'x' }),
       );
       localStorage.setItem('hwc.audio', 'off');
@@ -93,7 +93,7 @@ test.describe('US1 reading-position resume', () => {
     await page.locator(selectors.goStart).click();
     await expectFrameId(page, 'f-001');
     const keys = await getHwcKeys(page);
-    const progress = JSON.parse(keys['hwc.progress']);
+    const progress = JSON.parse(keys['hwc.progress:fixture-story']);
     expect(progress.frameId).toBe('f-001');
   });
 });

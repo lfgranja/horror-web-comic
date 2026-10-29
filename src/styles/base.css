@@ -120,7 +120,9 @@ button:disabled {
   *::after {
     scroll-behavior: auto !important;
     animation-name: none !important;
+    animation-duration: 0s !important;
     transition-property: none !important;
+    transition-duration: 0s !important;
   }
 
   .loading-mark {

@@ -27,12 +27,32 @@ test('startup focus loss clears auto-start, pauses audio, saves progress, and re
 
   await expect(page.locator('#resume-overlay')).toBeVisible();
   await expect(page.locator('#player')).toHaveAttribute('data-status', 'paused');
-  const state = await page.evaluate(() => ({
-    autoStartTimer: globalThis.__cinematicPlayer.autoStartTimer,
-    dwellTimer: globalThis.__cinematicPlayer.timer,
-    audioPaused: globalThis.__cinematicPlayer.audio.paused,
-    frameId: JSON.parse(localStorage.getItem('hwc.progress')).frameId
-  }));
+  const state = await page.evaluate(() => {
+    let progress = null;
+    try {
+      progress = JSON.parse(localStorage.getItem('hwc.progress') || 'null');
+    } catch {}
+    if (!progress) {
+      for (let i = 0; i < localStorage.length; i += 1) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('hwc.progress')) {
+          try {
+            const candidate = JSON.parse(localStorage.getItem(key) || 'null');
+            if (candidate && candidate.frameId) {
+              progress = candidate;
+              break;
+            }
+          } catch {}
+        }
+      }
+    }
+    return {
+      autoStartTimer: globalThis.__cinematicPlayer.autoStartTimer,
+      dwellTimer: globalThis.__cinematicPlayer.timer,
+      audioPaused: globalThis.__cinematicPlayer.audio.paused,
+      frameId: progress?.frameId
+    };
+  });
   expect(state).toEqual({ autoStartTimer: 0, dwellTimer: 0, audioPaused: true, frameId: 'frame-01' });
   await page.waitForTimeout(350);
   await expect(page.locator('#player')).toHaveAttribute('data-frame-id', 'frame-01');
@@ -54,12 +74,32 @@ test('focus loss during pending navigation cancels the queued move and requires 
   });
 
   await expect(page.locator('#resume-overlay')).toBeVisible();
-  const state = await page.evaluate(() => ({
-    pendingNavigation: globalThis.__cinematicPlayer.pendingNavigation,
-    dwellTimer: globalThis.__cinematicPlayer.timer,
-    audioPaused: globalThis.__cinematicPlayer.audio.paused,
-    frameId: JSON.parse(localStorage.getItem('hwc.progress')).frameId
-  }));
+  const state = await page.evaluate(() => {
+    let progress = null;
+    try {
+      progress = JSON.parse(localStorage.getItem('hwc.progress') || 'null');
+    } catch {}
+    if (!progress) {
+      for (let i = 0; i < localStorage.length; i += 1) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('hwc.progress')) {
+          try {
+            const candidate = JSON.parse(localStorage.getItem(key) || 'null');
+            if (candidate && candidate.frameId) {
+              progress = candidate;
+              break;
+            }
+          } catch {}
+        }
+      }
+    }
+    return {
+      pendingNavigation: globalThis.__cinematicPlayer.pendingNavigation,
+      dwellTimer: globalThis.__cinematicPlayer.timer,
+      audioPaused: globalThis.__cinematicPlayer.audio.paused,
+      frameId: progress?.frameId
+    };
+  });
   expect(state).toEqual({ pendingNavigation: null, dwellTimer: 0, audioPaused: true, frameId: 'frame-01' });
   await page.waitForTimeout(500);
   await expect(page.locator('#player')).toHaveAttribute('data-frame-id', 'frame-01');

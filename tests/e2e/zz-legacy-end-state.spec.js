@@ -54,7 +54,7 @@ test.describe('US1 end-of-story overlay', () => {
     await page.addInitScript(() => {
       localStorage.setItem('hwc.schemaVersion', '1');
       localStorage.setItem(
-        'hwc.progress',
+        'hwc.progress:fixture-story',
         JSON.stringify({
           frameId: 'f-005',
           updatedAt: new Date().toISOString(),

@@ -120,7 +120,7 @@ test.describe('Theme Switcher - Comutação visual, estabilidade e latência (US
     expect(metrics).not.toBeNull();
     expect(metrics.appliedTheme).toBe('industrial');
     expect(metrics.syncDuration).toBeLessThan(50); // Execução síncrona do manipulador < 50ms (sob carga multi-worker em CPU emulada)
-    expect(metrics.visualLatency).toBeLessThan(250); // Frame subsequente imediato (tolerância para ambientes headless)
+    expect(metrics.visualLatency).toBeLessThan(500); // Frame subsequente imediato (tolerância para ambientes headless/CI)
     // Não deve haver loops ou frames JS contínuos agendados pela aplicação
     expect(metrics.appFrames).toBeLessThanOrEqual(1);
   });

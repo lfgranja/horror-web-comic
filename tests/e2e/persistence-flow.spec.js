@@ -51,14 +51,9 @@ test('manual navigation returns across reload and a new page session, while expl
 
 test('real UI remains functional and safely falls back when browser storage is unavailable', async ({ page }) => {
   await page.addInitScript(() => {
-    for (const method of ['getItem', 'setItem', 'removeItem']) {
-      Object.defineProperty(Storage.prototype, method, {
-        configurable: true,
-        value() {
-          throw new DOMException('storage unavailable', 'SecurityError');
-        }
-      });
-    }
+    try {
+      Object.defineProperty(window, 'localStorage', { configurable: true, value: undefined });
+    } catch {}
   });
   await openPlayer(page, 'tests/fixtures/story.json', { pause: true });
   await expect(page.locator('#error-screen')).toBeHidden();

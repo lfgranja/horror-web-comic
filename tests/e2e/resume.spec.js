@@ -9,7 +9,7 @@ test('resumes a saved frame and does not persist paused state', async ({ page })
     localStorage.setItem('hwc.audio', 'off');
     localStorage.setItem('hwc.volume', '0.4');
     localStorage.setItem('hwc.speed', '1');
-    localStorage.setItem('hwc.progress', JSON.stringify({ frameId: 'frame-03', updatedAt: new Date().toISOString(), seq: 4, tabId: 'test-tab' }));
+    localStorage.setItem('hwc.progress:main-story', JSON.stringify({ frameId: 'frame-03', updatedAt: new Date().toISOString(), seq: 4, tabId: 'test-tab' }));
   });
   await openPlayer(page);
   await waitForFrame(page, 'frame-03');
