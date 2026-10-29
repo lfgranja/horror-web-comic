@@ -51,6 +51,9 @@ test('a frame that is selected but not playing leaves the scene at full gain', a
   await expect(page.locator('#player')).toBeVisible();
   const result = await page.evaluate(async () => {
     const audio = window.__cinematicPlayer.audio;
+    audio.enabled = true;
+    audio.awaitingUnlock = false;
+    audio.silentContinuation = false;
     audio.setPaused(false);
     audio.setScene(1);
     audio.setFrame('frame-03');
