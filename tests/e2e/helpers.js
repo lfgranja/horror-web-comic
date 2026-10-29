@@ -1,7 +1,17 @@
 import { readFileSync } from 'node:fs';
 import { expect } from '@playwright/test';
+const cleanedContexts = new WeakSet();
 
 export async function openPlayer(page, story = 'tests/fixtures/story.json', { pause = false, dismissBlocked = true, freeze = false } = {}) {
+  // Clear persisted progress only once per browser context (first openPlayer
+  // call). Guard with sessionStorage so reloads of the same page do not wipe
+  // storage mid-test, and skip init script on later pages of the same context
+  // so cross-page persistence (e.g. persistence-flow) keeps working.
+  const ctx = page.context();
+  if (!cleanedContexts.has(ctx)) {
+    cleanedContexts.add(ctx);
+    await page.addInitScript(() => { try { if (!sessionStorage.getItem('__hwc_test_cleaned')) { localStorage.clear(); sessionStorage.setItem('__hwc_test_cleaned', '1'); } } catch {} });
+  }
   await page.goto(`/?story=${encodeURIComponent(story)}`);
   await expect(page.locator('#player')).toBeVisible();
   if (freeze) {
