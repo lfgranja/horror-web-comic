@@ -16,7 +16,7 @@ test.describe('resume onto the final frame', () => {
     // boot loses a race with the already-running page's own saveProgress().
     await page.addInitScript(() => {
       localStorage.setItem('hwc.schemaVersion', '1');
-      localStorage.setItem('hwc.progress', JSON.stringify({
+      localStorage.setItem('hwc.progress:fixture-story', JSON.stringify({
         frameId: 'f-005',
         updatedAt: new Date().toISOString(),
         seq: 1,
