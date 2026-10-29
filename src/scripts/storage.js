@@ -247,13 +247,30 @@ export class StorageManager {
         continue;
       }
     }
+    // Also clear any story-scoped progress keys
+    try {
+      const storage = this.storage;
+      if (storage && typeof storage.length === 'number') {
+        const keysToRemove = [];
+        for (let i = 0; i < storage.length; i += 1) {
+          const key = storage.key(i);
+          if (key && (key === 'hwc.progress' || key.startsWith('hwc.progress:'))) {
+            keysToRemove.push(key);
+          }
+        }
+        for (const key of keysToRemove) {
+          try {
+            storage.removeItem(key);
+          } catch {}
+        }
+      }
+    } catch {}
     try {
       this.set('hwc.schemaVersion', SCHEMA_VERSION);
     } catch {
       return;
     }
   }
-
   get(key) {
     if (this.storage) {
       try {
