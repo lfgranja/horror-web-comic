@@ -24,7 +24,7 @@
     "ci:lighthouse": "npm run lhci"
   },
   "devDependencies": {
-    "@axe-core/playwright": "4.13.0",
+    "@axe-core/playwright": "4.14.0",
     "@lhci/cli": "0.15.1",
     "@playwright/test": "1.64.1",
     "ajv": "8.20.0",
