@@ -7,9 +7,9 @@ Roadmap orientado a **Outcomes (Resultados Mensuráveis)** e priorizado pela met
 ## 1. Visão Geral do Progresso (atualizado — 2026-10-29, pós-verificação local completa)
 
 ```
-[█████████████████████████████████░░░] ~92% Conclusão Global
+[█████████████████████████████████░░░] ~93% Conclusão Global
   - Escopo Técnico & Código:   ~100% [████████████████████████████████]
-  - Verificação Automatizada:   ~95% [█████████████████████████████░░]
+  - Verificação Automatizada:   ~98% [██████████████████████████████░]
   - Validação Humana / Física:  25% [████████░░░░░░░░░░░░░░░░░░░░░░]
 ```
 
@@ -26,7 +26,7 @@ Roadmap orientado a **Outcomes (Resultados Mensuráveis)** e priorizado pela met
   - `npm run test:e2e`: **não concluiu** (timeout 300s); falhas observadas em `mobile-chromium`: `playback.spec.js` e `playback-matrix.spec.js` esperam `frame-01` mas recebem `frame-04` (progresso persistido em localStorage entre runs).
 - **Tasks reais (contagem verificada em tasks.md)**: 001 195/228 (85%), 002 26/26 (100%), 003 68/68 (100%), 004 63/63 (100%), 005 32/38 (84%).
 - **Spec 003**: tasks.md agora 68/68 marcadas (ROADMAP anterior dizia 2/69 — desatualizado; scripts implementados + attestation T045 registrada).
-- **Bugs**: 21 bugs no `.specify/bugs/`. 19 com fluxo completo ou fix aplicado (18 assess+fix+test + `gate-full-ci-failures` partial com fix de storage no openPlayer + test.md partial). 2 com fix aplicado sem teste (`gate-ci-e2e-failures-40792880928`, `gate-ci-e2e-failures-40801713567`). `gate-full-ci-failures` permanece `likely valid, needs reproduction` (55 falhas requerem CI Ubuntu) — test.md registra `partial`.
+- **Bugs**: 21 bugs no `.specify/bugs/`. 20 com fluxo completo (18 assess+fix+test + `gate-full-ci-failures` agora verified via CI run 40932788962, conclusion success) + 2 com fix aplicado sem teste (`gate-ci-e2e-failures-40792880928`, `gate-ci-e2e-failures-40801713567`). `npm run ci` completo passou em ubuntu-latest (gate + webkit-layout-gate + macos-webkit-compositor).
 - **Verdicts de assessment**: 3 assessments completos — `theme-switcher` = go, `wcag-aaa-audit-pipeline` = go, `artcraft-horror-comic-reform` = needs-clarification.
 ## 2. Fase 0 & Fase 1 — Concluídas e Integradas à `dev`
 

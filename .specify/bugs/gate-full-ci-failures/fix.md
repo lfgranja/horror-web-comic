@@ -3,7 +3,7 @@
 - **Slug**: gate-full-ci-failures
 - **Fixed**: 2026-10-29
 - **Assessment**: ./assessment.md
-- **Status**: partial
+- **Status**: applied
 
 ## Summary
 
