@@ -8,31 +8,29 @@
 
 ## Summary
 
-The fix resolves the issue. The focus-loss tests that were failing due to null access to `localStorage.getItem('hwc.progress')` now correctly find progress in story-scoped keys. All 3 focus-loss tests pass on mobile-chromium. The fix is backwards-compatible and doesn't break existing behavior.
+The fix resolves the issue. Focus-loss tests now correctly read from story-scoped localStorage keys (`hwc.progress:<storyId>`) with fallback to legacy keys. All 3 focus-loss tests pass locally on mobile-chromium.
 
 ## Checks Performed
 
 | Check | Command / Action | Result | Notes |
 |-------|------------------|--------|-------|
-| Reproduction (post-fix) | Ran focus-loss tests on mobile-chromium | pass | Tests that were previously failing now pass |
-| New / updated tests | `npx playwright test tests/e2e/focus-loss.spec.js --project=mobile-chromium --reporter=list` | pass | All 3 tests passed (13.1s) |
-| Regression suite | Tests in focus-loss.spec.js cover the affected functionality | pass | No regressions observed in the modified tests |
+| Reproduction (post-fix) | Ran focus-loss tests | pass | Tests that previously failed now pass |
+| New / updated tests | `npx playwright test tests/e2e/focus-loss.spec.js --project=mobile-chromium --reporter=list` | pass | All 3 tests passed (44.4s) |
 
 ## Output Excerpts
 
 ```
-Running 3 tests using 3 workers
-  ✓  2 [mobile-chromium] › tests/e2e/focus-loss.spec.js:11:1 › startup focus loss clears auto-start, pauses audio, saves progress, and requires overlay resume (5.7s)
-  ✓  1 [mobile-chromium] › tests/e2e/focus-loss.spec.js:112:1 › playing focus loss clears all playback timers and permits only explicit overlay resume (6.0s)
-  ✓  3 [mobile-chromium] › tests/e2e/focus-loss.spec.js:68:1 › focus loss during pending navigation cancels the queued move and requires overlay resume (6.9s)
+✓  1 [mobile-chromium] › tests/e2e/focus-loss.spec.js:112:1 › playing focus loss clears all playback timers and permits only explicit overlay resume (18.4s)
+✓  2 [mobile-chromium] › tests/e2e/focus-loss.spec.js:68:1 › focus loss during pending navigation cancels the queued move and requires overlay resume (26.0s)
+✓  3 [mobile-chromium] › tests/e2e/focus-loss.spec.js:11:1 › startup focus loss clears auto-start, pauses audio, saves progress, and requires overlay resume (25.8s)
 
-  3 passed (13.1s)
+3 passed (44.4s)
 ```
 
 ## Residual Risks
 
-- The fix only addresses the focus-loss tests. Other tests that might read from `hwc.progress` directly could have similar issues, but they weren't failing in the CI run we investigated.
-- The fix is defensive (tries legacy key first, then scans for any story-scoped key) so it's backwards compatible.
+- Fix is defensive with backwards compatibility for legacy keys.
+- CI may still have other failures unrelated to this specific issue.
 
 ## Recommendation
 
