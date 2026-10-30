@@ -176,7 +176,7 @@ async function boot() {
       const m = mode === 'safe-accessible' ? 'safe-accessible' : 'immersive-fx';
       document.documentElement.setAttribute('data-sensory-mode', m);
       if (toggleSensory) toggleSensory.setAttribute('aria-pressed', m === 'immersive-fx' ? 'true' : 'false');
-      if (badge) { updateBadge(); badge.classList.add('visible'); setTimeout(() => badge.classList.remove('visible'), 2000); }
+      if (badge) { updateBadge(); badge.classList.add('visible'); setTimeout(() => badge.classList.remove('visible'), 5000); }
     };
     applySensoryMode(globalThis.localStorage?.getItem('hwc.sensoryMode') || (reducedMotion ? 'safe-accessible' : 'safe-accessible'));
     toggleSensory?.addEventListener('click', () => {
