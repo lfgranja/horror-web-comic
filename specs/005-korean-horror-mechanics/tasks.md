@@ -55,4 +55,4 @@
 
 ## Phase 6: Convergence
 
-- [ ] T041 Implement static photosensitivity lint for `frame.fx` (pulse count <=2, deltaL <=0.05, brightness 0.8-1.25, red ratio <=0.70, no infinite iteration) in `scripts/validate-manifest.mjs` per FR-011 (partial - durationMs validated, rest missing)
+- [x] T041 Implement static photosensitivity lint for `frame.fx` (pulse count <=2, deltaL <=0.05, brightness 0.8-1.25, red ratio <=0.70, no infinite iteration) in `scripts/validate-manifest.mjs` per FR-011 (partial - durationMs validated, rest missing)

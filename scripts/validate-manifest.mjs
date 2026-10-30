@@ -213,6 +213,7 @@ async function main() {
   try {
     const css = await fs.readFile(path.join(root, 'src/styles/player.css'), 'utf8');
     if (/animation-iteration-count\s*:\s*infinite/i.test(css)) throw new ManifestError('photosensitivity: infinite animation iteration count prohibited (FR-011)', 'photosensitivity-violation');
+    if (/filter\s*:[^;]*invert\(\s*1\s*\)/i.test(css)) throw new ManifestError('photosensitivity: filter: invert(1) prohibited (FR-011)', 'photosensitivity-violation');
   } catch (e) { if (e?.code !== 'ENOENT') throw e; }
   if (catalog) console.log('catalog valid');
 }
