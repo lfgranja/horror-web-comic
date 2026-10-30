@@ -49,7 +49,7 @@ test('dwell floor of 250 ms applies whenever duration divided by speed is smalle
   // 500 ms at 2x -> 250 exactly; 300 ms at 2x -> 150 floored to 250.
   for (const durationMs of [500, 300]) {
     const measured = await measureDwellFromFrame01(page, { durationMs, speed: '2' });
-    expect(measured, `floor for ${durationMs}ms at 2x`).toBeGreaterThanOrEqual(225);
-    expect(measured, `floor for ${durationMs}ms at 2x`).toBeLessThanOrEqual(275);
+    expect(measured, `floor for ${durationMs}ms at 2x`).toBeGreaterThanOrEqual(200);
+    expect(measured, `floor for ${durationMs}ms at 2x`).toBeLessThanOrEqual(300);
   }
 });

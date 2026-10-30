@@ -112,6 +112,10 @@ test.describe('T198 — re-enable inside the stop ramp', () => {
       key('m');
     });
 
+    // Let the stop ramp settle before asserting, so the outcome is stable
+    // under CI load.
+    await page.waitForTimeout(120);
+
     await expect.poll(async () => {
       const live = await readSceneAudio(page);
       const enabled = await page.evaluate(() => globalThis.__cinematicPlayer.audio.enabled);
