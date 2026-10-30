@@ -406,9 +406,9 @@ export class CinematicPlayer {
     const wasHidden = this.endOverlay.hidden;
     this.endOverlay.hidden = false;
     this.endOverlayShown = true;
-    if (!wasHidden) return;
     this.publishControlBarHeight();
     requestAnimationFrame(() => this.publishControlBarHeight());
+    requestAnimationFrame(() => requestAnimationFrame(() => this.publishControlBarHeight()));
   }
 
   goEnd() {

@@ -357,6 +357,8 @@
    operable. The end card is informational, so it must not swallow clicks
    aimed at the control bar beneath it; only its own action captures them. */
 #end-overlay {
+  /* FR-033: never intercept clicks meant for the control bar beneath it. */
+  pointer-events: none;
   /* The end card is informational and must never intercept clicks aimed at the
      control bar (FR-033). The overlay is `position: fixed`, so it is anchored
      to the VIEWPORT, while the control bar lives in the scrolling document:
@@ -395,7 +397,7 @@
      never reaches the controls. What the floor buys is a band tall enough to hold
      the card's own action, so the hazard stays one-directional — a band that is
      too SHORT, never one that overlaps. */
-  bottom: max(4.5rem, calc(100dvh - var(--control-bar-top, 100dvh)));
+  bottom: min(calc(100dvh - var(--control-bar-top, 100dvh)), calc(100dvh - 12rem));
   padding: max(var(--space-4), var(--safe-top)) max(var(--space-4), var(--safe-right)) 0 max(var(--space-4), var(--safe-left));
 }
 
