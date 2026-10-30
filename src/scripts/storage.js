@@ -148,7 +148,6 @@ export class StorageManager {
 
   createChannel() {
     try {
-      if (globalThis.__HWC_DISABLE_PROGRESS_CHANNEL__) return null;
       if (typeof globalThis.BroadcastChannel !== 'function' || !hasWindow()) return null;
       const channel = new globalThis.BroadcastChannel(CHANNEL_NAME);
       const handler = (event) => {

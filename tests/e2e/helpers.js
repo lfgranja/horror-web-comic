@@ -10,7 +10,7 @@ export async function openPlayer(page, story = 'tests/fixtures/story.json', { pa
   const ctx = page.context();
   if (!cleanedContexts.has(ctx)) {
     cleanedContexts.add(ctx);
-    await page.addInitScript(() => { try { globalThis.__HWC_DISABLE_PROGRESS_CHANNEL__ = true; if (!sessionStorage.getItem('__hwc_test_cleaned')) { localStorage.clear(); sessionStorage.setItem('__hwc_test_cleaned', '1'); } } catch {} });
+    await page.addInitScript(() => { try { if (!sessionStorage.getItem('__hwc_test_cleaned')) { localStorage.clear(); sessionStorage.setItem('__hwc_test_cleaned', '1'); } } catch {} });
   }
   await page.goto(`/?story=${encodeURIComponent(story)}`);
   await expect(page.locator('#player')).toBeVisible();
