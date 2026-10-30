@@ -169,6 +169,23 @@ async function boot() {
       await renderCatalog();
     });
     document.querySelector('#catalog-close')?.addEventListener('click', () => { if (catalogDialog) catalogDialog.hidden = true; });
+
+    const endNextStory = document.querySelector('#end-next-story');
+    const endOpenCatalog = document.querySelector('#end-open-catalog');
+    endOpenCatalog?.addEventListener('click', () => { if (catalogDialog) { catalogDialog.hidden = false; renderCatalog(); } });
+    endNextStory?.addEventListener('click', async () => {
+      try { audio?.stopAll?.(0.6); } catch {}
+      await new Promise((resolve) => setTimeout(resolve, 600));
+      try {
+        const res = await fetch('src/data/catalog.json');
+        const cat = await res.json();
+        const stories = cat.stories || [];
+        const currentId = story.id;
+        const idx = stories.findIndex((s) => (s.id || s.slug) === currentId);
+        const next = stories[(idx + 1) % stories.length];
+        if (next?.entryHtml) globalThis.location.href = next.entryHtml;
+      } catch {}
+    });
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { if (catalogDialog && !catalogDialog.hidden) { catalogDialog.hidden = true; e.preventDefault(); } } });
     document.title = story.title;
     const toggleSensory = document.querySelector('#toggle-sensory-mode');
@@ -176,7 +193,7 @@ async function boot() {
       const m = mode === 'safe-accessible' ? 'safe-accessible' : 'immersive-fx';
       document.documentElement.setAttribute('data-sensory-mode', m);
       if (toggleSensory) toggleSensory.setAttribute('aria-pressed', m === 'immersive-fx' ? 'true' : 'false');
-      if (badge) { updateBadge(); badge.classList.add('visible'); setTimeout(() => badge.classList.remove('visible'), 2000); }
+      if (badge) { updateBadge(); badge.classList.add('visible'); setTimeout(() => badge.classList.remove('visible'), 5000); }
     };
     applySensoryMode(globalThis.localStorage?.getItem('hwc.sensoryMode') || (reducedMotion ? 'safe-accessible' : 'safe-accessible'));
     toggleSensory?.addEventListener('click', () => {
