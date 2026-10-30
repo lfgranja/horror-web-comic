@@ -397,7 +397,7 @@
      never reaches the controls. What the floor buys is a band tall enough to hold
      the card's own action, so the hazard stays one-directional — a band that is
      too SHORT, never one that overlaps. */
-  bottom: min(calc(100dvh - var(--control-bar-top, 100dvh)), calc(100dvh - 12rem));
+  bottom: max(4.5rem, calc(100dvh - var(--control-bar-top, 100dvh)));
   padding: max(var(--space-4), var(--safe-top)) max(var(--space-4), var(--safe-right)) 0 max(var(--space-4), var(--safe-left));
 }
 
