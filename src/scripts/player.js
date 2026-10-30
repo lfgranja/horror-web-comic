@@ -75,6 +75,7 @@ export class CinematicPlayer {
     this.scrollHandler = null;
     this.endOverlayShown = false;
     this.index = this.findInitialIndex();
+    this.initialIndex = this.index;
     this.cacheDom();
     this.root.dataset.degraded = String(this.capabilities.shouldDegrade);
     this.root.dataset.reducedMotion = String(this.capabilities.reducedMotion);

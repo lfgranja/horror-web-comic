@@ -62,6 +62,7 @@ async function boot() {
 
     const story = await loadStory(storyUrl);
     storage.setStoryId?.(story.id);
+    try { globalThis.__bootDebug = { lastFrameId: storage.load().lastFrameId, keys: Object.keys(globalThis.localStorage || {}) }; } catch (e) { globalThis.__bootDebug = { error: String(e) }; }
     const capabilities = detectCapabilities();
     const a11y = new AccessibilityController();
     audio = new AudioManager({
@@ -198,6 +199,7 @@ async function boot() {
     if (!globalThis.__CINEMATIC_PRODUCTION__) {
       globalThis.__cinematicPlayer = player;
       globalThis.__audioManager = audio;
+      globalThis.__initialPlayerIndex = player.initialIndex;
     }
     document.querySelector('#retry-button').addEventListener('click', () => globalThis.location.reload());
   } catch (error) {

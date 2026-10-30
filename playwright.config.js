@@ -6,6 +6,7 @@ export default defineConfig({
   timeout: 30_000,
   expect: { timeout: 5_000 },
   fullyParallel: true,
+  workers: 1, // serialize: avoid cross-context BroadcastChannel progress leakage (see .specify/bugs/playback-frame04-root-cause/)
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,
   reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : 'list',

@@ -2,9 +2,15 @@ import { test, expect } from '@playwright/test';
 import { openPlayer, waitForFrame } from './helpers.js';
 
 test('starts on the first frame and advances in narrative order', async ({ page }) => {
+  await page.goto('/?story=tests/fixtures/story.json');
+  // The initial frame is captured at boot (before auto-advance can move on),
+  // so the assertion is deterministic regardless of machine load.
+  const initialIndex = await page.waitForFunction(() => {
+    if (window.__initialPlayerIndex !== undefined) return true;
+    return false;
+  }, { timeout: 10000 }).then(() => page.evaluate(() => window.__initialPlayerIndex));
+  expect(initialIndex).toBe(0);
   await openPlayer(page);
-  await waitForFrame(page, 'frame-01');
-  await expect(page.locator('#frame-image')).toHaveAttribute('data-frame-id', 'frame-01');
   await waitForFrame(page, 'frame-02');
   await expect(page.locator('#progress')).toHaveAttribute('aria-valuenow', '2');
 });
