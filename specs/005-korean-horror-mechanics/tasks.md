@@ -47,3 +47,8 @@
 - [x] T036 Implement catalog progress bars/badges and Escape close in `#catalog-dialog` per FR-005/FR-014 (partial)
 - [x] T037 Attenuate memory illusion audio sting to 20% on revisit in `src/scripts/player.js`/`audio.js` per FR-007 (partial)
 - [X] T038 Run full `npm run ci` verification gate (verification)
+
+## Phase 5: Convergence
+
+- [ ] T039 Add missing `#end-overlay` actions "Próxima Obra Curada" (fade-out 600ms + redirect) and "Ver Catálogo Completo" (opens `#catalog-dialog`) per FR-014 (partial)
+- [ ] T040 Implement static photosensitivity lint for `frame.fx` (pulse count ≤2, ΔL ≤0.05, brightness 0.8–1.25, red ratio ≤0.70, no infinite iteration) per FR-011 (partial)
