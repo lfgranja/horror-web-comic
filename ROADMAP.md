@@ -4,12 +4,12 @@ Roadmap orientado a **Outcomes (Resultados Mensuráveis)** e priorizado pela met
 
 ---
 
-## 1. Visão Geral do Progresso (atualizado — 2026-10-29, pós-verificação local completa)
+## 1. Visão Geral do Progresso (atualizado — 2026-10-29, pós-verificação local completa + pesquisa atualizada)
 
 ```
 [█████████████████████████████████░░░] ~93% Conclusão Global
   - Escopo Técnico & Código:   ~100% [████████████████████████████████]
-  - Verificação Automatizada:   ~98% [██████████████████████████████░]
+  - Verificação Automatizada:   ~95% [█████████████████████████████░░░]
   - Validação Humana / Física:  25% [████████░░░░░░░░░░░░░░░░░░░░░░]
 ```
 
@@ -28,6 +28,16 @@ Roadmap orientado a **Outcomes (Resultados Mensuráveis)** e priorizado pela met
 - **Spec 003**: tasks.md agora 68/68 marcadas (ROADMAP anterior dizia 2/69 — desatualizado; scripts implementados + attestation T045 registrada).
 - **Bugs**: 21 bugs no `.specify/bugs/`. 20 com fluxo completo (18 assess+fix+test + `gate-full-ci-failures` agora verified via CI run 40932788962, conclusion success) + 2 com fix aplicado sem teste (`gate-ci-e2e-failures-40792880928`, `gate-ci-e2e-failures-40801713567`). `npm run ci` completo passou em ubuntu-latest (gate + webkit-layout-gate + macos-webkit-compositor).
 - **Verdicts de assessment**: 3 assessments completos — `theme-switcher` = go, `wcag-aaa-audit-pipeline` = go, `artcraft-horror-comic-reform` = needs-clarification.
+
+### Notas de pesquisa (fontes primárias, 2026-10-29)
+
+- **WCAG 2.2**: W3C Recommendation; adotado como **ISO/IEC 40500:2025** (edição 2, set/2025). O nível AAA inclui critérios aprimorados (Focus Not Obscured Enhanced 2.4.12, Focus Appearance 2.4.13, Accessible Authentication Enhanced 3.3.9). A auditoria automatizada (Axe-Core) do projeto cobre as regras normativas; validação com leitores de tela reais (NVDA/VoiceOver/TalkBack) permanece pendente de teste humano. Fonte: w3.org/TR/WCAG22, iso.org/standard/91029.
+- **Playwright**: último release **1.64.1** (out/2026). Projeto fixado em **1.64.0** — 1 patch atrás, sem breaking changes conhecidos; atualização recomendada mas não bloqueante. Fonte: github.com/microsoft/playwright/releases.
+- **Lighthouse / Core Web Vitals**: thresholds vigentes permanecem LCP ≤ 2.5s, CLS ≤ 0.1, INP ≤ 200ms (substituiu FID). O projeto usa LCP ≤ 2500ms e CLS ≤ 0.1 — alinhado. Score de performance ≥ 0.9 e a11y ≥ 0.95 são metas internas do projeto, não padrão W3C. Fonte: web.dev/articles/vitals, developer.chrome.com/docs/lighthouse.
+- **AVIF**: ~94% de suporte global em 2026 (Chrome 85+, Firefox, Safari 16+, Edge). O projeto gera AVIF + WebP + JPEG com fallback via `<picture>` — estratégia correta e atual. Fonte: caniuse.com/avif, avif.tools.
+- **Opus**: suporte amplo em navegadores modernos (Chrome, Firefox, Safari 17+, Edge). O projeto usa Opus para variantes `-light` de áudio — alinhado. Fonte: caniuse.com/opus.
+- **Speckit / SDD**: a metodologia do projeto (constituição → assessment → spec → plan → tasks → implement → converge) está documentada em `.specify/`. Não há padrão externo único; o fluxo interno é coerente e rastreável.
+
 ## 2. Fase 0 & Fase 1 — Concluídas e Integradas à `dev`
 
 - [x] Constituição v2.1.0 ratificada.
@@ -55,6 +65,7 @@ Roadmap orientado a **Outcomes (Resultados Mensuráveis)** e priorizado pela met
 ### 3.3 Fechar issues abertas da spec 003 (T012–T045)
 - Bloqueado por entregável humano T028 (masters autorais SVG/PNG otimizados).
 - **ICE**: 6 × 7 × 5 = **210**. Scripts já implementados (svg-sanitize, sidecar, delivery-fidelity, atomic-write, ci-trailers). Faltam masters + fechamento de issues.
+
 ## 4. Fase 3 — Validações Não Automatizáveis (Humanos / Dispositivo Real)
 
 ### 4.1 Protocolos operacionais de usabilidade (T171/T172) — ICE 810
@@ -97,3 +108,8 @@ Roadmap orientado a **Outcomes (Resultados Mensuráveis)** e priorizado pela met
 - Fullscreen API.
 - Gate em FPS no CI (SC-018 gateia em contador rAF = 0).
 - WebKit no Fedora local (limitação de ambiente; CI Ubuntu/macOS).
+
+### 5.2 Atualização de dependências recomendada (não bloqueante)
+- Playwright 1.64.0 → 1.64.1 (patch, sem breaking changes).
+- Lighthouse/Axe: manter pins atuais; thresholds alinhados com Core Web Vitals 2026 (LCP ≤ 2.5s, CLS ≤ 0.1, INP ≤ 200ms).
+- AVIF (~94% suporte global) e Opus (suporte amplo) confirmados como escolhas atuais corretas; manter estratégia de fallback via `<picture>`/`<audio>`.

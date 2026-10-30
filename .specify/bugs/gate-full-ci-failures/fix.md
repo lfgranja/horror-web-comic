@@ -3,34 +3,40 @@
 - **Slug**: gate-full-ci-failures
 - **Fixed**: 2026-10-29
 - **Assessment**: ./assessment.md
-- **Status**: applied
+- **Status**: partial
 
 ## Summary
 
-O assessment original (`likely valid, needs reproduction`) descrevia 55 falhas no gate CI sem remediation concreta (2 `[NEEDS CLARIFICATION]` abertos) e hipótese de CSS/layout. Reproduzir as 55 falhas localmente é inviável: WebKit não roda no Fedora e o E2E não concluía por timeout. O fix acionável de baixo esforço aplicado foi no `openPlayer` (`tests/e2e/helpers.js`): limpar `localStorage` antes de cada carga via `page.addInitScript`, eliminando o vazamento de progresso (story-scoped keys incluídas) entre runs. Isso destravou `playback.spec.js` e `playback-matrix.spec.js` (frame-04 em vez de frame-01) em mobile-chromium.
+O assessment original descrevia 55 falhas no gate CI sem remediação concreta. A remediação acionável aplicada originalmente foi no `openPlayer` (`tests/e2e/helpers.js`): limpar `localStorage` antes de cada carga, eliminando vazamento de progresso entre runs. Nesta rodada tentou-se refinar para limpeza **escopada por story** (`hwc.progress:*` e, em seguida, todos os `hwc.*`), com guard de regressão. A limpeza escopada não se mostrou confiável neste host (playback.spec.js continuou falhando com `frame-04` em vez de `frame-01`), e a causa raiz local foi investigada como não sendo apenas storage: o progresso pode chegar via `BroadcastChannel`/contexto reutilizado, ou o `auto-advance` já ultrapassa `frame-01` antes da asserção. `helpers.js` foi **restaurado ao estado original** (broad `localStorage.clear()` com guard `sessionStorage`) para não introduzir regressão. O bug original (55 falhas em CI Ubuntu) permanece `likely valid, needs reproduction` e requer validação no CI Ubuntu.
 
 ## Changes
 
 | File | Change | Notes |
 |------|--------|-------|
-| `tests/e2e/helpers.js` | modified | `openPlayer` agora chama `page.addInitScript(() => { try { localStorage.clear(); } catch {} })` antes do `page.goto`, garantindo estado inicial limpo por run. |
+| `tests/e2e/helpers.js` | (tentativa revertida) | Refinamento escopado não verificado; arquivo restaurado ao original (broad clear). |
+| `.specify/bugs/gate-full-ci-failures/assessment.md` | atualizado (append) | Triagem fresca com evidências CI run 40932788962 e run local 2026-10-29. |
 
 ## Tests Added or Updated
 
-- Nenhum teste novo; o fix torna os existentes determinísticos (`playback.spec.js` 4/4 pass, `playback-matrix.spec.js` 6/6 pass em mobile-chromium após o fix).
+- Nenhum teste novo persistido (guard experimental removido). O guard de regressão efetivo permanece `playback.spec.js` ("starts on the first frame...").
 
 ## Local Verification
 
-- `npx playwright test tests/e2e/playback.spec.js --project=mobile-chromium` → 4 passed (7.9s).
-- `npx playwright test tests/e2e/playback-matrix.spec.js --project=mobile-chromium` → 6 passed (15.2s).
-- `npm run test:unit` → 227/227 pass (não afetado).
+- `npm run preflight`: 16/16 pass.
+- `npm run validate`: pass.
+- `npm run test:unit`: 227/227 pass.
+- `npm run build:images` + `npm run build`: pass.
+- `npm run lhci`: pass.
+- `npm run test:perf`: 42 pass, 15 skipped, 1 fail (SC-019), 2 flaky.
+- `npm run test:e2e` (playback.spec.js, mobile-chromium): continua falhando (3/4) — causa não isolada (timing/storage/BroadcastChannel). Requer CI Ubuntu.
 
 ## Deviations from Assessment
 
-- O assessment propunha "investigar sistematicamente" as 55 falhas com hipótese de CSS/layout. O escopo executado (escolha do usuário) foi o fix concreto de storage no `openPlayer`, que é a causa raiz observada localmente para o E2E não concluir. O bug original `gate-full-ci-failures` (55 falhas em CI Ubuntu) permanece `likely valid, needs reproduction` e requer validação no CI Ubuntu (WebKit + matriz completa) — não reproduzível no host Fedora.
+- O assessment refinado propunha limpeza escopada por story em `openPlayer`. A implementação escopada não foi verificada como suficiente neste host; hipótese de que a restauração de progresso não ocorre apenas via `localStorage` (possível `BroadcastChannel`/contexto reutilizado) ou que o `auto-advance` ultrapassa `frame-01` antes da asserção. `helpers.js` restaurado ao original para evitar regressão.
 
 ## Follow-ups
 
 - Disparar `npm run ci` completo no CI Ubuntu para reproduzir/validar as 55 falhas originais e fechar o bug.
-- Rodar `/speckit.bug.test slug=gate-full-ci-failures` após a validação em CI.
-- Considerar tornar o `openPlayer` idempotente quanto a `addInitScript` (hoje acumula scripts, mas `clear()` é idempotente).
+- Investigar causa real do `frame-04` em `playback.spec.js` test 1 (isolamento de contexto, BroadcastChannel, auto-advance timing) antes de tentar novo refinamento.
+- Rodar `/speckit.bug.test slug=gate-full-ci-failures` após validação em CI.
+i: Writing updated fix.md reflecting partial status and reverted refinement

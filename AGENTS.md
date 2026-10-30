@@ -1,149 +1,113 @@
-# AGENTS.md — horror-web-comic
+# Repository Guidelines
 
-## Quick Reference
+Concise, AI-assistant-oriented reference for the `horror-web-comic` codebase. Vanilla ES-module, manifest-driven cinematic comic player with audio, accessibility, and automated quality gates. No backend, no framework.
 
-| Command | Purpose |
-|---------|---------|
-| `npm run preflight` | Verify all tools, browsers, deps, env before any work |
-| `npm run validate` | Validate story manifest against schema + check asset refs exist |
-| `npm run report` | Compatibility report for a manifest (schema, refs, assets, light variants, budgets, a11y metadata) |
-| `npm run test:unit` | Run Node unit tests (`node --test tests/unit/*.test.js`) |
-| `npm run build:images` | Generate light variants & verify media (needs ffmpeg) |
-| `npm run build` | Full production build to `dist/` (minify, budgets, copy) |
-| `npm run test:e2e` | Playwright matrix (5 browsers, desktop+mobile) |
-| `npm run test:perf` | FPS + first-frame performance tests (all 5 projects) |
-| `npm run test:perf:webkit` | SC-018 transition ratio on the two WebKit projects; run by the macOS job only |
-| `npm run ci` | Full gate: preflight → validate → test:unit → build:images → build → test:e2e → test:perf |
-| `npm run serve` | Static dev server at `http://127.0.0.1:8080` (python3) |
-| `npm run lhci` | Lighthouse CI audit (needs Chrome/Chromium) |
+## Project Overview
 
-**Required order for CI:** `preflight && validate && test:unit && build:images && build && test:e2e && test:perf`
+Static HTML/CSS/JS comic player. A narrative manifest (`src/data/story.json`, schema v1) drives scenes, frames, images (AVIF/WebP/JPEG + srcset), audio, and transitions. Build pipeline (esbuild) bundles JS/CSS, validates asset refs, enforces byte budgets, copies to `dist/`. All tooling pinned; `npm run preflight` is the hard gate before any work.
 
-A second job, `macos-webkit-compositor`, runs `test:perf:webkit` on `macos-15`. It exists
-because Playwright's WebKit on a Linux runner is the WPE build with no GPU and software-
-composites, so a frame-rate number taken there is a rasterizer fact, not a WebKit one — the
-identical code reads 0.17–0.40 on Linux and 0.80–1.13 on macOS. On macOS, headless WebKit
-creates a real `NSWindow` the window server composites. The spec proves that for itself by
-reading `WEBGL_debug_renderer_info` and failing on a software renderer, so the job cannot
-silently degrade to the number it was added to disprove. It is **$0** — standard runners are
-free for public repositories on every OS.
+## Architecture & Data Flow
 
-**SC-018 does not gate on frame rate.** It gates on a counter: how many animation frames the
-app schedules while a transition runs, which is 0 and must stay 0. Frame rate is measured and
-printed on every run as evidence for the real-device certification, because a frame-rate
-assertion on a Linux runner certifies the machine on 2 of 5 projects. A test that wants to
-assert on it must change `zz-ci-budgets.spec.js` first, which fails until someone explains
-the change in the failure message.
+Boot order (`src/scripts/main.js` `boot()`):
+1. `createStorageManager()` → load saved theme → set `document.documentElement.dataset.theme`
+2. `await loadStory(storyUrl)` → `storage.setStoryId(story.id)`
+3. `detectCapabilities()` → `new AccessibilityController()` → `new AudioManager(...)` → `new CinematicPlayer(...)`
+4. Apply saved volume/speed/theme; wire theme change, `pageshow` restore, sensory dialog, catalog dialog
+5. `player.schedule()` → `player.setAudioState(audio.state())`
 
-## Architecture
+Key modules:
+- `player.js` (`CinematicPlayer`): state machine `idle`→`playing`/`paused`/`ended`; 250ms auto-start; 400ms navigation coalescing (`queueNavigation`); `moveTo(target)` bounds-checks, cancels transition, saves progress, renders; `resumeRequired` latch on visibility loss (modal overlay, FR-033); memory illusions on backward nav (latched in `sessionStorage hwc.latched:<id>`); image loading with 10s watchdog + fallback retry; transitions `cut` under reduced-motion/degradation else fade 600ms; `preloadNext()` gated on connection/memory.
+- `audio.js` (`AudioManager`): source-less elements (URL parked on `dataset.trackSource`), armed via `assignSource()` before `play()`; autoplay probe at volume 0.01 (not muted — T199); fades (in 300ms, scene 500ms, frame 300ms, stop 40ms) guarded by generation tokens; scene bed ducked to 40% when a frame track is active (FR-006); blocked → `markBlocked()` overlay; `continueSilently()` persists `hwc.audio=off` across visits (T211).
+- `story-loader.js`: `loadStory(url, fetcher=fetch)` with `no-store` cache; `validateStory` (schema v1, allow-listed keys, transition types `cut|fade|zoom-in|zoom-out|dissolve|slide-left|slide-right|none`, easings, integer durations 500–30000ms, fx types/intensity, image `avif`+`fallback` required, srcset width descriptors, sizes syntax); throws `manifest-unavailable`/`manifest-malformed`/`manifest-incompatible`. `isSafeLocalReference` (from `safe-reference.js`): no scheme/`//`/absolute/drive-letter/query/hash/backslash, no `.`/`..`/empty segments.
+- `light-variants.js`: single source of `-light-*` naming (`lightUrl`, `lightAudioSource`, `lightSrcset`, `resolveImageSources`, `LIGHT_MAX_SIDE=1280`). Never re-derive inline.
+- `storage.js` (`StorageManager`): keys `hwc.audio|volume|speed|progress|theme|schemaVersion`; channels `progress`/`theme`/`hwc:sensory` via BroadcastChannel with `storage` fallback; `tabId` via `crypto.randomUUID`; progress ordering `(updatedAt, seq, tabId)`; `receiveProgress` adopts only newer; `saveProgress` bumps monotonic `seq`. `schemaVersion` mismatch → wipe. localStorage unavailable → silent in-memory fallback.
+- `capabilities.js`: `detectCapabilities()` → `{saveData, effectiveType, rtt, deviceMemory, hardwareConcurrency, reducedMotion, slowConnection, lowMemory, lowCpu, shouldDegrade, imageVariant, audioVariant}`; `watchCapabilities(cb)` returns unsubscribe.
+- `a11y.js` (`AccessibilityController`): debounced 500ms announce into `#frame-description` (`role="status"`, `aria-live="polite"`, `aria-atomic="true"`).
 
-- **Vanilla ES modules**, no framework. Entry: `src/scripts/main.js` → boots `CinematicPlayer` + `AudioManager` + `AccessibilityController`.
-- **Manifest-driven:** `src/data/story.json` (schema v1) defines scenes, frames, images (avif/webp/fallback + srcset), audio, transitions.
-- **Player** (`src/scripts/player.js`): state machine (idle/playing/paused/ended), navigation coalescing, reduced-motion/degradation, image loading with fallback, BroadcastChannel sync.
-- **Build** (`scripts/build.mjs`): esbuild bundles JS/CSS, validates all asset refs, enforces `budget.json` limits (initial scene, per-frame, total assets, compressed code), copies to `dist/`.
-- **Preflight** (`scripts/preflight.mjs`): Hard gate — checks Node≥20, npm≥10, Python≥3.10, ffmpeg/ffprobe≥5 (aac, libopus), Playwright browsers launch headless, pinned deps match lockfile, `scripts.ci` chains correctly.
+Data flow: manifest → `loadStory` (validate) → `CinematicPlayer` (builds frames, renders `<picture>` avif→webp→fallback, manages transitions) → `AudioManager` (scene bed + frame stings, ducking, fades) → `StorageManager` (progress/theme/audio persisted, cross-tab sync). Light variants resolved at runtime (`shouldDegrade`/`saveData`).
 
-## Key Conventions
+## Key Directories
 
-- **All deps pinned exactly** in `package.json` (no ranges). `preflight` fails on drift.
-- **Safe local references only** — no absolute, protocol-relative, or `../` paths in manifest or HTML. Enforced by `isSafeLocalReference` in `story-loader.js` and `build.mjs`.
-- **Light variants** (`-light-*`) generated by `build:images` for images/audio; player auto-switches on `capabilities.shouldDegrade` or `saveData`. The naming convention lives once in `light-variants.js` and is shared by the player, the audio manager, both build scripts and the report — do not re-derive it inline.
-- **Master provenance (003)** — every file under `media-src/` needs a sidecar `media-src/<path>.json` (schema v1.0) with `subject.digest.sha256` matching the master bytes and `review.decision: approve` for integration commits. Commits touching `media-src/` must carry `Authored-With:` and `Reviewed-By:` trailers (enforced by `scripts/ci-trailers.mjs` in CI, fetch-depth: 0). Masters must pass `scripts/svg-sanitize.mjs` if SVG.
-- **Budgets** in `budget.json` are hard limits — build fails if exceeded.
-- **Lighthouse thresholds:** performance≥0.9, a11y≥0.95, CLS≤0.1, LCP≤2500ms.
-- **Test matrix:** 5 projects (mobile-chromium, mobile-webkit, desktop-chromium, desktop-firefox, desktop-webkit).
-- **No `|| true`, `exit 0`, `--force` in `scripts.ci`** — preflight validates this.
+- `src/scripts/` — player, audio, storage, story-loader, light-variants, capabilities, a11y, safe-reference, sensory-taxonomy
+- `src/styles/` — tokens.css, base.css, player.css
+- `src/data/` — story.json, catalog.json, stories/o-alojamento.json
+- `media-src/` — masters (frames/audio), never published; sidecar `.json` required
+- `assets/` — publishable tree (manifest-referenced, delivery-encoded only)
+- `scripts/` — build/validation pipeline (see Development Commands)
+- `tests/unit/` — Node native tests; `tests/e2e/` — Playwright; `tests/perf/` — perf budgets; `tests/fixtures/` — manifests + assets
+- `docs/` — delivery, authoring, authoring-accessibility, briefs, monetization, image-quality-assessment
+- `specs/` — 001–005 feature specs with spec/plan/tasks/checklists
+- `.specify/bugs/` — 18 bug assessments (assess/fix/test)
 
-## Testing
+## Development Commands
 
-- **Unit:** `tests/unit/*.test.js` (Node native test runner). Run single: `node --test tests/unit/storage.test.js`
-- **E2E:** `tests/e2e/*.spec.js` (Playwright). Run single: `npx playwright test tests/e2e/navigation.spec.js`
-- **Perf:** `tests/perf/*.spec.js` (Playwright). Run single: `npx playwright test tests/perf/first-frame.spec.js`
-- **Fixtures:** `tests/fixtures/` (malformed, incompatible, valid story.json)
-- **Helpers:** `tests/e2e/helpers.js` shared utilities
-
-## Environment Gotchas
-
-- Playwright `webServer` runs `scripts/serve-e2e.mjs`, which implements **HTTP Range**. `python3 -m http.server` does not, and a media element that has to seek then fails to load on WebKit ("unexpected 200 HTTP status code for range request") and Firefox, while Chromium tolerates it. Do not swap the e2e server back.
-- `build:images` + `build` need **ffmpeg/ffprobe** with aac & libopus encoders.
-- Playwright browsers must **launch headless** (preflight verifies; missing system libs = fail).
-- `lhci` needs **Chrome/Chromium** binary (`CHROME_PATH` or install Google Chrome).
-- Run `npx playwright install --with-deps chromium firefox webkit` after `npm ci`.
-- **The e2e suite needs an audio output, but not a real one.** Firefox does not tolerate a
-  missing output device: it raises `OnMediaSinkAudioError`, the element's `error` event
-  reaches `AudioManager.handleMediaFailure`, and the track is latched as failed for the
-  session. Chromium and WebKit degrade silently, which makes it look engine-specific. CI
-  installs PulseAudio and loads a `module-null-sink` for this (see the *Provide a null
-  audio sink* step in `ci.yml`); to run the matrix locally, install `pulseaudio
-  pulseaudio-utils`, run `pulseaudio --start --exit-idle-time=-1 --load="module-null-sink
-  sink_name=ci_null"`, and `pactl set-default-sink ci_null`. There is no Firefox pref for
-  it: `media.cubeb.force_null_context` forces the failure on purpose, and
-  `force_mock_context` only compiles under `ENABLE_TESTS`.
-- **Fedora hosts cannot run webkit locally.** Playwright's dependency installer is Debian/Ubuntu-only, and the pinned webkit build links against ICU 74 while Fedora 44 ships ICU 77, so `npx playwright install-deps` cannot close the gap. `npm run preflight` therefore always fails the `browser-launch` check here — that check is **CI-enforced** on `ubuntu-latest`. Locally the bar is the other 14 preflight checks plus `npx playwright test tests/e2e --project=mobile-chromium --project=desktop-chromium --project=desktop-firefox`, which covers 3 of the 5 matrix projects. Chromium and Firefox do launch.
-
-## File Layout
-
-```
-index.html                 # Shell, controls, overlays, a11y regions
-src/data/story.json        # Narrative manifest (schema v1)
-media-src/                 # Master sources; never published
-  frames/                  # Frame masters (*.svg|png|jpe?g) read by build:images
-  audio/                   # Audio masters (*.wav) read by build:images
-assets/                    # Publishable tree; manifest-referenced, delivery-encoded only
-src/scripts/
-  main.js                  # Boot: storage → story → capabilities → a11y → audio → player
-  player.js                # CinematicPlayer class (state, nav, render, transitions, preload)
-  audio.js                 # AudioManager (scene/frame tracks, autoplay policy, sync)
-  story-loader.js          # fetch + strict validation (schema + custom rules)
-  light-variants.js        # single source of the -light-* naming convention (images + audio)
-  storage.js               # localStorage + BroadcastChannel progress sync
-  capabilities.js          # detect: reducedMotion, slowConnection, saveData, shouldDegrade
-  a11y.js                  # AccessibilityController (announce, focus, live regions)
-src/styles/
-  tokens.css               # Design tokens (colors, spacing, type, motion)
-  base.css                 # Reset, layout, responsive
-  player.css               # Player-specific styles
-scripts/
-  preflight.mjs            # Environment + toolchain gate (run before everything; includes librsvg host check)
-  validate-manifest.mjs    # Schema + reference integrity
-  compatibility-report.mjs # Manifest compatibility report (static, no build/browser)
-  build-images.mjs         # Generate light variants via sharp/ffmpeg; integrates svg-sanitize, sidecar, delivery-fidelity, atomic-write gates
-  build.mjs                # Production build (esbuild, budgets, copy, rewrite refs)
-  svg-sanitize.mjs         # Fail-closed SVG sanitizer (allow-list; vectorcraft vocabulary)
-  sidecar.mjs              # Provenance sidecar validation (SHA-256, staleness, orphan detection)
-  delivery-fidelity.mjs    # SSIM/PSNR delivery fidelity gate (standard fail-fast, light warn-only)
-  atomic-write.mjs         # Atomic file write (temp + rename, same dir)
-  ci-trailers.mjs          # CI-only trailer/sidecar enforcement for commits touching media-src/
-docs/
-  delivery.md              # Browser matrix, media formats, delivery budgets
-  authoring.md             # ArtCraft authoring workflow, tools, "testada-com" version, Tier A checklist
-  authoring-accessibility.md # F20 story-metadata rule (alt/description/durationMs)
-  briefs/                  # Professional authoring briefs for master frames (frame-01..04)
-  monetization/            # Commercial documentation; no landing page lives in this repo
-specs/001-cinematic-player/  # Spec, plan, contracts, research, checklists
-specs/003-artcraft-local-authoring/ # ArtCraft authoring: svg-sanitize, sidecar, fidelity, trailers, briefs
-tests/
-  unit/                    # Node native tests
-  e2e/                     # Playwright user flows
-  perf/                    # Playwright perf budgets
-  fixtures/                # Test manifests
+```bash
+npm run preflight        # host/toolchain gate (run before anything)
+npm run validate         # manifest schema + asset refs
+npm run report           # compatibility report (static, no build/browser)
+npm run build:images     # generate light variants (needs ffmpeg)
+npm run build            # validate + production build to dist/
+npm run test:unit        # node --test tests/unit/*.test.js
+npm run test:e2e         # Playwright matrix (5 projects)
+npm run test:perf        # perf budgets (Chromium only)
+npm run test:perf:webkit # SC-018 on WebKit projects (macOS job)
+npm run ci               # preflight → validate → test:unit → build:images → build → test:e2e → test:perf
+npm run ci:lighthouse    # Lighthouse (needs Chrome)
+npm run serve            # python3 -m http.server 8080 (NO Range — dev only)
 ```
 
-## Common Tasks
+Single files: `node --test tests/unit/storage.test.js`; `npx playwright test tests/e2e/playback.spec.js --project=mobile-chromium`; `npx playwright test tests/perf/first-frame.spec.js`.
 
-**Add a frame:** Edit `src/data/story.json` (follow schema), add the master image to `media-src/frames/`, run `npm run validate && npm run build:images && npm run build`. Never put masters or uncompressed sources in `assets/` — it is the publishable tree and the build rejects unreferenced or WAV files there.
+## Code Conventions & Common Patterns
 
-**Change budgets:** Edit `budget.json`, then `npm run build` to verify.
+- **Modules**: vanilla ES modules (`"type": "module"`), no framework. Group imports: std → external → local (`use crate::` style per AGENTS.md).
+- **Naming**: structs/classes PascalCase, functions/variables snake_case (JS camelCase in practice: `CinematicPlayer`, `openPlayer`), constants UPPER_SNAKE_CASE, modules snake-case.
+- **Formatting**: 4-space indent, 100 soft / 120 hard line limit, trailing commas, `cargo fmt`-equivalent `npm run` (no formatter configured; follow existing style). Run `cargo fmt`/clippy only for Rust (not applicable here).
+- **Error handling**: custom error codes (`manifest-unavailable`, `manifest-malformed`, `manifest-incompatible`); `?`-style propagation via try/catch with friendly error screen; `thiserror`-equivalent not used (plain JS).
+- **Async**: `async/await` throughout; `boot()` is async top-level. Tests use `node:test` + `assert/strict`.
+- **State management**: in-memory + localStorage with BroadcastChannel cross-tab sync; `defaultsOnly` flag for private-mode fallback; `seq` monotonic for progress ordering.
+- **Dependency injection**: constructors take `{story, storage, audio, capabilities, a11y}`; `loadStory(url, fetcher=fetch)` injectable for tests.
+- **Test hooks**: gated by `__CINEMATIC_PRODUCTION__` define (stripped from prod bundle by esbuild).
+- **PT-BR copy** throughout UI and comments.
+- **Pinned deps**: all 8 devDependencies exact (no ranges); preflight fails on drift. `engines.node >=20.0.0`.
 
-**Debug preflight failure:** Run `npm run preflight` — output shows exact check + remedy.
+## Important Files
 
-**Skip Lighthouse in CI:** Use `npm run ci` (excludes lhci). Run `npm run ci:lighthouse` separately.
+- Entry: `src/scripts/main.js`, `index.html`
+- Manifest: `src/data/story.json`, `src/data/catalog.json`
+- Core: `src/scripts/player.js`, `audio.js`, `storage.js`, `story-loader.js`, `light-variants.js`, `capabilities.js`, `a11y.js`, `safe-reference.js`, `sensory-taxonomy.js`
+- Config: `package.json`, `budget.json`, `playwright.config.js`, `lighthouserc.json`
+- Build: `scripts/build.mjs`, `build-images.mjs`, `preflight.mjs`, `validate-manifest.mjs`, `serve-e2e.mjs`
+- Gates: `svg-sanitize.mjs`, `sidecar.mjs`, `delivery-fidelity.mjs`, `atomic-write.mjs`, `ci-trailers.mjs`, `compatibility-report.mjs`
+- Docs: `docs/delivery.md`, `authoring.md`, `authoring-accessibility.md`, `image-quality-assessment.md`
 
-**Update Playwright browsers:** `npx playwright install --with-deps chromium firefox webkit` then `npm run preflight`.
+## Runtime/Tooling Preferences
 
-## Do Not
+- **Node.js ≥20.0.0**, npm ≥10.0.0 (pinned). No Bun/Deno.
+- **Package manager**: npm (exact pins, lockfile v3). Run `npm ci` (not `npm install`) to respect pins.
+- **Python 3 ≥3.10** (serve, Playwright webServer).
+- **ffmpeg/ffprobe ≥5** with `aac` + `libopus` encoders (build:images, build).
+- **tesseract ≥4** (e2e OCR).
+- **Playwright browsers**: chromium, firefox, webkit (same revision as pinned @playwright/test). `npx playwright install --with-deps chromium firefox webkit`.
+- **Chrome/Chromium** binary for Lighthouse (`CHROME_PATH`).
+- **librsvg** (pkg-config or sharp SVG decode) for SVG masters.
+- **Fedora caveat**: WebKit cannot launch locally (ICU 74 pinned vs 77 system); browser-launch preflight check fails; run chromium+firefox subset only. CI uses ubuntu-latest.
+- **Audio sink**: Firefox needs a real output device (PulseAudio `module-null-sink`); otherwise tracks latch as failed.
 
-- Use semver ranges in `package.json` — preflight will fail.
-- Add external URLs to manifest or HTML — build validates and rejects.
-- Mask failures in `scripts.ci` with `|| true` or similar — preflight validates the chain.
-- Commit without `npm run preflight` passing locally.
+## Testing & QA
+
+- **Unit**: `npm run test:unit` (`node --test tests/unit/*.test.js`). 227 tests, given-when-then naming, happy path + error cases.
+- **E2E**: `npm run test:e2e` (Playwright, 5 projects: mobile-chromium, mobile-webkit, desktop-chromium, desktop-firefox, desktop-webkit). Serial (`workers: 1`) to avoid cross-context BroadcastChannel progress leakage.
+- **Perf**: `npm run test:perf` (Chromium-only, CDP network emulation 170ms RTT/9Mbps). SC-018: 0 animation frames during transition (counter, not FPS). SC-001/SC-019/SC-008 first-frame budgets. WebKit pair: `npm run test:perf:webkit` (macOS job only — hardware compositor).
+- **Lighthouse**: `npm run ci:lighthouse` (perf ≥0.9, a11y ≥0.95, CLS ≤0.1, LCP ≤2500ms).
+- **Gotchas**: E2E server must be `scripts/serve-e2e.mjs` (HTTP Range); `python3 -m http.server` answers 200 to range requests and breaks WebKit/Firefox seeking. Firefox needs null PulseAudio sink. `zz-boot-manifest.spec.js` requires `npm run build` first.
+- **Coverage expectations**: no formal coverage tool; tests pin behavior, boundaries, invariants, transitions, precedence, errors. Avoid testing wiring/copies/forwarding.
+
+## Notes
+
+- `index.html` has a duplicated closing `</section>` after `#player` (harmless).
+- `docs/attestation.md` is empty; `docs/delivery.md` lists stale pinned versions vs `package.json` (0.15.1 / 1.64.1 / 0.28.2 / 0.35.5).
+- `playwright.config.js` comment says pinned Playwright 1.63.0; `package.json` pins 1.64.1.
+- `build-images.mjs` imports `atomic-write.mjs` but never calls it (dead import); rejects masters >1200px while `docs/delivery.md` says 2560px ceiling (contradictory).
+- `ci-trailers.mjs` enforces commit trailers but the sidecar-provenance comparison is not implemented.
+- `npm run serve` (python3, no Range) must not substitute for `serve-e2e.mjs` in E2E.

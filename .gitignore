@@ -17,3 +17,4 @@ Thumbs.db
 
 # Speckit generic templates
 .specify/templates/
+.omp/
