@@ -42,3 +42,15 @@ None. Applied exactly the preferred remediation (per-theme contrast adjustment i
 - Run `npx playwright test tests/e2e/accessibility.spec.js --project=mobile-chromium --project=desktop-chromium` to confirm `gate` clears.
 - If violations persist on specific themes, isolate per-theme with Axe per-state testing.
 - Do not weaken Axe assertions; keep AAA target.
+## Update - 2026-10-30: Token lightening insufficient
+
+**Current fix** (`--mist-500: #cfdded`, `--ink-700: #4a5a78`) is NOT sufficient. Local E2E test on Chromium still fails at `accessibility.spec.js:105/315` - same Axe-Core violations persist.
+
+**Required next step:** More aggressive contrast adjustments. Dark themes need significantly lighter text colors or darker backgrounds to reach AAA (7:1 normal text). Consider:
+- `--ink-700` → `#cccccc` or lighter
+- `--mist-500` → `#e0e0e0` or lighter
+- Or use `--mist-100: #f4f7fb` as base text color on dark themes
+
+Then re-run: `npx playwright test tests/e2e/accessibility.spec.js --project=mobile-chromium --project=desktop-chromium`
+
+Until E2E passes with 0 failures, `fix.md` remains at `Status: applied` but verification is incomplete.
