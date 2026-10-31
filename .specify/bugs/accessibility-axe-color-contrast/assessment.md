@@ -2,13 +2,13 @@
 
 - **Slug**: accessibility-axe-color-contrast
 - **Created**: 2026-10-29
-- **Source**: CI run 40983459997 (github.com, allowlisted) + local e2e run (color-contrast 18 serious, color-contrast-enhanced 6 serious)
+- **Source**: CI run 40983459997 (`https://github.com/lfgranja/horror-web-comic/actions/runs/40983459997`, github.com allowlisted) + CI run 41122925597 (`https://github.com/lfgranja/horror-web-comic/actions/runs/41122925597`, github.com allowlisted) + local e2e run (color-contrast 18 serious, color-contrast-enhanced 6 serious)
 - **Verdict**: likely valid, needs reproduction
 - **Severity**: medium
 
 ## Report (verbatim or summarized)
 
-CI gate (run 40983459997): 9 failed, 2 flaky. accessibility.spec.js fails on mobile-chromium and desktop-chromium at lines 105 (Estado 1: Repouso Canônico & Matriz Ortogonal dos 5 Temas Visuais) and 315 (Estado 4: Fim da Narrativa e Overlay de Encerramento). Axe-Core reports 18 `color-contrast` + 6 `color-contrast-enhanced` serious violations. Local e2e run (chromium) reproduces the same Axe diagnostics.
+CI gate (run 40983459997): 9 failed, 2 flaky. accessibility.spec.js fails on mobile-chromium and desktop-chromium at lines 105 (Estado 1: Repouso Canônico & Matriz Ortogonal dos 5 Temas Visuais) and 315 (Estado 4: Fim da Narrativa e Overlay de Encerramento). Axe-Core reports 18 color-contrast + 6 color-contrast-enhanced serious violations. Confirmed again in CI run 41122925597: same 4 accessibility.spec.js failures (lines 105 and 315 on mobile-chromium and desktop-chromium), plus 1 flaky audio-lifecycle.spec.js:64:1, 1305 passed, 15 skipped, 37m 6s. Local e2e run (chromium) reproduces the same Axe diagnostics.
 
 ## Symptom
 
