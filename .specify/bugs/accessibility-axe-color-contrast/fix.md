@@ -41,6 +41,9 @@ None. Applied exactly the preferred remediation (per-theme contrast adjustment i
 
 - Run `npx playwright test tests/e2e/accessibility.spec.js --project=mobile-chromium --project=desktop-chromium` to confirm `gate` clears.
 - If violations persist on specific themes, isolate per-theme with Axe per-state testing.
+<<<<<<< HEAD
+- Do not weaken Axe assertions; keep AAA target.
+=======
 - Do not weaken Axe assertions; keep AAA target.
 ## Update - 2026-10-30 (max contrast): Token lightening insufficient, maximized
 
@@ -52,3 +55,4 @@ Applied maximum contrast adjustments across all 5 themes (cinema, noir, eldritch
 Committed to `fix/a11y-contrast-aaa` (commit `a46fa36`). CI run in progress. If violations persist, may need to adjust component-level styles or use more specific selectors.
 
 Re-run: `npx playwright test tests/e2e/accessibility.spec.js --project=mobile-chromium --project=desktop-chromium`
+>>>>>>> dev
