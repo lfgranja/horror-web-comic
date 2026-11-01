@@ -127,20 +127,6 @@ async function boot() {
     } else if (sensoryDialog) {
       sensoryDialog.hidden = true;
     }
-    const badge = document.querySelector('#sensory-advisory-badge');
-    const updateBadge = () => {
-      if (!badge) return;
-      const descriptors = story.sensoryAdvisory?.descriptors || [];
-      const mode = globalThis.localStorage?.getItem('hwc.sensoryMode') || (reducedMotion ? 'safe-accessible' : 'safe-accessible');
-      const audioState = (audio?.enabled && !audio?.awaitingUnlock) ? '' : '🔇 Toque para ativar som';
-      const desc = descriptors.map((d) => `[${d}]`).join(' ');
-      badge.textContent = [desc, mode === 'safe-accessible' ? 'Modo Seguro ativo' : null, audioState].filter(Boolean).join(' ');
-      badge.classList.add('visible');
-    };
-    if (badge) {
-      updateBadge();
-      setTimeout(() => badge.classList.remove('visible'), 5000);
-    }
     const catalogButton = document.querySelector('#catalog-button');
     const catalogDialog = document.querySelector('#catalog-dialog');
     const catalogList = document.querySelector('#catalog-list');
