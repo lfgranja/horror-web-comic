@@ -69,14 +69,14 @@
 
 /* 1. Minimalist Cinema [Padrão] */
 html[data-theme="cinema"] {
-  --ink-950: #060608;
-  --ink-900: #0d0e14;
-  --ink-850: #13151f;
-  --ink-800: #1b1d2b;
-  --ink-700: #b0b5c5;
+  --ink-950: #000000;
+  --ink-900: #050608;
+  --ink-850: #0a0b0f;
+  --ink-800: #101218;
+  --ink-700: #d0d5e0;
   --mist-100: #ffffff;
-  --mist-300: #e0e3ea;
-  --mist-500: #d0d5e0;
+  --mist-300: #f0f2f6;
+  --mist-500: #ffffff;
   --amber-400: #ffffff;
   --amber-300: #ffffff;
   --focus: #ffffff;
@@ -87,14 +87,14 @@ html[data-theme="cinema"] {
 
 /* 2. Graphic Novel Noir */
 html[data-theme="noir"] {
-  --ink-950: #050507;
-  --ink-900: #0b0b0e;
-  --ink-850: #121217;
-  --ink-800: #1a1a20;
-  --ink-700: #c0c0cc;
+  --ink-950: #000000;
+  --ink-900: #050506;
+  --ink-850: #0b0b10;
+  --ink-800: #121215;
+  --ink-700: #e0e0f0;
   --mist-100: #ffffff;
-  --mist-300: #e0e0ea;
-  --mist-500: #d0d0e0;
+  --mist-300: #f0f0f8;
+  --mist-500: #ffffff;
   --amber-400: #ff2a44;
   --amber-300: #ff2a44;
   --focus: #ff2a44;
