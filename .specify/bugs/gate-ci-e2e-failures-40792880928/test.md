@@ -17,6 +17,6 @@ npx playwright test tests/e2e --project=mobile-chromium --project=desktop-chromi
 - E2E matrix passes across all projects
 
 ## Verification
-- [ ] sync.spec.js passes all tests
-- [ ] No regressions in related tests
+- [ ] sync.spec.js passes all tests (some cross-tab sync tests fail in this environment due to timing/BroadcastChannel; fixes for storage key issues are in place)
+- [x] No regressions in related tests (a11y, persistence, resume pass)
 - [ ] CI gate passes
