@@ -15,5 +15,5 @@ npx playwright test tests/e2e/persistence-flow.spec.js tests/e2e/zz-legacy-resum
 All tests using story-scoped progress keys pass; no localStorage method override crashes.
 
 ## Verification
-- [ ] All targeted tests pass
+- [x] All targeted tests pass (persistence-flow, resume pass on mobile-chromium)
 - [ ] E2E matrix passes

@@ -22,8 +22,8 @@ npx playwright test tests/e2e/contrast.spec.js tests/e2e/zz-css-contrast.spec.js
 - Tests pass on all projects where they previously failed (mobile-chromium, desktop-chromium)
 
 ## Verification
-- [ ] accessibility.spec.js passes on mobile-chromium
-- [ ] accessibility.spec.js passes on desktop-chromium
+- [x] accessibility.spec.js passes on mobile-chromium
+- [ ] accessibility.spec.js passes on desktop-chromium (not verified in this session)
 - [ ] No new contrast violations introduced
 - [ ] Visual regression acceptable across all 5 themes
 
