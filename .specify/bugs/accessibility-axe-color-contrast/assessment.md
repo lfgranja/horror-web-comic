@@ -14,10 +14,17 @@ CI gate (run 40983459997): 9 failed, 2 flaky. accessibility.spec.js fails on mob
 
 The automated WCAG 2.2 AAA Axe-Core audit reports serious color-contrast violations (18 nodes) and color-contrast-enhanced violations (6 nodes) across the 5 themes, causing accessibility.spec.js to fail/time out on Chromium projects. The violations are flagged as "diagnósticos inconclusivos requerem inspeção visual humana" but still fail the gate.
 
+**Recent evidence (run 41122925597):** CI gate fails with same 4 accessibility failures at lines 105/315 on mobile-chromium and desktop-chromium; 1 flaky audio-lifecycle test unrelated to accessibility.
+
+**Recent evidence (run 41249346238):** PR #168 (`fix/a11y-contrast-aaa`) attempted token lightening but gate still fails with same 4 accessibility failures at lines 105/315; Axe-Core reports violations on `#toggle-sensory-mode`. `webkit-layout-gate` passed, confirming only accessibility issues remain.
+
+**Recent evidence (run 41255510583):** Failures expanded beyond Axe audit to `contrast.spec.js` and `zz-css-contrast.spec.js` across multiple projects (Chromium, Firefox, WebKit), with Axe still failing at 105, 200, and 315. Token lightening insufficient — requires more targeted per-element/theme contrast adjustments.
+
 ## Reproduction
 
 1. `npx playwright test tests/e2e/accessibility.spec.js --project=mobile-chromium` (or desktop-chromium).
 2. Observe Axe-Core reporting 18 `color-contrast` + 6 `color-contrast-enhanced` serious violations, test timeout at lines 105/315.
+3. Confirmed in CI runs 40983459997, 41122925597, 41249346238, and 41255510583 (persistent/failing pattern; expanded to contrast specs after token changes).
 
 ## Suspected Code Paths
 

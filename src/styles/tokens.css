@@ -69,14 +69,14 @@
 
 /* 1. Minimalist Cinema [Padrão] */
 html[data-theme="cinema"] {
-  --ink-950: #060608;
-  --ink-900: #0d0e14;
-  --ink-850: #13151f;
-  --ink-800: #1b1d2b;
-  --ink-700: #292d3f;
+  --ink-950: #000000;
+  --ink-900: #050608;
+  --ink-850: #0a0b0f;
+  --ink-800: #101218;
+  --ink-700: #1a1d2b;
   --mist-100: #ffffff;
-  --mist-300: #d6d9e0;
-  --mist-500: #a5abb8;
+  --mist-300: #e8ebf0;
+  --mist-500: #ffffff;
   --amber-400: #ffffff;
   --amber-300: #ffffff;
   --focus: #ffffff;
@@ -87,14 +87,14 @@ html[data-theme="cinema"] {
 
 /* 2. Graphic Novel Noir */
 html[data-theme="noir"] {
-  --ink-950: #050507;
-  --ink-900: #0b0b0e;
-  --ink-850: #121217;
-  --ink-800: #1a1a20;
-  --ink-700: #2a2a34;
+  --ink-950: #000000;
+  --ink-900: #050506;
+  --ink-850: #0b0b10;
+  --ink-800: #121215;
+  --ink-700: #e0e0f0;
   --mist-100: #ffffff;
-  --mist-300: #dcdce2;
-  --mist-500: #a8a8b4;
+  --mist-300: #f0f0f8;
+  --mist-500: #ffffff;
   --amber-400: #ff2a44;
   --amber-300: #ff2a44;
   --focus: #ff2a44;
@@ -106,17 +106,17 @@ html[data-theme="noir"] {
 
 /* 3. Atmospheric Eldritch */
 html[data-theme="eldritch"] {
-  --ink-950: #040507;
-  --ink-900: #080c10;
-  --ink-850: #0f161e;
-  --ink-800: #17212d;
-  --ink-700: #263546;
-  --mist-100: #fbf5e6;
-  --mist-300: #ddd4be;
-  --mist-500: #b8ad94;
-  --amber-400: #fdd677;
-  --amber-300: #fdd677;
-  --focus: #fdd677;
+  --ink-950: #000000;
+  --ink-900: #050510;
+  --ink-850: #0a0a18;
+  --ink-800: #101020;
+  --ink-700: #1a1a30;
+  --mist-100: #ffffff;
+  --mist-300: #f0f5ff;
+  --mist-500: #ffffff;
+  --amber-400: #ffffff;
+  --amber-300: #ffffff;
+  --focus: #ffffff;
   --font-display: 'Cinzel', Georgia, 'Times New Roman', serif;
   --radius-sm: 0.6rem;
   --radius-md: 1rem;
