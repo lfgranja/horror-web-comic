@@ -124,7 +124,7 @@ async function send(body, filePath, stats, request, response) {
     // the HTTP cache is scoped to the context, so nothing survives between tests. A
     // file edited between runs is still picked up, because the next run starts with
     // an empty cache.
-    'cache-control': 'no-store'
+    'cache-control': 'public, max-age=60'
   };
 
   if (request.method === 'HEAD') {
