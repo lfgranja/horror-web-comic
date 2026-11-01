@@ -106,17 +106,17 @@ html[data-theme="noir"] {
 
 /* 3. Atmospheric Eldritch */
 html[data-theme="eldritch"] {
-  --ink-950: #040507;
-  --ink-900: #080c10;
-  --ink-850: #0f161e;
-  --ink-800: #17212d;
-  --ink-700: #263546;
-  --mist-100: #fbf5e6;
-  --mist-300: #ddd4be;
-  --mist-500: #b8ad94;
-  --amber-400: #fdd677;
-  --amber-300: #fdd677;
-  --focus: #fdd677;
+  --ink-950: #000000;
+  --ink-900: #000000;
+  --ink-850: #050510;
+  --ink-800: #0a0a15;
+  --ink-700: #ffffff;
+  --mist-100: #ffffff;
+  --mist-300: #ffffff;
+  --mist-500: #ffffff;
+  --amber-400: #ffffff;
+  --amber-300: #ffffff;
+  --focus: #ffffff;
   --font-display: 'Cinzel', Georgia, 'Times New Roman', serif;
   --radius-sm: 0.6rem;
   --radius-md: 1rem;
