@@ -18,3 +18,8 @@ Thumbs.db
 # Speckit generic templates
 .specify/templates/
 .omp/
+
+# Agent/tooling
+.cursor/
+.claude/
+.aider*

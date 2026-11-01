@@ -32,3 +32,7 @@ Added additional fixes for touch target requirements (theme select, control butt
 ## Follow-ups
 
 - Monitor CI webkit-layout-gate to confirm all issues resolved
+
+## Evidence (2026-11-01)
+- CI run [41305476488](https://github.com/lfgranja/horror-web-comic/actions/runs/41305476488) (PR #166): webkit-layout-gate completed SUCCESS after increasing `#end-overlay` bottom floor to `max(6rem, calc(100dvh - var(--control-bar-top, 100dvh)))` in `src/styles/player.css`.
+- macos-webkit-compositor completed SUCCESS. gate still running at time of update.
