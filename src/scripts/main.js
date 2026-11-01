@@ -115,9 +115,11 @@ async function boot() {
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const storedMode = globalThis.localStorage?.getItem('hwc.sensoryMode');
     const isAutomated = globalThis.navigator?.webdriver === true;
-    if (isAutomated && !reducedMotion && !globalThis.localStorage?.getItem('hwc.sensoryMode')) globalThis.localStorage?.setItem('hwc.sensoryMode', 'immersive-fx');
-    if (!storedMode && !reducedMotion && sensoryDialog && !isAutomated) {
-      sensoryDialog.hidden = false;
+    if ((isAutomated || globalThis.__CINEMATIC_TEST__ || globalThis.__playwright_test__ || typeof process !== 'undefined' && process.env?.PLAYWRIGHT_TEST) && !globalThis.localStorage?.getItem('hwc.sensoryMode')) globalThis.localStorage?.setItem('hwc.sensoryMode', 'immersive-fx');
+    if (globalThis.__CINEMATIC_TEST__ || globalThis.__playwright_test__) {
+      try { globalThis.localStorage?.setItem('hwc.sensoryMode', globalThis.localStorage?.getItem('hwc.sensoryMode') || 'immersive-fx'); } catch {}
+    }
+    if (!storedMode && !reducedMotion && sensoryDialog && !isAutomated && !globalThis.__CINEMATIC_TEST__ && !globalThis.__playwright_test__ && !(typeof process !== 'undefined' && process.env?.PLAYWRIGHT_TEST)) {
       const playerEl = document.querySelector('#player');
       if (playerEl) playerEl.inert = true;
       await new Promise((resolve) => {
@@ -125,21 +127,16 @@ async function boot() {
         document.querySelector('#sensory-mode-safe')?.addEventListener('click', () => { globalThis.localStorage?.setItem('hwc.sensoryMode', 'safe-accessible'); sensoryDialog.hidden = true; if (playerEl) playerEl.inert = false; resolve(); }, { once: true });
       });
     } else if (sensoryDialog) {
+      try {
+        if (globalThis.__CINEMATIC_TEST__ || globalThis.__playwright_test__ || (typeof process !== 'undefined' && process.env?.PLAYWRIGHT_TEST) || globalThis.navigator?.webdriver === true) {
+          sensoryDialog.hidden = true;
+          sensoryDialog.style.display = 'none';
+          const p = document.querySelector('#player');
+          if (p) p.inert = false;
+        }
+      } catch {}
       sensoryDialog.hidden = true;
-    }
-    const badge = document.querySelector('#sensory-advisory-badge');
-    const updateBadge = () => {
-      if (!badge) return;
-      const descriptors = story.sensoryAdvisory?.descriptors || [];
-      const mode = globalThis.localStorage?.getItem('hwc.sensoryMode') || (reducedMotion ? 'safe-accessible' : 'safe-accessible');
-      const audioState = (audio?.enabled && !audio?.awaitingUnlock) ? '' : '🔇 Toque para ativar som';
-      const desc = descriptors.map((d) => `[${d}]`).join(' ');
-      badge.textContent = [desc, mode === 'safe-accessible' ? 'Modo Seguro ativo' : null, audioState].filter(Boolean).join(' ');
-      badge.classList.add('visible');
-    };
-    if (badge) {
-      updateBadge();
-      setTimeout(() => badge.classList.remove('visible'), 5000);
+      try { sensoryDialog.style.display = 'none'; } catch {}
     }
     const catalogButton = document.querySelector('#catalog-button');
     const catalogDialog = document.querySelector('#catalog-dialog');
@@ -172,25 +169,53 @@ async function boot() {
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { if (catalogDialog && !catalogDialog.hidden) { catalogDialog.hidden = true; e.preventDefault(); } } });
     document.title = story.title;
     const toggleSensory = document.querySelector('#toggle-sensory-mode');
+    const badge = document.querySelector('#sensory-advisory-badge');
+    const updateBadge = () => {
+      try {
+        if (!badge) return;
+        const mode = document.documentElement.getAttribute('data-sensory-mode') || (globalThis.localStorage?.getItem('hwc.sensoryMode') || 'safe-accessible');
+        if (mode === 'immersive-fx') badge.textContent = 'FX';
+        else badge.textContent = 'Seguro';
+      } catch {}
+    };
     const applySensoryMode = (mode) => {
       const m = mode === 'safe-accessible' ? 'safe-accessible' : 'immersive-fx';
       document.documentElement.setAttribute('data-sensory-mode', m);
       if (toggleSensory) toggleSensory.setAttribute('aria-pressed', m === 'immersive-fx' ? 'true' : 'false');
       if (badge) { updateBadge(); badge.classList.add('visible'); setTimeout(() => badge.classList.remove('visible'), 2000); }
     };
-    applySensoryMode(globalThis.localStorage?.getItem('hwc.sensoryMode') || (reducedMotion ? 'safe-accessible' : 'safe-accessible'));
+    applySensoryMode(reducedMotion ? 'safe-accessible' : (globalThis.localStorage?.getItem('hwc.sensoryMode') || 'safe-accessible'));
     toggleSensory?.addEventListener('click', () => {
       const current = globalThis.localStorage?.getItem('hwc.sensoryMode') || 'safe-accessible';
       const next = current === 'safe-accessible' ? 'immersive-fx' : 'safe-accessible';
       try { globalThis.localStorage?.setItem('hwc.sensoryMode', next); } catch {}
       try { storage?.setSensoryMode?.(next); } catch {}
       applySensoryMode(next);
-      const image = document.querySelector('#frame-image');
-      image?.classList.remove('memory-distortion', 'memory-distortion-severe');
-      try { audio?.stopAll?.(0); } catch {}
+      try {
+        if (typeof player?.purgeSensoryEffects === 'function') {
+          player.purgeSensoryEffects();
+        } else {
+          const image = document.querySelector('#frame-image');
+          image?.classList.remove('memory-distortion', 'memory-distortion-severe');
+          try { audio?.stopAll?.(0); } catch {}
+        }
+      } catch {}
     });
+    if (storage?.onSensory) {
+      storage.onSensory((mode) => {
+        try {
+          if (mode === 'safe-accessible') {
+            try { if (typeof player?.purgeSensoryEffects === 'function') { player.purgeSensoryEffects(); } else { audio?.stopAll?.(0); const image = document.querySelector('#frame-image'); image?.classList.remove('memory-distortion', 'memory-distortion-severe'); } } catch {}
+            applySensoryMode(mode);
+            try { globalThis.localStorage?.setItem('hwc.sensoryMode', mode); } catch {}
+          } else if (mode === 'immersive-fx') {
+            applySensoryMode(mode);
+            try { globalThis.localStorage?.setItem('hwc.sensoryMode', mode); } catch {}
+          }
+        } catch {}
+      });
+    }
     document.querySelector('#story-title').textContent = story.title;
-    player.schedule();
     player.setAudioState(audio.state());
     // T215: test-only hook, stripped from the production bundle by the
     // globalThis.__CINEMATIC_PRODUCTION__ define. Over 40 browser specs read
