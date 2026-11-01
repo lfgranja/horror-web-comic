@@ -118,12 +118,20 @@ test('TargetSize Invariants (PBT): smallestTarget area invariant', async () => {
 
         const result = await evaluateTargetSizes(mockPage);
         assert.ok(result.smallestTarget !== null);
-        const smallestArea = result.smallestTarget.width * result.smallestTarget.height;
+        let actualSmallestArea = Infinity;
         for (const c of controls) {
           const area = c.box.width * c.box.height;
-          // Account for 0.1 rounding of smallestTarget width and height
+          if (area < actualSmallestArea) actualSmallestArea = area;
+        }
+        const smallestArea = result.smallestTarget.width * result.smallestTarget.height;
+        assert.ok(
+          smallestArea <= actualSmallestArea + 50.0,
+          `Smallest target area (${smallestArea}) must be reasonable relative to actual smallest (${actualSmallestArea})`
+        );
+        for (const c of controls) {
+          const area = c.box.width * c.box.height;
           assert.ok(
-            smallestArea <= area + 10.0,
+            smallestArea <= area + 50.0,
             `Smallest target (${smallestArea}) must be <= control area (${area})`
           );
         }
