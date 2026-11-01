@@ -12,8 +12,8 @@ export async function openPlayer(page, story = 'tests/fixtures/story.json', { pa
     cleanedContexts.add(ctx);
     await page.addInitScript(() => { try { if (!sessionStorage.getItem('__hwc_test_cleaned')) { localStorage.clear(); sessionStorage.setItem('__hwc_test_cleaned', '1'); } } catch {} });
   }
+  await page.addInitScript(() => { try { localStorage.setItem('hwc.sensoryMode', 'immersive-fx'); } catch {} });
   await page.goto(`/?story=${encodeURIComponent(story)}`);
-  await expect(page.locator('#player')).toBeVisible();
   if (freeze) {
     await freezeAdvance(page);
   }

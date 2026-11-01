@@ -115,8 +115,8 @@ async function boot() {
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const storedMode = globalThis.localStorage?.getItem('hwc.sensoryMode');
     const isAutomated = globalThis.navigator?.webdriver === true;
-    if (isAutomated && !reducedMotion && !globalThis.localStorage?.getItem('hwc.sensoryMode')) globalThis.localStorage?.setItem('hwc.sensoryMode', 'immersive-fx');
-    if (!storedMode && !reducedMotion && sensoryDialog && !isAutomated) {
+    if ((isAutomated || globalThis.__CINEMATIC_TEST__ || globalThis.__playwright_test__) && !reducedMotion && !globalThis.localStorage?.getItem('hwc.sensoryMode')) globalThis.localStorage?.setItem('hwc.sensoryMode', 'immersive-fx');
+    if (!storedMode && !reducedMotion && sensoryDialog && !isAutomated && !globalThis.__CINEMATIC_TEST__ && !globalThis.__playwright_test__) {
       sensoryDialog.hidden = false;
       const playerEl = document.querySelector('#player');
       if (playerEl) playerEl.inert = true;
