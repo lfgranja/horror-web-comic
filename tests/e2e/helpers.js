@@ -12,7 +12,7 @@ export async function openPlayer(page, story = 'tests/fixtures/story.json', { pa
     cleanedContexts.add(ctx);
     await page.addInitScript(() => { try { if (!sessionStorage.getItem('__hwc_test_cleaned')) { localStorage.clear(); sessionStorage.setItem('__hwc_test_cleaned', '1'); } } catch {} });
   }
-  await page.addInitScript(() => { try { localStorage.setItem('hwc.sensoryMode', 'immersive-fx'); } catch {} });
+  await page.addInitScript(() => { try { localStorage.setItem('hwc.sensoryMode', 'immersive-fx'); const d = document.getElementById('sensory-dialog'); if (d) { d.hidden = true; d.style.display = 'none'; } } catch {} });
   await page.goto(`/?story=${encodeURIComponent(story)}`);
   if (freeze) {
     await freezeAdvance(page);

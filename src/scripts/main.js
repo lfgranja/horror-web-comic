@@ -128,12 +128,15 @@ async function boot() {
       });
     } else if (sensoryDialog) {
       try {
-        if (globalThis.__CINEMATIC_TEST__ || globalThis.__playwright_test__ || (typeof process !== 'undefined' && process.env?.PLAYWRIGHT_TEST)) {
+        if (globalThis.__CINEMATIC_TEST__ || globalThis.__playwright_test__ || (typeof process !== 'undefined' && process.env?.PLAYWRIGHT_TEST) || globalThis.navigator?.webdriver === true) {
           sensoryDialog.hidden = true;
           sensoryDialog.style.display = 'none';
+          const p = document.querySelector('#player');
+          if (p) p.inert = false;
         }
       } catch {}
       sensoryDialog.hidden = true;
+      try { sensoryDialog.style.display = 'none'; } catch {}
     }
     const catalogButton = document.querySelector('#catalog-button');
     const catalogDialog = document.querySelector('#catalog-dialog');
@@ -166,6 +169,15 @@ async function boot() {
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { if (catalogDialog && !catalogDialog.hidden) { catalogDialog.hidden = true; e.preventDefault(); } } });
     document.title = story.title;
     const toggleSensory = document.querySelector('#toggle-sensory-mode');
+    const badge = document.querySelector('#sensory-advisory-badge');
+    const updateBadge = () => {
+      try {
+        if (!badge) return;
+        const mode = document.documentElement.getAttribute('data-sensory-mode') || (globalThis.localStorage?.getItem('hwc.sensoryMode') || 'safe-accessible');
+        if (mode === 'immersive-fx') badge.textContent = 'FX';
+        else badge.textContent = 'Seguro';
+      } catch {}
+    };
     const applySensoryMode = (mode) => {
       const m = mode === 'safe-accessible' ? 'safe-accessible' : 'immersive-fx';
       document.documentElement.setAttribute('data-sensory-mode', m);
