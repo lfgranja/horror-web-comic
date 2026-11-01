@@ -178,19 +178,38 @@ async function boot() {
       if (toggleSensory) toggleSensory.setAttribute('aria-pressed', m === 'immersive-fx' ? 'true' : 'false');
       if (badge) { updateBadge(); badge.classList.add('visible'); setTimeout(() => badge.classList.remove('visible'), 2000); }
     };
-    applySensoryMode(globalThis.localStorage?.getItem('hwc.sensoryMode') || (reducedMotion ? 'safe-accessible' : 'safe-accessible'));
+    applySensoryMode(reducedMotion ? 'safe-accessible' : (globalThis.localStorage?.getItem('hwc.sensoryMode') || 'safe-accessible'));
     toggleSensory?.addEventListener('click', () => {
       const current = globalThis.localStorage?.getItem('hwc.sensoryMode') || 'safe-accessible';
       const next = current === 'safe-accessible' ? 'immersive-fx' : 'safe-accessible';
       try { globalThis.localStorage?.setItem('hwc.sensoryMode', next); } catch {}
       try { storage?.setSensoryMode?.(next); } catch {}
       applySensoryMode(next);
-      const image = document.querySelector('#frame-image');
-      image?.classList.remove('memory-distortion', 'memory-distortion-severe');
-      try { audio?.stopAll?.(0); } catch {}
+      try {
+        if (typeof player?.purgeSensoryEffects === 'function') {
+          player.purgeSensoryEffects();
+        } else {
+          const image = document.querySelector('#frame-image');
+          image?.classList.remove('memory-distortion', 'memory-distortion-severe');
+          try { audio?.stopAll?.(0); } catch {}
+        }
+      } catch {}
     });
+    if (storage?.onSensory) {
+      storage.onSensory((mode) => {
+        try {
+          if (mode === 'safe-accessible') {
+            try { if (typeof player?.purgeSensoryEffects === 'function') { player.purgeSensoryEffects(); } else { audio?.stopAll?.(0); const image = document.querySelector('#frame-image'); image?.classList.remove('memory-distortion', 'memory-distortion-severe'); } } catch {}
+            applySensoryMode(mode);
+            try { globalThis.localStorage?.setItem('hwc.sensoryMode', mode); } catch {}
+          } else if (mode === 'immersive-fx') {
+            applySensoryMode(mode);
+            try { globalThis.localStorage?.setItem('hwc.sensoryMode', mode); } catch {}
+          }
+        } catch {}
+      });
+    }
     document.querySelector('#story-title').textContent = story.title;
-    player.schedule();
     player.setAudioState(audio.state());
     // T215: test-only hook, stripped from the production bundle by the
     // globalThis.__CINEMATIC_PRODUCTION__ define. Over 40 browser specs read

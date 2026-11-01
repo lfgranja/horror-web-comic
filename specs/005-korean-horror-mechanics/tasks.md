@@ -40,10 +40,10 @@
 
 ## Phase 4: Convergence
 
-- [ ] T032 Implement `BroadcastChannel('hwc:sensory')` propagation in `src/scripts/storage.js` per FR-004 (partial)
-- [ ] T033 Implement reduced-motion auto-safe and recurring bypass edge cases in `src/scripts/main.js` per FR-003/FR-004 (partial)
-- [ ] T034 Implement atomic <50ms purge without `render()` on toggle in `src/scripts/player.js` per FR-005 (partial)
-- [ ] T035 Implement `#sensory-advisory-badge` 5s auto-hide and audio-state text in `src/scripts/main.js` per FR-013 (partial)
-- [ ] T036 Implement catalog progress bars/badges and Escape close in `#catalog-dialog` per FR-005/FR-014 (partial)
-- [ ] T037 Attenuate memory illusion audio sting to 20% on revisit in `src/scripts/player.js`/`audio.js` per FR-007 (partial)
+- [x] T032 Implement `BroadcastChannel('hwc:sensory')` propagation in `src/scripts/storage.js` per FR-004 (partial)
+- [x] T033 Implement reduced-motion auto-safe and recurring bypass edge cases in `src/scripts/main.js` per FR-003/FR-004 (partial)
+- [x] T034 Implement atomic <50ms purge without `render()` on toggle in `src/scripts/player.js` per FR-005 (partial)
+- [x] T035 Implement `#sensory-advisory-badge` 5s auto-hide and audio-state text in `src/scripts/main.js` per FR-013 (partial)
+- [x] T036 Implement catalog progress bars/badges and Escape close in `#catalog-dialog` per FR-005/FR-014 (partial)
+- [x] T037 Attenuate memory illusion audio sting to 20% on revisit in `src/scripts/player.js`/`audio.js` per FR-007 (partial)
 - [X] T038 Run full `npm run ci` verification gate (verification)

@@ -80,11 +80,8 @@ export class CinematicPlayer {
     this.root.dataset.degraded = String(this.capabilities.shouldDegrade);
     this.root.dataset.reducedMotion = String(this.capabilities.reducedMotion);
     this.bindControls();
-    this.applyAudioState = (state) => this.setAudioState(state);
-    this.audio.onStateChange = this.applyAudioState;
-    this.audio.setScene(this.frames[this.index].sceneIndex);
-    this.audio.setFrame(this.frames[this.index].id);
-    this.unsubscribeProgress = this.storage.onProgress((record) => this.adoptProgress(record));
+
+  applyAudioState = (state) => this.setAudioState(state);
     this.render();
     this.publishControlBarHeight();
     this.audio.setPaused(false);
@@ -740,6 +737,22 @@ export class CinematicPlayer {
       this.audio.setPaused(false);
       this.schedule();
     }
+  }
+  purgeSensoryEffects() {
+    try {
+      if (this.image) {
+        this.image.classList.remove('memory-distortion', 'memory-distortion-severe');
+      }
+    } catch {}
+    try {
+      if (this.audio && typeof this.audio.stopAll === 'function') {
+        this.audio.stopAll(0);
+      }
+    } catch {}
+    try {
+      clearTimeout(this.fxTimer);
+      this.fxTimer = 0;
+    } catch {}
   }
 
   updateCapabilities(next) {
