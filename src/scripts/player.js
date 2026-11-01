@@ -80,8 +80,7 @@ export class CinematicPlayer {
     this.root.dataset.degraded = String(this.capabilities.shouldDegrade);
     this.root.dataset.reducedMotion = String(this.capabilities.reducedMotion);
     this.bindControls();
-
-  applyAudioState = (state) => this.setAudioState(state);
+    this.applyAudioState = (state) => this.setAudioState(state);
     this.render();
     this.publishControlBarHeight();
     this.audio.setPaused(false);
