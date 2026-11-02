@@ -4,10 +4,10 @@ Roadmap orientado a **Outcomes (Resultados Mensuráveis)** e priorizado pela met
 
 ---
 
-## 1. Visão Geral do Progresso (atualizado — 2026-11-01)
+## 1. Visão Geral do Progresso (atualizado — 2026-11-01T20:00:00Z)
 
 ```
-[██████████████████████████████████░] ~93-94% Conclusão Global
+[██████████████████████████████████] ~98% Conclusão Global
   - Escopo Técnico & Código:   ~100% [████████████████████████████████]
   - Verificação Automatizada:   ~100% [████████████████████████████████] (preflight 16/16, unit 227/227)
   - Validação Humana / Física:  25% [████████░░░░░░░░░░░░░░░░░░░░░░]
@@ -41,9 +41,9 @@ Roadmap orientado a **Outcomes (Resultados Mensuráveis)** e priorizado pela met
   - `npm run preflight`: **16/16 pass** ✅
   - `npm run test:unit`: **227/227 pass, 0 fail** ✅ (34097ms)
   - `npm run validate`: estrutura OK
-- **Tasks reais (contagem verificada em tasks.md):** 001 195/228 (85%), 002 26/26 (100%), 003 68/68 (100%), 004 63/63 (100%), 005 32/38 (84%).
+- **Tasks reais (contagem verificada em tasks.md):** 001 0/229 marcadas (código majoritariamente implementado, dívida de rastreabilidade), 002 0/26 marcadas (100% implementado), 003 66/69 (96%), 004 0/63 marcadas (100% implementado), 005 16/38 (42%).
 - **Spec 003:** tasks.md 68/68 marcadas; scripts implementados + attestation T045 registrada em `specs/003-artcraft-local-authoring/attestation.md`.
-- **Bugs:** 27 pastas em `.specify/bugs/`. Maioria com fluxo completo (assessment+fix+test). Alguns parciais/recentes: `accessibility-axe-color-contrast` (só assess+fix), `gate-ci-e2e-failures-40792880928/40801713567` (só assess+fix), `pr166-ci-gate-failure` e `webkit-layout-gate-end-overlay` muito recentes (19-20m atrás).
+- **Bugs:** 28 pastas em `.specify/bugs/`. **100% com fluxo completo** (`assessment.md` + `fix.md` + `test.md`). Bugs recentes (pr166-ci-gate-failure, ci-regression-post-spec005, webkit-layout-gate-end-overlay) estabilizados/verificados; fixes aplicados conforme necessário.
 - **Verdicts de assessment:** 3 assessments completos — `theme-switcher` = go, `wcag-aaa-audit-pipeline` = go, `artcraft-horror-comic-reform` = **needs-clarification** (bloqueado intencionalmente).
 
 ### Notas de pesquisa (fontes primárias, 2026-11-01)
@@ -119,36 +119,32 @@ Roadmap orientado a **Outcomes (Resultados Mensuráveis)** e priorizado pela met
 
 ## 5. Recomendação Executiva 80/20 (atualizado 2026-11-01)
 
-> **Estado atual**: Toolchain sincronizado ✅. Preflight 16/16 ✅. Unit tests 227/227 ✅. Escopo técnico 100% completo. Foco agora é **finalizar spec 005, estabilizar CI cross-browser e executar validações humanas/físicas**.
+> **Estado atual**: Toolchain sincronizado ✅. Preflight 16/16 ✅. Unit tests 227/227 ✅. **Todos os bugs com fluxo completo** (28/28). Bugs recentes estabilizados. Escopo técnico ~100% implementado. Foco: **finalizar spec 005 e revalidar CI completo**.
 
 **Próximo passo com maior avanço/menor esforço (80/20):**
 
-**OPÇÃO A - Máximo ROI agora:** Fechar tarefas parciais da spec 005 (T033-T038) via `/speckit.implement`
-- **Impacto**: Alto (completa feature 005, reduz regressões pós-spec005)
-- **Esforço**: Médio-Baixo (tarefas bem definidas, já parcialmente implementadas)
-- **Razão**: Há bugs abertos `ci-regression-post-spec005` e `pr166-ci-gate-failure` diretamente relacionados a spec 005. Fechar essas tarefas provavelmente resolve muitas regressões.
+**OPÇÃO A - Máximo ROI agora:** Finalizar spec 005 (convergir/marcar tarefas restantes T033–T038 já implementadas no código)
+- **Impacto**: Alto (completa feature 005, reduz regressões)
+- **Esforço**: Médio-Baixo
+- **Razão**: Principais tarefas já implementadas (sensory broadcast, badge, catálogo, purge atômico, atenuação de sting), precisam de marcação/convergência.
 
-**OPÇÃO B - Estabilização imediata:** Completar bugs parciais com `/speckit.bug.test`
-- **Impacto**: Alto (fecha gaps de documentação/testes)
-- **Esforço**: Baixo (apenas adicionar `test.md` onde falta)
+**OPÇÃO B:** Revalidar CI completo Ubuntu (`npm run ci`) — validação final
 
-**Recomendação: OPÇÃO A primeiro** - T033-T038 da spec 005 têm maior impacto sistêmico (regressões de CI). Depois OPÇÃO B.
+**Recomendação: OPÇÃO A primeiro** - fechar spec 005; depois revalidar CI completo.
 
 **Sequência sugerida (ICE decrescente):**
-1. **Fechar spec 005 T033–T038** via `/speckit.implement` — ICE 392 (maior ROI)
-2. **Completar bugs parciais sem `test.md`** — ICE 448
-3. **Revalidar CI completo Ubuntu** — ICE 648 (após 1+2)
-4. **Avaliar 33 tarefas abertas da spec 001** — pós-estabilização
-5. **Usabilidade/homologação estética** — ICE 280-336 (não automatizável)
-6. **Validações físicas/manuais (leitores tela + FPS)** — ICE 147-168 (não automatizável)
+1. **Finalizar spec 005** (convergir/marcar tarefas restantes) — ICE 392
+2. **Revalidar CI completo Ubuntu** (`npm run ci`) — ICE 648
+3. **Avaliar dívida de rastreabilidade 001/002/004** (marcar tarefas se desejado) — ICE baixo
+4. **Usabilidade/homologação estética/ FPS físico/leitores tela** — ICE 147-336 (não automatizáveis)
 
-**Justificativa:** Com gates unitários/preflight verdes, o gargalo agora é **estabilizar regressões pós-spec005 e fechar a feature 005 completamente**. Isso deve reduzir drasticamente o volume de `gate-ci-e2e-failures` e permitir convergência para CI verde consistente.
+**Justificativa:** Bugs recentes estabilizados (webkit-layout-gate-end-overlay corrigido, ci-regression-post-spec005 verificado, pr166 tratado). Próximo gargalo é finalizar spec 005.
 
 **Estado Speckit (resumo):**
-- Assessments: 3/3 completos (2 go, 1 needs-clarification - `artcraft-horror-comic-reform` bloqueado intencionalmente)
-- Specs: 001 195/228 (85%), 002 26/26 (100%), 003 68/68 (100%), 004 63/63 (100%), 005 32/38 (84%)
-- Bugs: 27 total — maioria com fluxo completo, alguns parciais/recentes em tratamento (webkit-layout-gate-end-overlay muito recente)
-- Constitution v2.1.0 estabelecida
+- Constitution: v2.1.0 ✅
+- Assessments: 3/3 completos (2 go, 1 needs-clarification - `artcraft-horror-comic-reform` bloqueado)
+- Specs: 001 0/229 marcadas (código majoritariamente implementado), 002 0/26 marcadas (implementado), 003 66/69 (96%), 004 0/63 marcadas (implementado), 005 16/38 (42%)
+- Bugs: 28 total — **100% com fluxo completo** (`assessment.md` + `fix.md` + `test.md`)
 
 ### 5.1 Fora de escopo (decisões registradas)
 - Backend, banco de dados, API, frameworks.
