@@ -357,45 +357,13 @@
    operable. The end card is informational, so it must not swallow clicks
    aimed at the control bar beneath it; only its own action captures them. */
 #end-overlay {
-  /* The end card is informational and must never intercept clicks aimed at the
-     control bar (FR-033). The overlay is `position: fixed`, so it is anchored
-     to the VIEWPORT, while the control bar lives in the scrolling document:
-     on a short viewport the document is taller than the screen, so any scroll
-     can move the bar up into the overlay's band and the card then swallows
-     clicks meant for the navigation controls.
-
-     Anchor the overlay to the control bar's real position instead of the
-     viewport bottom, so the band ends exactly where the bar BEGINS and
-     follows the bar wherever it sits. `--control-bar-top` is the bar's
-     viewport-relative top edge, kept current by showEndOverlay() plus the
-     ResizeObserver and the resize/scroll handlers in player.js. It is
-     published on the shared `.app-shell` ancestor because the overlay is a
-     sibling of #player, not a descendant.
-
-     The card is aligned to the START of the band, not centred: when the band is
-     shorter than the card (a scrolled short viewport) centring would push the
-     card's own action below the band and out of reach, and any bottom padding
-     would shrink the content box and let it hang back over the bar. */
   align-content: start;
   align-items: start;
   justify-items: center;
   grid-template-rows: minmax(0, 1fr);
   top: 0;
-  /* `--control-bar-top` is the control bar's viewport-relative top edge, so the
-     reserved band is exactly the space above it. The subtraction must be
-     expressed in viewport units: a percentage in `bottom` resolves against the
-     containing block, not the viewport, which made the band far taller than
-     intended. Clamped so a bar at (or above) the viewport top degrades to a
-     minimal band instead of a negative one.
-
-     That floor is `max(4.5rem, …)` and not `3rem`, and it can only ever make the
-     band SHORTER, never longer: `bottom` is the distance from the viewport's
-     bottom edge, so the floor wins only when the bar's top edge is already below
-     `100dvh - 4.5rem`, in which case the band ends above the bar regardless. It
-     never reaches the controls. What the floor buys is a band tall enough to hold
-     the card's own action, so the hazard stays one-directional — a band that is
-     too SHORT, never one that overlaps. */
-  bottom: max(6rem, calc(100dvh - var(--control-bar-top, 100dvh)));
+  /* Keep band strictly above controls to avoid intercepting nav controls */
+  bottom: max(7.5rem, calc(100dvh - var(--control-bar-top, 100dvh)));
   padding: max(var(--space-4), var(--safe-top)) max(var(--space-4), var(--safe-right)) 0 max(var(--space-4), var(--safe-left));
   pointer-events: none;
 }
