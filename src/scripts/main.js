@@ -65,6 +65,62 @@ async function boot() {
     try { globalThis.__bootDebug = { lastFrameId: storage.load().lastFrameId, keys: Object.keys(globalThis.localStorage || {}) }; } catch (e) { globalThis.__bootDebug = { error: String(e) }; }
     const capabilities = detectCapabilities();
     const a11y = new AccessibilityController();
+
+    // Show sensory dialog before creating player/scheduling (FR-003)
+    const sensoryDialogPre = document.querySelector('#sensory-dialog');
+    const reducedMotionPre = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let storedModePre = globalThis.localStorage?.getItem('hwc.sensoryMode') || globalThis.localStorage?.getItem('horror_comic_sensory_mode');
+    if (!storedModePre && globalThis.localStorage?.getItem('horror_comic_sensory_mode')) {
+      try { globalThis.localStorage?.setItem('hwc.sensoryMode', globalThis.localStorage.getItem('horror_comic_sensory_mode')); storedModePre = globalThis.localStorage.getItem('hwc.sensoryMode'); } catch {}
+    }
+    const isAutomatedPre = globalThis.navigator?.webdriver === true;
+    if ((isAutomatedPre || globalThis.__CINEMATIC_TEST__ || globalThis.__playwright_test__ || (typeof process !== 'undefined' && process.env?.PLAYWRIGHT_TEST)) && !globalThis.localStorage?.getItem('hwc.sensoryMode')) {
+      try { globalThis.localStorage?.setItem('hwc.sensoryMode', 'immersive-fx'); storedModePre = 'immersive-fx'; } catch {}
+    }
+    if (globalThis.__CINEMATIC_TEST__ || globalThis.__playwright_test__) {
+      try { if (!globalThis.localStorage?.getItem('hwc.sensoryMode')) { globalThis.localStorage?.setItem('hwc.sensoryMode', 'immersive-fx'); storedModePre = storedModePre || 'immersive-fx'; } } catch {}
+    }
+    let _audioPreInst = null;
+    try {
+      _audioPreInst = new AudioManager({ story, storage, a11y, capabilities, onStateChange: () => {} });
+    } catch {}
+    if (!storedModePre && !reducedMotionPre && sensoryDialogPre && !isAutomatedPre && !globalThis.__CINEMATIC_TEST__ && !globalThis.__playwright_test__ && !(typeof process !== 'undefined' && process.env?.PLAYWRIGHT_TEST)) {
+      const playerElPre = document.querySelector('#player');
+      if (playerElPre) playerElPre.inert = true;
+      await new Promise((resolve) => {
+        document.querySelector('#sensory-mode-fx')?.addEventListener('click', async () => {
+          try { globalThis.localStorage?.setItem('hwc.sensoryMode', 'immersive-fx'); } catch {}
+          try { globalThis.localStorage?.removeItem?.('horror_comic_sensory_mode'); } catch {}
+          try { await _audioPreInst?.unlock?.(); } catch {}
+          sensoryDialogPre.hidden = true;
+          try { sensoryDialogPre.style.display = 'none'; } catch {}
+          if (playerElPre) playerElPre.inert = false;
+          resolve();
+        }, { once: true });
+        document.querySelector('#sensory-mode-safe')?.addEventListener('click', async () => {
+          try { globalThis.localStorage?.setItem('hwc.sensoryMode', 'safe-accessible'); } catch {}
+          try { globalThis.localStorage?.removeItem?.('horror_comic_sensory_mode'); } catch {}
+          try { await _audioPreInst?.unlock?.(); } catch {}
+          sensoryDialogPre.hidden = true;
+          try { sensoryDialogPre.style.display = 'none'; } catch {}
+          if (playerElPre) playerElPre.inert = false;
+          resolve();
+        }, { once: true });
+      });
+    } else if (sensoryDialogPre) {
+      try {
+        if (globalThis.__CINEMATIC_TEST__ || globalThis.__playwright_test__ || (typeof process !== 'undefined' && process.env?.PLAYWRIGHT_TEST) || globalThis.navigator?.webdriver === true) {
+          sensoryDialogPre.hidden = true;
+          try { sensoryDialogPre.style.display = 'none'; } catch {}
+          const p = document.querySelector('#player');
+          if (p) p.inert = false;
+        } else {
+          sensoryDialogPre.hidden = true;
+          try { sensoryDialogPre.style.display = 'none'; } catch {}
+        }
+      } catch {}
+    }
+
     audio = new AudioManager({
       story,
       storage,
@@ -119,31 +175,11 @@ async function boot() {
     });
 
     const sensoryDialog = document.querySelector('#sensory-dialog');
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const storedMode = globalThis.localStorage?.getItem('hwc.sensoryMode');
-    const isAutomated = globalThis.navigator?.webdriver === true;
-    if ((isAutomated || globalThis.__CINEMATIC_TEST__ || globalThis.__playwright_test__ || typeof process !== 'undefined' && process.env?.PLAYWRIGHT_TEST) && !globalThis.localStorage?.getItem('hwc.sensoryMode')) globalThis.localStorage?.setItem('hwc.sensoryMode', 'immersive-fx');
-    if (globalThis.__CINEMATIC_TEST__ || globalThis.__playwright_test__) {
-      try { globalThis.localStorage?.setItem('hwc.sensoryMode', globalThis.localStorage?.getItem('hwc.sensoryMode') || 'immersive-fx'); } catch {}
-    }
-    if (!storedMode && !reducedMotion && sensoryDialog && !isAutomated && !globalThis.__CINEMATIC_TEST__ && !globalThis.__playwright_test__ && !(typeof process !== 'undefined' && process.env?.PLAYWRIGHT_TEST)) {
-      const playerEl = document.querySelector('#player');
-      if (playerEl) playerEl.inert = true;
-      await new Promise((resolve) => {
-        document.querySelector('#sensory-mode-fx')?.addEventListener('click', () => { globalThis.localStorage?.setItem('hwc.sensoryMode', 'immersive-fx'); sensoryDialog.hidden = true; if (playerEl) playerEl.inert = false; resolve(); }, { once: true });
-        document.querySelector('#sensory-mode-safe')?.addEventListener('click', () => { globalThis.localStorage?.setItem('hwc.sensoryMode', 'safe-accessible'); sensoryDialog.hidden = true; if (playerEl) playerEl.inert = false; resolve(); }, { once: true });
-      });
-    } else if (sensoryDialog) {
-      try {
-        if (globalThis.__CINEMATIC_TEST__ || globalThis.__playwright_test__ || (typeof process !== 'undefined' && process.env?.PLAYWRIGHT_TEST) || globalThis.navigator?.webdriver === true) {
-          sensoryDialog.hidden = true;
-          sensoryDialog.style.display = 'none';
-          const p = document.querySelector('#player');
-          if (p) p.inert = false;
-        }
-      } catch {}
+    if (sensoryDialog) {
       sensoryDialog.hidden = true;
       try { sensoryDialog.style.display = 'none'; } catch {}
+      const p = document.querySelector('#player');
+      if (p) p.inert = false;
     }
     const catalogButton = document.querySelector('#catalog-button');
     const catalogDialog = document.querySelector('#catalog-dialog');
@@ -153,6 +189,7 @@ async function boot() {
       try {
         const res = await fetch('src/data/catalog.json');
         const cat = await res.json();
+        try { globalThis.__catalogData = cat; } catch {}
         catalogList.innerHTML = (cat.stories || []).map((s) => {
           const storyId = s.id || s.slug;
           let progress = null;
@@ -174,29 +211,94 @@ async function boot() {
     });
     document.querySelector('#catalog-close')?.addEventListener('click', () => { if (catalogDialog) catalogDialog.hidden = true; });
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { if (catalogDialog && !catalogDialog.hidden) { catalogDialog.hidden = true; e.preventDefault(); } } });
+    // End overlay handlers
+    const endNextStory = document.querySelector('#end-next-story');
+    const endOpenCatalog = document.querySelector('#end-open-catalog');
+    if (endNextStory) {
+      endNextStory.addEventListener('click', async (e) => {
+        e.preventDefault();
+        try { await audio?.stopAll?.(0.6); } catch {}
+        try { await new Promise(r => setTimeout(r, 600)); } catch {}
+        globalThis.location.href = endNextStory.getAttribute('href') || 'alojamento.html';
+      });
+    }
+    if (endOpenCatalog) {
+      endOpenCatalog.addEventListener('click', async () => {
+        const endOverlay = document.querySelector('#end-overlay');
+        if (endOverlay) endOverlay.hidden = true;
+        if (catalogDialog) {
+          catalogDialog.hidden = false;
+          try {
+            const res = await fetch('src/data/catalog.json', { cache: 'no-store' });
+            const catalog = await res.json();
+            if (catalogList) {
+              const stories = Array.isArray(catalog.stories) ? catalog.stories : [];
+              catalogList.innerHTML = stories.map((s) => {
+                const progress = s.id ? JSON.parse(globalThis.localStorage?.getItem(`hwc.progress:${s.id}`) || 'null') : null;
+                const frameIndex = typeof progress?.frameIndex === 'number' ? progress.frameIndex : 0;
+                const totalFrames = typeof progress?.totalFrames === 'number' ? progress.totalFrames : 0;
+                const ended = !!progress?.ended;
+                const pct = totalFrames > 0 ? Math.min(100, Math.round((frameIndex / totalFrames) * 100)) : 0;
+                const label = ended ? '✓ Concluída' : (totalFrames > 0 ? `Quadro ${frameIndex + 1} de ${totalFrames}` : '');
+                return `<div class="catalog-card"><h3>${s.title}</h3><p>${s.synopsis}</p><div class="catalog-progress"><div style="width:${pct}%"></div></div><div class="catalog-badge">${label}</div><a href="${s.entryHtml}">${ended ? 'Ler Novamente' : (progress ? 'Continuar' : 'Abrir')}</a></div>`;
+              }).join('');
+            }
+          } catch {}
+        }
+      });
+    }
     document.title = story.title;
     const toggleSensory = document.querySelector('#toggle-sensory-mode');
     const badge = document.querySelector('#sensory-advisory-badge');
-    const updateBadge = () => {
+    const updateBadge = (mode) => {
       try {
         if (!badge) return;
-        const mode = document.documentElement.getAttribute('data-sensory-mode') || (globalThis.localStorage?.getItem('hwc.sensoryMode') || 'safe-accessible');
-        if (mode === 'immersive-fx') badge.textContent = 'FX';
-        else badge.textContent = 'Seguro';
+        const m = mode || document.documentElement.getAttribute('data-sensory-mode') || globalThis.localStorage?.getItem('hwc.sensoryMode') || globalThis.localStorage?.getItem('horror_comic_sensory_mode') || 'safe-accessible';
+        const storyCur = globalThis.__currentStory || story;
+        const catalog = globalThis.__catalogData || null;
+        let descriptors = [];
+        try {
+          descriptors = catalog?.stories?.find?.(s => s.id === storyCur?.id)?.sensoryAdvisory?.descriptors
+            || storyCur?.sensoryAdvisory?.descriptors
+            || ['psychological-distress'];
+        } catch { descriptors = ['psychological-distress']; }
+        const descText = descriptors.map(d => `[${String(d).replace(/-/g, ' ')}]`).join(' ');
+        const audioText = (globalThis.__audioState && !globalThis.__audioState.enabled) ? ' 🔇 Toque para ativar som' : '';
+        badge.textContent = `${descText}${audioText} ${m === 'immersive-fx' ? '[FX]' : '[Modo Seguro]'}`;
+        badge.hidden = false;
+        try { badge.style.opacity = '1'; } catch {}
+        clearTimeout(badge._timeout);
+        badge._timeout = setTimeout(() => {
+          try { badge.style.opacity = '0'; } catch {}
+          setTimeout(() => { try { badge.hidden = true; } catch {} }, 300);
+        }, 5000);
       } catch {}
     };
     const applySensoryMode = (mode) => {
       const m = mode === 'safe-accessible' ? 'safe-accessible' : 'immersive-fx';
       document.documentElement.setAttribute('data-sensory-mode', m);
+      try { storage?.setSensoryMode?.(m); } catch {}
+      try { globalThis.localStorage?.setItem('hwc.sensoryMode', m); try { globalThis.localStorage?.removeItem?.('horror_comic_sensory_mode'); } catch {} } catch {}
       if (toggleSensory) toggleSensory.setAttribute('aria-pressed', m === 'immersive-fx' ? 'true' : 'false');
-      if (badge) { updateBadge(); badge.classList.add('visible'); setTimeout(() => badge.classList.remove('visible'), 2000); }
+      if (badge) { updateBadge(m); badge.classList.add('visible'); setTimeout(() => badge.classList.remove('visible'), 5000); }
+      if (m === 'safe-accessible') {
+        try { player?.purgeSensoryEffects?.(); } catch {}
+      }
     };
-    applySensoryMode(reducedMotion ? 'safe-accessible' : (globalThis.localStorage?.getItem('hwc.sensoryMode') || 'safe-accessible'));
-    toggleSensory?.addEventListener('click', () => {
-      const current = globalThis.localStorage?.getItem('hwc.sensoryMode') || 'safe-accessible';
+    let eff = globalThis.localStorage?.getItem('hwc.sensoryMode') || globalThis.localStorage?.getItem('horror_comic_sensory_mode');
+    if (eff === 'horror_comic_sensory_mode') eff = globalThis.localStorage?.getItem('hwc.sensoryMode');
+    if (reducedMotionPre) eff = 'safe-accessible';
+    if (!eff) eff = 'safe-accessible';
+    try { globalThis.localStorage?.setItem('hwc.sensoryMode', eff); globalThis.localStorage?.removeItem?.('horror_comic_sensory_mode'); } catch {}
+    applySensoryMode(eff);
+    try { globalThis.__currentStory = story; } catch {}
+    toggleSensory?.addEventListener('click', async () => {
+      let current = globalThis.localStorage?.getItem('hwc.sensoryMode') || globalThis.localStorage?.getItem('horror_comic_sensory_mode') || 'safe-accessible';
+      if (current === 'horror_comic_sensory_mode') current = globalThis.localStorage?.getItem('hwc.sensoryMode') || 'safe-accessible';
       const next = current === 'safe-accessible' ? 'immersive-fx' : 'safe-accessible';
-      try { globalThis.localStorage?.setItem('hwc.sensoryMode', next); } catch {}
+      try { globalThis.localStorage?.setItem('hwc.sensoryMode', next); try { globalThis.localStorage?.removeItem?.('horror_comic_sensory_mode'); } catch {} } catch {}
       try { storage?.setSensoryMode?.(next); } catch {}
+      try { await audio?.unlock?.(); } catch {}
       applySensoryMode(next);
       try {
         if (typeof player?.purgeSensoryEffects === 'function') {
