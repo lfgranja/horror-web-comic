@@ -110,6 +110,13 @@ async function boot() {
         }
       }
     });
+    storage.onProgress((record) => {
+      try {
+        if (player?.adoptProgress) {
+          player.adoptProgress(record);
+        }
+      } catch {}
+    });
 
     const sensoryDialog = document.querySelector('#sensory-dialog');
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
