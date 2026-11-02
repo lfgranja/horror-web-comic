@@ -50,12 +50,12 @@
 
 ## Phase 5: Convergence
 
-- [ ] T039 Add missing unit tests for sensory taxonomy, manifest fields, and storage keys in `tests/unit/` per FR-001/FR-004 (missing)
-- [ ] T040 Add missing E2E tests for sensory dialog, catalog, and memory illusion in `tests/e2e/` per SC-001..SC-006 (missing)
-- [ ] T041 Complete sensory mode persistence and BroadcastChannel sync across all entry points per FR-004 (partial)
-- [ ] T042 Complete sensory dialog gating with reduced-motion/recurring bypass per FR-003 (partial)
-- [ ] T043 Complete catalog dialog/navigation with progress bars/badges/Escape per FR-005/FR-014 (partial)
-- [ ] T044 Complete memory illusion latch/sessionStorage hydration and 20% sting attenuation per FR-007 (partial)
-- [ ] T045 Complete atomic sensory purge without render per FR-005 (partial)
-- [ ] T046 Complete badge auto-hide and audio-state text per FR-013 (partial)
+- [x] T039 Add missing unit tests for sensory taxonomy, manifest fields, and storage keys in `tests/unit/` per FR-001/FR-004 (missing)
+- [x] T040 Add missing E2E tests for sensory dialog, catalog, and memory illusion in `tests/e2e/` per SC-001..SC-006 (missing)
+- [x] T041 Complete sensory mode persistence and BroadcastChannel sync across all entry points per FR-004 (partial)
+- [x] T042 Complete sensory dialog gating with reduced-motion/recurring bypass per FR-003 (partial)
+- [x] T043 Complete catalog dialog/navigation with progress bars/badges/Escape per FR-005/FR-014 (partial)
+- [x] T044 Complete memory illusion latch/sessionStorage hydration and 20% sting attenuation per FR-007 (partial)
+- [x] T045 Complete atomic sensory purge without render per FR-005 (partial)
+- [x] T046 Complete badge auto-hide and audio-state text per FR-013 (partial)
 - [ ] T047 Verify full `npm run ci` passes with all spec 005 features (verification)
