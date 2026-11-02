@@ -429,18 +429,27 @@
   font-size: 0.85rem;
 }
 
-#end-overlay .overlay-card button {
+#end-overlay .overlay-card button,
+#end-overlay .overlay-card a {
   pointer-events: auto;
   /* Pinned to the bottom of the card's scrollport. The card is the scroll
      container above, so `sticky` + `bottom: 0` keeps the action inside the
-     PAINTED band however short that band is — the failure the 320x568 run hit,
-     where a 125px band against a 178px card scrolled the button 22px out of
-     reach and the hit test landed on the control bar underneath. An opaque
-     background is required: sticky does not move the box out of the text flow,
-     so scrolled copy would otherwise show through it. */
+     PAINTED band however short that band is. An opaque
+     background is required. */
   position: sticky;
   bottom: 0;
   background-color: var(--ink-900);
+}
+
+/* Ensure end overlay covers navigation controls on narrow viewports */
+@media (max-width: 420px) {
+  #end-overlay {
+    bottom: max(7rem, calc(100dvh - var(--control-bar-top, 100dvh)));
+    padding-bottom: max(var(--space-3), var(--safe-bottom));
+  }
+  #end-overlay .overlay-card {
+    max-height: 92vh;
+  }
 }
 
 .frame-stage:not([data-image-loading='true'])[data-transition='fade'] .frame-image,
