@@ -204,10 +204,29 @@ async function main() {
   let catalog = null;
   try { catalog = JSON.parse(await fs.readFile(catalogPath, 'utf8')); } catch {}
   const manifests = new Set(['src/data/story.json']);
-  if (catalog?.stories) for (const s of catalog.stories) if (s.manifest) manifests.add(s.manifest);
+  if (catalog?.stories) {
+    for (const s of catalog.stories) {
+      if (s.manifest) manifests.add(s.manifest);
+    }
+  }
   for (const m of manifests) {
     const result = await loadManifest(m, { root });
     console.log(`manifest valid: ${result.path}`);
+    // deep equality check
+    try {
+      if (catalog?.stories) {
+        const cStory = catalog.stories.find(s => s.manifest && (s.manifest === m || result.path.endsWith(s.manifest.replace(/.*[\\/]/, '')) || result.path.includes(s.manifest)));
+        if (cStory && Array.isArray(cStory.sensoryAdvisory?.descriptors) && Array.isArray(result.manifest?.sensoryAdvisory?.descriptors)) {
+          const c = [...cStory.sensoryAdvisory.descriptors].sort();
+          const man = [...result.manifest.sensoryAdvisory.descriptors].sort();
+          if (JSON.stringify(c) !== JSON.stringify(man)) {
+            throw new ManifestError(`sensoryAdvisory.descriptors mismatch between catalog and ${result.path}`, 'manifest-incompatible');
+          }
+        }
+      }
+    } catch (e) {
+      if (e?.code === 'manifest-incompatible') throw e;
+    }
   }
   if (catalog) console.log('catalog valid');
 }

@@ -59,3 +59,15 @@
 - [x] T045 Complete atomic sensory purge without render per FR-005 (partial)
 - [x] T046 Complete badge auto-hide and audio-state text per FR-013 (partial)
 - [ ] T047 Verify full `npm run ci` passes with all spec 005 features (verification)
+
+## Phase 6: Convergence
+
+- [ ] T048 CRITICAL: Move sensory dialog gating to before `player.schedule()` in `src/scripts/main.js` per FR-003 (contradicts)
+- [ ] T049 HIGH: Add deep equality check for `sensoryAdvisory.descriptors` between `src/data/catalog.json` and each story manifest in `scripts/validate-manifest.mjs` per FR-002 (missing)
+- [ ] T050 HIGH: Add fallback key `horror_comic_sensory_mode` in sensory mode resolution in `src/scripts/main.js` and `src/scripts/storage.js` per FR-004 (missing)
+- [ ] T051 HIGH: Implement full sensory advisory badge behavior (descriptors from catalog/story, audio state text, 5s auto-hide with fade) in `src/scripts/main.js` per FR-013 (partial)
+- [ ] T052 HIGH: Add "Próxima Obra Curada: O Alojamento" link with 600ms audio fade-out and "Ver Catálogo Completo" button to `#end-overlay` in `index.html`/`alojamento.html` and wire handlers per FR-014 (missing)
+- [ ] T053 HIGH: Wire sensory dialog button clicks to unlock audio via `audio.unlock()`/gesture handling per FR-003/Q18 (partial)
+- [ ] T054 HIGH: Add unit tests for manifest fx/memoryIllusion/sensoryAdvisory fields and storage key partitioning (`hwc.progress:${storyId}`) in `tests/unit/` per FR-001/FR-014 (missing)
+- [ ] T055 HIGH: Add E2E tests for catalog navigation/progress/badges/Escape, memory illusion latch/sessionStorage/20% attenuation, atomic purge on toggle without render, badge behavior, end overlay actions, reduced motion/recurring bypass per SC-001..SC-006 (missing)
+- [ ] T056 MEDIUM: Validate catalog.json schema against `specs/005-korean-horror-mechanics/contracts/catalog-manifest.schema.json` if present or enforce required fields in `scripts/validate-manifest.mjs` per FR-002 (missing)

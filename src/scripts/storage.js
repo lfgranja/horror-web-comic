@@ -124,10 +124,11 @@ export class StorageManager {
             this.set('hwc.theme', newTheme);
             this.notifyTheme(newTheme);
           }
-        } else if (event?.key === 'hwc.sensoryMode') {
+        } else if (event?.key === 'hwc.sensoryMode' || event?.key === 'horror_comic_sensory_mode') {
           const newMode = event?.newValue;
           if (newMode === 'safe-accessible' || newMode === 'immersive-fx') {
             this.defaultsOnly = false;
+            try { if (event?.key === 'horror_comic_sensory_mode') this.set('hwc.sensoryMode', newMode); } catch {}
             this.notifySensory(newMode);
           }
         }
