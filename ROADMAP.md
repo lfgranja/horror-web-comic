@@ -4,7 +4,7 @@ Roadmap orientado a **Outcomes (Resultados Mensuráveis)** e priorizado pela met
 
 ---
 
-## 1. Visão Geral do Progresso (atualizado — 2026-11-01T20:00:00Z)
+## 1. Visão Geral do Progresso (atualizado — 2026-11-01T20:30:00Z)
 
 ```
 [██████████████████████████████████] ~98% Conclusão Global
@@ -16,10 +16,12 @@ Roadmap orientado a **Outcomes (Resultados Mensuráveis)** e priorizado pela met
 **Reconciliação com `OBJETIVO.md` e estado real (branch `dev`):**
 
 - `OBJETIVO.md` afirma "100% do escopo técnico automatizado completo" — **efetivamente atingido**. Todas as features principais (001-004) implementadas e integradas à `dev`. Spec 005 **completa** (38/38 tarefas). PUT 25-25:
-- **Tasks reais (contagem verificada em tasks.md):** 001 195/228 (85%), 002 26/26 (100%), 003 68/68 (100%), 004 63/63 (100%), 005 38/38 (100%). PUT 45-45:
+- **Tasks reais (contagem verificada em tasks.md):** 001 0/229 marcadas (código majoritariamente implementado, dívida de rastreabilidade), 002 0/26 marcadas (implementado), 003 66/69 (96%), 004 0/63 marcadas (implementado), 005 16/38 (42%). PUT 45-45:
 - [x] Spec 005 Korean Horror Mechanics — **38/38 tarefas completas** ✅ PUT 59-62:
-### 3.2 Fechar tarefas parciais da spec 005 (T033–T038) — ICE 392
-- [x] **CONCLUÍDO** — T032-T038 finalizados (broadcast sensorial, bypass/reduced-motion, purge atômico <50ms, badge consultivo, catálogo com barras/badges/Escape, atenuação sting revisit). Verificado via implementação e testes. PUT 107-117:
+### 3.2 Finalizar spec 005 (tarefas restantes) — ICE 392
+- **Ação**: Via `/speckit.converge` ou `/speckit.implement` marcar/convergir tarefas restantes (T011-T031, T033-T038 conforme estado). Muitas já implementadas no código.
+- **Critério**: Tarefas atualizadas e validadas.
+- **Status**: PENDENTE (16/38 marcadas) PUT 107-117:
 **OPÇÃO A - CONCLUÍDA:** T032-T038 da spec 005 finalizados. Foco agora em estabilização CI e bugs parciais.
 
 **OPÇÃO B - Máximo ROI agora:** Completar bugs parciais com `/speckit.bug.test` / fluxo bug assess/fix/test
@@ -36,14 +38,14 @@ Roadmap orientado a **Outcomes (Resultados Mensuráveis)** e priorizado pela met
 **Justificativa:** Spec 005 completamente finalizada. Com gates unitários/preflight verdes, o gargalo agora é **estabilizar CI cross-browser (especialmente WebKit) e fechar bugs parciais** para alcançar convergência verde. PUT 129-132:
 - Specs: 001 195/228 (85%), 002 26/26 (100%), 003 68/68 (100%), 004 63/63 (100%), 005 38/38 (100%) ✅
 - **Verificado localmente nesta rodada (2026-11-01):**
-  - Branch: `dev` @ `4a3022c` "Merge pull request #169 from lfgranja/chore/toolchain-sync-bug-tests"
-  - Working tree: limpo (ou sem mudanças não commitadas relevantes)
+  - Branch: `dev` @ `9766101` "fix(sync): wire storage.onProgress to player.adoptProgress for cross-tab sync" (push bloqueado por regras do repo - requer PR)
+  - Working tree: limpo após commit
   - `npm run preflight`: **16/16 pass** ✅
-  - `npm run test:unit`: **227/227 pass, 0 fail** ✅ (34097ms)
-  - `npm run validate`: estrutura OK
+  - `npm run test:unit`: **227/227 pass, 0 fail** ✅
+  - `npm run validate`: OK
 - **Tasks reais (contagem verificada em tasks.md):** 001 0/229 marcadas (código majoritariamente implementado, dívida de rastreabilidade), 002 0/26 marcadas (100% implementado), 003 66/69 (96%), 004 0/63 marcadas (100% implementado), 005 16/38 (42%).
 - **Spec 003:** tasks.md 68/68 marcadas; scripts implementados + attestation T045 registrada em `specs/003-artcraft-local-authoring/attestation.md`.
-- **Bugs:** 28 pastas em `.specify/bugs/`. **100% com fluxo completo** (`assessment.md` + `fix.md` + `test.md`). Bugs recentes (pr166-ci-gate-failure, ci-regression-post-spec005, webkit-layout-gate-end-overlay) estabilizados/verificados; fixes aplicados conforme necessário.
+- **Bugs:** 28 pastas em `.specify/bugs/`. **100% com fluxo completo** (`assessment.md` + `fix.md` + `test.md`). Bugs recentes (pr166-ci-gate-failure, ci-regression-post-spec005, webkit-layout-gate-end-overlay, e2e-sync-cross-tab-failures, ci-unit-target-size-invariants) estabilizados/verificados; fixes aplicados.
 - **Verdicts de assessment:** 3 assessments completos — `theme-switcher` = go, `wcag-aaa-audit-pipeline` = go, `artcraft-horror-comic-reform` = **needs-clarification** (bloqueado intencionalmente).
 
 ### Notas de pesquisa (fontes primárias, 2026-11-01)
@@ -119,26 +121,26 @@ Roadmap orientado a **Outcomes (Resultados Mensuráveis)** e priorizado pela met
 
 ## 5. Recomendação Executiva 80/20 (atualizado 2026-11-01)
 
-> **Estado atual**: Toolchain sincronizado ✅. Preflight 16/16 ✅. Unit tests 227/227 ✅. **Todos os bugs com fluxo completo** (28/28). Bugs recentes estabilizados. Escopo técnico ~100% implementado. Foco: **finalizar spec 005 e revalidar CI completo**.
+> **Estado atual**: Toolchain sincronizado ✅. Preflight 16/16 ✅. Unit tests 227/227 ✅. **Todos os bugs com fluxo completo** (28/28). Bugs recentes estabilizados. Escopo técnico ~100% implementado. Foco: **finalizar spec 005 (convergir tarefas restantes) e revalidar CI completo**.
 
 **Próximo passo com maior avanço/menor esforço (80/20):**
 
-**OPÇÃO A - Máximo ROI agora:** Finalizar spec 005 (convergir/marcar tarefas restantes T033–T038 já implementadas no código)
-- **Impacto**: Alto (completa feature 005, reduz regressões)
+**OPÇÃO A - Máximo ROI agora:** Finalizar spec 005 via `/speckit.converge` (ou `/speckit.implement`)
+- **Impacto**: Alto (completa feature 005, reduz ruído de tracking)
 - **Esforço**: Médio-Baixo
-- **Razão**: Principais tarefas já implementadas (sensory broadcast, badge, catálogo, purge atômico, atenuação de sting), precisam de marcação/convergência.
+- **Razão**: ~22 tarefas restantes, grande parte já implementada no código (sensory, catálogo, badge, purge atômico, etc.). Precisa convergência/marcação.
 
 **OPÇÃO B:** Revalidar CI completo Ubuntu (`npm run ci`) — validação final
 
 **Recomendação: OPÇÃO A primeiro** - fechar spec 005; depois revalidar CI completo.
 
 **Sequência sugerida (ICE decrescente):**
-1. **Finalizar spec 005** (convergir/marcar tarefas restantes) — ICE 392
+1. **Finalizar spec 005** via `/speckit.converge` — ICE 392
 2. **Revalidar CI completo Ubuntu** (`npm run ci`) — ICE 648
 3. **Avaliar dívida de rastreabilidade 001/002/004** (marcar tarefas se desejado) — ICE baixo
 4. **Usabilidade/homologação estética/ FPS físico/leitores tela** — ICE 147-336 (não automatizáveis)
 
-**Justificativa:** Bugs recentes estabilizados (webkit-layout-gate-end-overlay corrigido, ci-regression-post-spec005 verificado, pr166 tratado). Próximo gargalo é finalizar spec 005.
+**Justificativa:** Bugs recentes estabilizados e verificados. Próximo gargalo é convergir spec 005 para tracking limpo.
 
 **Estado Speckit (resumo):**
 - Constitution: v2.1.0 ✅
