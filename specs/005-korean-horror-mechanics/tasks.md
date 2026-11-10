@@ -58,7 +58,7 @@
 - [x] T044 Complete memory illusion latch/sessionStorage hydration and 20% sting attenuation per FR-007 (partial)
 - [x] T045 Complete atomic sensory purge without render per FR-005 (partial)
 - [x] T046 Complete badge auto-hide and audio-state text per FR-013 (partial)
-- [ ] T047 Verify full `npm run ci` passes with all spec 005 features (verification)
+- [ ] T047 Verify full `npm run ci` passes with all spec 005 features (verification) — CI run #42824002797 killed by SIGTERM at 4m32s (infra); gates preflight/validate/unit/build/images/build all green; E2E matrix in progress. Requires retry on Ubuntu runner.
 
 ## Phase 6: Convergence
 
