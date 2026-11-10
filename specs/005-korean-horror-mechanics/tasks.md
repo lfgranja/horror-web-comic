@@ -69,5 +69,5 @@
 - [x] T052 HIGH: Add "Próxima Obra Curada: O Alojamento" link with 600ms audio fade-out and "Ver Catálogo Completo" button to `#end-overlay` in `index.html`/`alojamento.html` and wire handlers per FR-014 (missing)
 - [x] T053 HIGH: Wire sensory dialog button clicks to unlock audio via `audio.unlock()`/gesture handling per FR-003/Q18 (partial)
 - [x] T054 HIGH: Add unit tests for manifest fx/memoryIllusion/sensoryAdvisory fields and storage key partitioning (`hwc.progress:${storyId}`) in `tests/unit/` per FR-001/FR-014 (missing)
-- [ ] T055 HIGH: Add E2E tests for catalog navigation/progress/badges/Escape, memory illusion latch/sessionStorage/20% attenuation, atomic purge on toggle without render, badge behavior, end overlay actions, reduced motion/recurring bypass per SC-001..SC-006 (missing)
+- [x] T055 HIGH: Add E2E tests for catalog navigation/progress/badges/Escape, memory illusion latch/sessionStorage/20% attenuation, atomic purge on toggle without render, badge behavior, end overlay actions, reduced motion/recurring bypass per SC-001..SC-006 (missing)
 - [x] T056 MEDIUM: Validate catalog.json schema against `specs/005-korean-horror-mechanics/contracts/catalog-manifest.schema.json` if present or enforce required fields in `scripts/validate-manifest.mjs` per FR-002 (missing)
