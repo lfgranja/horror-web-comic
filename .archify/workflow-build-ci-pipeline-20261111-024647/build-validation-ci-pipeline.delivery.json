@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "4ed743c9-6524-4a52-bdb3-c0f169ae3ce7",
+  "status": "current",
+  "command": "deliver",
+  "type": "workflow",
+  "input": "/home/luis/development/horror-web-comic/.archify/workflow-build-ci-pipeline-20261111-024647/candidate.json",
+  "output": "/home/luis/development/horror-web-comic/.archify/workflow-build-ci-pipeline-20261111-024647/build-validation-ci-pipeline.html",
+  "specification": {
+    "sha256": "8d2e4d76809e1f08c6ecaf0acc6b2594fc142bc7c8f61372166bfbbf961622ec",
+    "bytes": 11011
+  },
+  "artifact": {
+    "sha256": "4779cec8ff298f4937eacca19986002588db79aee0f19c566f319a5c57641523",
+    "bytes": 867157
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "9b0f27ff-c0c7-44b5-a056-296a49ef9b15",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "/home/luis/development/horror-web-comic/.archify/architecture-cinematic-player-runtime-20261111-024647/candidate.json",
+  "output": "/home/luis/development/horror-web-comic/.archify/architecture-cinematic-player-runtime-20261111-024647/review-1/cinematic-player-runtime.html",
+  "specification": {
+    "sha256": "dd75fc59e21955ea362819bde3c6cd61a51da6d11cec3ffeed8932ccaa948084",
+    "bytes": 8411
+  },
+  "artifact": {
+    "sha256": "15082b7f25699a35128f4613c2ffe2db9e34f989154ba2e4e7f1bab6e85d3118",
+    "bytes": 868638
+  }
+}

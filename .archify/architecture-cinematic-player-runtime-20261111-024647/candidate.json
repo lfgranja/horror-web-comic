@@ -1,0 +1,395 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Horror Web Comic — Cinematic Player Runtime",
+    "output": ".archify/architecture-cinematic-player-runtime-20261111-024647/cinematic-player-runtime.html",
+    "quality_profile": "showcase",
+    "locale": "en",
+    "repository": {
+      "url": "https://github.com/lfgranja/horror-web-comic.git",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "1247555487c8968e1e8ee1124e5c5d1a1e3f6e68"
+    }
+  },
+  "layout": {
+    "mode": "grid",
+    "origin": [
+      30,
+      30
+    ],
+    "cols": 4,
+    "gapX": 170,
+    "gapY": 150,
+    "cellW": 160,
+    "cellH": 70
+  },
+  "components": [
+    {
+      "id": "browser_ui",
+      "type": "frontend",
+      "label": "Browser UI Shell",
+      "sublabel": "index.html, controls, overlays",
+      "row": 0,
+      "col": 0,
+      "sources": [
+        {
+          "path": "index.html",
+          "line": 17,
+          "end_line": 40
+        },
+        {
+          "path": "src/scripts/main.js",
+          "line": 184,
+          "end_line": 210
+        }
+      ]
+    },
+    {
+      "id": "boot",
+      "type": "backend",
+      "label": "Boot & Compose",
+      "sublabel": "main.js boot and wiring",
+      "row": 0,
+      "col": 1,
+      "sources": [
+        {
+          "path": "src/scripts/main.js",
+          "line": 1,
+          "end_line": 67
+        },
+        {
+          "path": "src/scripts/main.js",
+          "line": 148,
+          "end_line": 176
+        },
+        {
+          "path": "src/scripts/main.js",
+          "line": 327,
+          "end_line": 349
+        }
+      ]
+    },
+    {
+      "id": "capabilities",
+      "type": "backend",
+      "label": "Capabilities",
+      "sublabel": "Motion/save-data/degrade",
+      "row": 0,
+      "col": 2,
+      "sources": [
+        {
+          "path": "src/scripts/capabilities.js",
+          "line": 1,
+          "end_line": 36
+        }
+      ]
+    },
+    {
+      "id": "a11y",
+      "type": "security",
+      "label": "A11y Announcer",
+      "sublabel": "Debounced descriptions",
+      "row": 0,
+      "col": 3,
+      "sources": [
+        {
+          "path": "src/scripts/a11y.js",
+          "line": 1,
+          "end_line": 18
+        }
+      ]
+    },
+    {
+      "id": "story_data",
+      "type": "database",
+      "label": "Story & Catalog",
+      "sublabel": "Manifests in src/data",
+      "row": 1,
+      "col": 0,
+      "sources": [
+        {
+          "path": "src/data/story.json",
+          "line": 1,
+          "end_line": 45
+        },
+        {
+          "path": "src/data/catalog.json",
+          "line": 1,
+          "end_line": 35
+        }
+      ]
+    },
+    {
+      "id": "loader",
+      "type": "backend",
+      "label": "Story Loader",
+      "sublabel": "Validate, parse, fetch",
+      "row": 1,
+      "col": 1,
+      "sources": [
+        {
+          "path": "src/scripts/story-loader.js",
+          "line": 1,
+          "end_line": 120
+        },
+        {
+          "path": "src/scripts/story-loader.js",
+          "line": 170,
+          "end_line": 220
+        }
+      ]
+    },
+    {
+      "id": "player",
+      "type": "backend",
+      "label": "Cinematic Player",
+      "sublabel": "Frames, nav, progress",
+      "row": 1,
+      "col": 2,
+      "sources": [
+        {
+          "path": "src/scripts/player.js",
+          "line": 1,
+          "end_line": 60
+        },
+        {
+          "path": "src/scripts/player.js",
+          "line": 90,
+          "end_line": 120
+        }
+      ]
+    },
+    {
+      "id": "variants",
+      "type": "backend",
+      "label": "Variant Resolver",
+      "sublabel": "Light image/audio selection",
+      "row": 1,
+      "col": 3,
+      "sources": [
+        {
+          "path": "src/scripts/light-variants.js",
+          "line": 1,
+          "end_line": 55
+        }
+      ]
+    },
+    {
+      "id": "storage",
+      "type": "database",
+      "label": "Storage & Sync",
+      "sublabel": "Prefs, progress, tabs",
+      "row": 2,
+      "col": 1,
+      "sources": [
+        {
+          "path": "src/scripts/storage.js",
+          "line": 1,
+          "end_line": 90
+        }
+      ]
+    },
+    {
+      "id": "audio",
+      "type": "backend",
+      "label": "Audio Manager",
+      "sublabel": "Tracks, fades, unlock",
+      "row": 2,
+      "col": 2,
+      "sources": [
+        {
+          "path": "src/scripts/audio.js",
+          "line": 1,
+          "end_line": 80
+        }
+      ]
+    },
+    {
+      "id": "assets",
+      "type": "external",
+      "label": "Media Assets",
+      "sublabel": "Published frames/audio",
+      "row": 2,
+      "col": 3,
+      "sources": [
+        {
+          "path": "src/data/story.json",
+          "line": 30,
+          "end_line": 45
+        },
+        {
+          "path": "scripts/build.mjs",
+          "line": 17,
+          "end_line": 18
+        }
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "ui_to_boot",
+      "from": "browser_ui",
+      "to": "boot",
+      "label": "start"
+    },
+    {
+      "id": "data_to_loader",
+      "from": "story_data",
+      "to": "loader",
+      "label": "manifest"
+    },
+    {
+      "id": "boot_to_loader",
+      "from": "boot",
+      "to": "loader",
+      "label": "loadStory",
+      "variant": "emphasis"
+    },
+    {
+      "id": "loader_to_boot",
+      "from": "loader",
+      "to": "boot",
+      "label": "validated story"
+    },
+    {
+      "id": "boot_to_cap",
+      "from": "boot",
+      "to": "capabilities",
+      "label": "detect"
+    },
+    {
+      "id": "boot_to_a11y",
+      "from": "boot",
+      "to": "a11y",
+      "label": "create"
+    },
+    {
+      "id": "boot_to_player",
+      "from": "boot",
+      "to": "player",
+      "label": "create player",
+      "variant": "emphasis"
+    },
+    {
+      "id": "boot_to_audio",
+      "from": "boot",
+      "to": "audio",
+      "label": "create audio"
+    },
+    {
+      "id": "boot_to_storage",
+      "from": "boot",
+      "to": "storage",
+      "label": "load prefs"
+    },
+    {
+      "id": "cap_to_player",
+      "from": "capabilities",
+      "to": "player",
+      "label": "flags"
+    },
+    {
+      "id": "cap_to_audio",
+      "from": "capabilities",
+      "to": "audio",
+      "label": "flags"
+    },
+    {
+      "id": "player_to_audio",
+      "from": "player",
+      "to": "audio",
+      "label": "playback"
+    },
+    {
+      "id": "audio_to_boot",
+      "from": "audio",
+      "to": "boot",
+      "label": "state/unlock",
+      "variant": "dashed"
+    },
+    {
+      "id": "player_to_storage",
+      "from": "player",
+      "to": "storage",
+      "label": "save progress"
+    },
+    {
+      "id": "storage_to_player",
+      "from": "storage",
+      "to": "player",
+      "label": "adopt progress",
+      "variant": "dashed"
+    },
+    {
+      "id": "player_to_a11y",
+      "from": "player",
+      "to": "a11y",
+      "label": "announce"
+    },
+    {
+      "id": "player_to_variants",
+      "from": "player",
+      "to": "variants",
+      "label": "resolve image"
+    },
+    {
+      "id": "audio_to_variants",
+      "from": "audio",
+      "to": "variants",
+      "label": "resolve audio"
+    },
+    {
+      "id": "variants_to_assets",
+      "from": "variants",
+      "to": "assets",
+      "label": "select files"
+    },
+    {
+      "id": "assets_to_player",
+      "from": "assets",
+      "to": "player",
+      "label": "images"
+    },
+    {
+      "id": "assets_to_audio",
+      "from": "assets",
+      "to": "audio",
+      "label": "tracks"
+    },
+    {
+      "id": "data_to_ui",
+      "from": "story_data",
+      "to": "browser_ui",
+      "label": "catalog",
+      "variant": "dashed"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Composition",
+      "items": [
+        "Boot loads/validates the manifest, then wires capabilities, a11y, storage, audio, and player.",
+        "Client-side runtime: browser shell and ES modules only, no backend."
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Playback",
+      "items": [
+        "Player drives frames/navigation/progress and controls scene/frame audio.",
+        "Capabilities and variant resolver select reduced-motion/light media under constraints."
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "State & Content",
+      "items": [
+        "Storage persists prefs/progress and syncs across tabs.",
+        "Manifests and publishable assets provide validated story content and media."
+      ]
+    }
+  ]
+}

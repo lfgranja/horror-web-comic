@@ -1,0 +1,392 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "architecture",
+  "quality": "showcase",
+  "specification": {
+    "path": "/home/luis/development/horror-web-comic/.archify/architecture-cinematic-player-runtime-20261111-024647/candidate.json",
+    "sha256": "dd75fc59e21955ea362819bde3c6cd61a51da6d11cec3ffeed8932ccaa948084",
+    "bytes": 8411
+  },
+  "artifact": {
+    "path": "/home/luis/development/horror-web-comic/.archify/architecture-cinematic-player-runtime-20261111-024647/review-2/cinematic-player-runtime.html",
+    "sha256": "15082b7f25699a35128f4613c2ffe2db9e34f989154ba2e4e7f1bab6e85d3118",
+    "bytes": 868638
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "pass"
+  },
+  "diagnostics": [],
+  "diagnosticSummary": {
+    "total": 0,
+    "shown": 0,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "/home/luis/development/horror-web-comic/.archify/architecture-cinematic-player-runtime-20261111-024647/review-2/cinematic-player-runtime.finalize.json",
+    "summaryReceipt": "/home/luis/development/horror-web-comic/.archify/architecture-cinematic-player-runtime-20261111-024647/review-2/cinematic-player-runtime.finalize-summary.json",
+    "browserCheckReceipt": "/home/luis/development/horror-web-comic/.archify/architecture-cinematic-player-runtime-20261111-024647/review-2/cinematic-player-runtime.browser-check.json"
+  },
+  "update": {
+    "status": "current",
+    "installedVersion": "3.2.0",
+    "availableVersion": "3.2.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-11-10T20:01:33.019Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  },
+  "visualReview": "not-requested",
+  "durationMs": 69926,
+  "browserCheck": {
+    "requested": true,
+    "ran": true
+  },
+  "visualReviewRecommendation": {
+    "action": "inspect-route-readability",
+    "signals": {
+      "resolvedCrossovers": 18,
+      "routesOverSuggestedBends": 9,
+      "routesOverSuggestedStretch": 1
+    },
+    "reason": "Automated gates passed, but crossings or detours still need perceptual review before claiming visual quality.",
+    "affectedRoutes": {
+      "crossings": [
+        {
+          "left": {
+            "id": "data_to_loader",
+            "from": "story_data",
+            "to": "loader",
+            "label": "manifest",
+            "collectionIndex": 1,
+            "artifactIndex": 2
+          },
+          "right": {
+            "id": "boot_to_storage",
+            "from": "boot",
+            "to": "storage",
+            "label": "load prefs",
+            "collectionIndex": 8,
+            "artifactIndex": 9
+          },
+          "point": [
+            357,
+            280
+          ]
+        },
+        {
+          "left": {
+            "id": "boot_to_loader",
+            "from": "boot",
+            "to": "loader",
+            "label": "loadStory",
+            "collectionIndex": 2,
+            "artifactIndex": 3
+          },
+          "right": {
+            "id": "boot_to_storage",
+            "from": "boot",
+            "to": "storage",
+            "label": "load prefs",
+            "collectionIndex": 8,
+            "artifactIndex": 9
+          },
+          "point": [
+            406,
+            170.16538461538642
+          ],
+          "sharedNode": "boot"
+        },
+        {
+          "left": {
+            "id": "loader_to_boot",
+            "from": "loader",
+            "to": "boot",
+            "label": "validated story",
+            "collectionIndex": 3,
+            "artifactIndex": 4
+          },
+          "right": {
+            "id": "boot_to_storage",
+            "from": "boot",
+            "to": "storage",
+            "label": "load prefs",
+            "collectionIndex": 8,
+            "artifactIndex": 9
+          },
+          "point": [
+            357,
+            266
+          ],
+          "sharedNode": "boot"
+        },
+        {
+          "left": {
+            "id": "boot_to_cap",
+            "from": "boot",
+            "to": "capabilities",
+            "label": "detect",
+            "collectionIndex": 4,
+            "artifactIndex": 5
+          },
+          "right": {
+            "id": "boot_to_player",
+            "from": "boot",
+            "to": "player",
+            "label": "create player",
+            "collectionIndex": 6,
+            "artifactIndex": 7
+          },
+          "point": [
+            504,
+            114
+          ],
+          "sharedNode": "boot"
+        },
+        {
+          "left": {
+            "id": "boot_to_player",
+            "from": "boot",
+            "to": "player",
+            "label": "create player",
+            "collectionIndex": 6,
+            "artifactIndex": 7
+          },
+          "right": {
+            "id": "boot_to_audio",
+            "from": "boot",
+            "to": "audio",
+            "label": "create audio",
+            "collectionIndex": 7,
+            "artifactIndex": 8
+          },
+          "point": [
+            504,
+            150
+          ],
+          "sharedNode": "boot"
+        },
+        {
+          "left": {
+            "id": "boot_to_player",
+            "from": "boot",
+            "to": "player",
+            "label": "create player",
+            "collectionIndex": 6,
+            "artifactIndex": 7
+          },
+          "right": {
+            "id": "cap_to_audio",
+            "from": "capabilities",
+            "to": "audio",
+            "label": "flags",
+            "collectionIndex": 10,
+            "artifactIndex": 11
+          },
+          "point": [
+            658.0000000000001,
+            334.00000000000006
+          ]
+        },
+        {
+          "left": {
+            "id": "boot_to_player",
+            "from": "boot",
+            "to": "player",
+            "label": "create player",
+            "collectionIndex": 6,
+            "artifactIndex": 7
+          },
+          "right": {
+            "id": "audio_to_boot",
+            "from": "audio",
+            "to": "boot",
+            "label": "state/unlock",
+            "collectionIndex": 12,
+            "artifactIndex": 13
+          },
+          "point": [
+            504,
+            149
+          ],
+          "sharedNode": "boot"
+        },
+        {
+          "left": {
+            "id": "boot_to_player",
+            "from": "boot",
+            "to": "player",
+            "label": "create player",
+            "collectionIndex": 6,
+            "artifactIndex": 7
+          },
+          "right": {
+            "id": "player_to_storage",
+            "from": "player",
+            "to": "storage",
+            "label": "save progress",
+            "collectionIndex": 13,
+            "artifactIndex": 14
+          },
+          "point": [
+            536,
+            334
+          ],
+          "sharedNode": "player"
+        }
+      ],
+      "detours": [
+        {
+          "relationship": {
+            "id": "boot_to_a11y",
+            "from": "boot",
+            "to": "a11y",
+            "label": "create",
+            "collectionIndex": 5,
+            "artifactIndex": 6
+          },
+          "bends": 4,
+          "stretch": 1.069,
+          "directCorridorBlockers": [
+            {
+              "id": "capabilities",
+              "label": "Capabilities",
+              "box": [
+                690,
+                30,
+                120,
+                60
+              ]
+            }
+          ]
+        },
+        {
+          "relationship": {
+            "id": "boot_to_player",
+            "from": "boot",
+            "to": "player",
+            "label": "create player",
+            "collectionIndex": 6,
+            "artifactIndex": 7
+          },
+          "bends": 3,
+          "stretch": 1.098
+        },
+        {
+          "relationship": {
+            "id": "boot_to_audio",
+            "from": "boot",
+            "to": "audio",
+            "label": "create audio",
+            "collectionIndex": 7,
+            "artifactIndex": 8
+          },
+          "bends": 4,
+          "stretch": 1
+        },
+        {
+          "relationship": {
+            "id": "boot_to_storage",
+            "from": "boot",
+            "to": "storage",
+            "label": "load prefs",
+            "collectionIndex": 8,
+            "artifactIndex": 9
+          },
+          "bends": 4,
+          "stretch": 1.249,
+          "directCorridorBlockers": [
+            {
+              "id": "loader",
+              "label": "Story Loader",
+              "box": [
+                360,
+                250,
+                120,
+                60
+              ]
+            }
+          ]
+        },
+        {
+          "relationship": {
+            "id": "cap_to_audio",
+            "from": "capabilities",
+            "to": "audio",
+            "label": "flags",
+            "collectionIndex": 10,
+            "artifactIndex": 11
+          },
+          "bends": 4,
+          "stretch": 1.431,
+          "directCorridorBlockers": [
+            {
+              "id": "player",
+              "label": "Cinematic Player",
+              "box": [
+                690,
+                250,
+                120,
+                60
+              ]
+            }
+          ]
+        },
+        {
+          "relationship": {
+            "id": "audio_to_boot",
+            "from": "audio",
+            "to": "boot",
+            "label": "state/unlock",
+            "collectionIndex": 12,
+            "artifactIndex": 13
+          },
+          "bends": 4,
+          "stretch": 1
+        },
+        {
+          "relationship": {
+            "id": "player_to_variants",
+            "from": "player",
+            "to": "variants",
+            "label": "resolve image",
+            "collectionIndex": 16,
+            "artifactIndex": 17
+          },
+          "bends": 4,
+          "stretch": 1.147
+        },
+        {
+          "relationship": {
+            "id": "audio_to_variants",
+            "from": "audio",
+            "to": "variants",
+            "label": "resolve audio",
+            "collectionIndex": 17,
+            "artifactIndex": 18
+          },
+          "bends": 4,
+          "stretch": 1
+        }
+      ],
+      "truncated": true
+    },
+    "hints": [
+      "story_data → loader crosses boot → storage: move the node of whichever is a branch, return, or second entrance to the other side of the main path, so that relationship runs through an empty corridor.",
+      "boot → loader and boot → storage cross next to boot: move node loader or storage so the two reach boot from different sides (for example one level with it, one directly above or below it).",
+      "loader → boot and boot → storage cross next to boot: move node loader or storage so the two reach boot from different sides (for example one level with it, one directly above or below it).",
+      "boot → capabilities and boot → player cross next to boot: move node capabilities or player so the two reach boot from different sides (for example one level with it, one directly above or below it).",
+      "boot → player and boot → audio cross next to boot: move node player or audio so the two reach boot from different sides (for example one level with it, one directly above or below it).",
+      "boot → player crosses capabilities → audio: move the node of whichever is a branch, return, or second entrance to the other side of the main path, so that relationship runs through an empty corridor.",
+      "boot → player and audio → boot cross next to boot: move node player or audio so the two reach boot from different sides (for example one level with it, one directly above or below it).",
+      "boot → player and player → storage cross next to player: move node boot or storage so the two reach player from different sides (for example one level with it, one directly above or below it)."
+    ],
+    "repair": "Trace these relationships at the desktop viewport. For Architecture, use references/architecture-layout-repair.md: reflow a blocked main path or tangled connected scene, and repair an isolated defect locally only when the surrounding composition is accepted. Preserve all semantic content and user-fixed geometry. Rerun finalize once after the edit."
+  }
+}

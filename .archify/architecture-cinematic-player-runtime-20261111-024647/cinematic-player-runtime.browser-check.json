@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "ok": false,
+  "command": "browser-check",
+  "evidenceKind": "automated-browser",
+  "status": "fail",
+  "visualReview": "not-requested",
+  "provenance": "current",
+  "deliveryReceiptId": "b56ee6b6-8450-4da1-a842-b45787d3b0b3",
+  "artifact": {
+    "path": "/home/luis/development/horror-web-comic/.archify/architecture-cinematic-player-runtime-20261111-024647/cinematic-player-runtime.html",
+    "sha256": "15082b7f25699a35128f4613c2ffe2db9e34f989154ba2e4e7f1bab6e85d3118",
+    "bytes": 868638
+  },
+  "state": {
+    "detail": "read",
+    "motion": "still"
+  },
+  "chrome": {
+    "status": "available",
+    "executable": "/home/luis/.local/bin/google-chrome"
+  },
+  "diagnostics": [
+    {
+      "code": "viewer/browser-check-runtime",
+      "severity": "error",
+      "message": "browser-check could not complete its Chrome inspection.",
+      "subject": {
+        "artifact": "/home/luis/development/horror-web-comic/.archify/architecture-cinematic-player-runtime-20261111-024647/cinematic-player-runtime.html"
+      },
+      "evidence": {
+        "reason": "Chrome navigation failed: net::ERR_FILE_NOT_FOUND"
+      },
+      "supportedFixes": [
+        "resolve the reported Chrome inspection error, then rerun browser-check"
+      ]
+    }
+  ],
+  "containment": {
+    "status": "fail",
+    "policy": "fit-or-reader-declared-readable-vertical-scroll",
+    "viewports": []
+  },
+  "themeStates": {
+    "status": "fail",
+    "viewports": []
+  },
+  "readability": {
+    "status": "fail",
+    "minimumProjectedNodeTextPx": 6,
+    "viewports": []
+  },
+  "viewerChrome": {
+    "status": "fail",
+    "viewports": []
+  },
+  "captures": {
+    "status": "not-requested",
+    "screenshots": [],
+    "contactSheet": null
+  },
+  "sidecars": {
+    "receipt": "cinematic-player-runtime.browser-check.json",
+    "files": []
+  },
+  "error": "Chrome navigation failed: net::ERR_FILE_NOT_FOUND"
+}
