@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "ok": false,
+  "command": "browser-check",
+  "evidenceKind": "automated-browser",
+  "status": "fail",
+  "visualReview": "not-requested",
+  "provenance": "current",
+  "deliveryReceiptId": "4ed743c9-6524-4a52-bdb3-c0f169ae3ce7",
+  "artifact": {
+    "path": "/home/luis/development/horror-web-comic/.archify/workflow-build-ci-pipeline-20261111-024647/build-validation-ci-pipeline.html",
+    "sha256": "4779cec8ff298f4937eacca19986002588db79aee0f19c566f319a5c57641523",
+    "bytes": 867157
+  },
+  "state": {
+    "detail": "read",
+    "motion": "still"
+  },
+  "chrome": {
+    "status": "available",
+    "executable": "/home/luis/.local/bin/google-chrome"
+  },
+  "diagnostics": [
+    {
+      "code": "viewer/browser-check-runtime",
+      "severity": "error",
+      "message": "browser-check could not complete its Chrome inspection.",
+      "subject": {
+        "artifact": "/home/luis/development/horror-web-comic/.archify/workflow-build-ci-pipeline-20261111-024647/build-validation-ci-pipeline.html"
+      },
+      "evidence": {
+        "reason": "Chrome navigation failed: net::ERR_FILE_NOT_FOUND"
+      },
+      "supportedFixes": [
+        "resolve the reported Chrome inspection error, then rerun browser-check"
+      ]
+    }
+  ],
+  "containment": {
+    "status": "fail",
+    "policy": "fit-or-reader-declared-readable-vertical-scroll",
+    "viewports": []
+  },
+  "themeStates": {
+    "status": "fail",
+    "viewports": []
+  },
+  "readability": {
+    "status": "fail",
+    "minimumProjectedNodeTextPx": 6,
+    "viewports": []
+  },
+  "viewerChrome": {
+    "status": "fail",
+    "viewports": []
+  },
+  "captures": {
+    "status": "not-requested",
+    "screenshots": [],
+    "contactSheet": null
+  },
+  "sidecars": {
+    "receipt": "build-validation-ci-pipeline.browser-check.json",
+    "files": []
+  },
+  "error": "Chrome navigation failed: net::ERR_FILE_NOT_FOUND"
+}

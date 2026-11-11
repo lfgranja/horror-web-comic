@@ -1,0 +1,373 @@
+{
+  "schemaVersion": 1,
+  "ok": false,
+  "command": "finalize",
+  "status": "fail",
+  "type": "workflow",
+  "quality": "showcase",
+  "startedAt": "2026-11-11T06:58:55.082Z",
+  "specification": {
+    "path": "/home/luis/development/horror-web-comic/.archify/workflow-build-ci-pipeline-20261111-024647/candidate.json",
+    "sha256": "8d2e4d76809e1f08c6ecaf0acc6b2594fc142bc7c8f61372166bfbbf961622ec",
+    "bytes": 11011
+  },
+  "artifact": {
+    "path": "/home/luis/development/horror-web-comic/.archify/workflow-build-ci-pipeline-20261111-024647/build-validation-ci-pipeline.html",
+    "sha256": "4779cec8ff298f4937eacca19986002588db79aee0f19c566f319a5c57641523",
+    "bytes": 867157
+  },
+  "stages": {
+    "validate": {
+      "status": "pass",
+      "exitCode": 0,
+      "durationMs": null,
+      "execution": "embedded-in-deliver",
+      "command": [
+        "/usr/bin/node-22",
+        "/home/luis/.agents/skills/archify/bin/archify.mjs",
+        "deliver",
+        "workflow",
+        "/home/luis/development/horror-web-comic/.archify/workflow-build-ci-pipeline-20261111-024647/candidate.json",
+        "/home/luis/development/horror-web-comic/.archify/workflow-build-ci-pipeline-20261111-024647/build-validation-ci-pipeline.html",
+        "--quality",
+        "showcase",
+        "--repo-root",
+        "/home/luis/development/horror-web-comic",
+        "--json"
+      ],
+      "receipt": {
+        "schemaVersion": 1,
+        "ok": true,
+        "command": "validate",
+        "specification": {
+          "sha256": "8d2e4d76809e1f08c6ecaf0acc6b2594fc142bc7c8f61372166bfbbf961622ec",
+          "bytes": 11011
+        },
+        "validation": {
+          "checksPassed": 9,
+          "checkCount": 9,
+          "compositionProfile": "showcase",
+          "compositionStatus": "pass",
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    "deliver": {
+      "status": "pass",
+      "exitCode": 0,
+      "durationMs": 2557,
+      "command": [
+        "/usr/bin/node-22",
+        "/home/luis/.agents/skills/archify/bin/archify.mjs",
+        "deliver",
+        "workflow",
+        "/home/luis/development/horror-web-comic/.archify/workflow-build-ci-pipeline-20261111-024647/candidate.json",
+        "/home/luis/development/horror-web-comic/.archify/workflow-build-ci-pipeline-20261111-024647/build-validation-ci-pipeline.html",
+        "--quality",
+        "showcase",
+        "--repo-root",
+        "/home/luis/development/horror-web-comic",
+        "--json"
+      ],
+      "receipt": {
+        "schemaVersion": 1,
+        "receiptId": "4ed743c9-6524-4a52-bdb3-c0f169ae3ce7",
+        "ok": true,
+        "command": "deliver",
+        "type": "workflow",
+        "input": "/home/luis/development/horror-web-comic/.archify/workflow-build-ci-pipeline-20261111-024647/candidate.json",
+        "output": "/home/luis/development/horror-web-comic/.archify/workflow-build-ci-pipeline-20261111-024647/build-validation-ci-pipeline.html",
+        "specification": {
+          "sha256": "8d2e4d76809e1f08c6ecaf0acc6b2594fc142bc7c8f61372166bfbbf961622ec",
+          "bytes": 11011
+        },
+        "artifact": {
+          "sha256": "4779cec8ff298f4937eacca19986002588db79aee0f19c566f319a5c57641523",
+          "bytes": 867157
+        },
+        "validation": {
+          "checksPassed": 9,
+          "checkCount": 9,
+          "compositionProfile": "showcase",
+          "compositionStatus": "pass",
+          "errors": 0,
+          "warnings": 0
+        },
+        "evidence": {
+          "verified": true,
+          "repository": "https://github.com/lfgranja/horror-web-comic",
+          "revision": "1247555487c8968e1e8ee1124e5c5d1a1e3f6e68",
+          "references": 25
+        },
+        "update": {
+          "status": "unavailable",
+          "installedVersion": null,
+          "availableVersion": null,
+          "releaseNotes": null,
+          "checkedAt": null,
+          "source": null,
+          "noticeRequired": false,
+          "noticeText": null,
+          "reason": "disabled"
+        }
+      }
+    },
+    "check": {
+      "status": "pass",
+      "exitCode": 0,
+      "durationMs": 678,
+      "command": [
+        "/usr/bin/node-22",
+        "/home/luis/.agents/skills/archify/bin/archify.mjs",
+        "check",
+        "/home/luis/development/horror-web-comic/.archify/workflow-build-ci-pipeline-20261111-024647/build-validation-ci-pipeline.html",
+        "--require-provenance"
+      ],
+      "receipt": {
+        "ok": true,
+        "file": "/home/luis/development/horror-web-comic/.archify/workflow-build-ci-pipeline-20261111-024647/build-validation-ci-pipeline.html",
+        "artifact": {
+          "sha256": "4779cec8ff298f4937eacca19986002588db79aee0f19c566f319a5c57641523",
+          "bytes": 867157
+        },
+        "checks": [
+          {
+            "name": "single_svg",
+            "ok": true,
+            "details": [
+              "found 1 <svg> block(s)"
+            ]
+          },
+          {
+            "name": "finite_svg",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "orthogonal_arrows",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "label_route_clearance",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "relationship_crossings",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "relationship_corridors",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "container_border_runs",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "route_rhythm",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "legend_clearance",
+            "ok": true,
+            "details": []
+          }
+        ],
+        "composition": {
+          "schemaVersion": 1,
+          "profile": "showcase",
+          "status": "pass",
+          "summary": {
+            "errors": 0,
+            "warnings": 0
+          },
+          "metrics": {
+            "properCrossings": 0,
+            "resolvedCrossovers": 0,
+            "ambiguousCorridors": 0,
+            "arrowheadCollisions": 0,
+            "containerBorderRuns": 0,
+            "labelRouteClearanceIssues": 0,
+            "labelCanvasOverflowIssues": 0,
+            "minLabelRouteClearance": 4,
+            "desktopReadabilityIssues": 0,
+            "viewportHeightIssues": 0,
+            "minProjectedNodeTextPx": 6.0855704697986575,
+            "maxBends": 0,
+            "routesOverSuggestedBends": 0,
+            "maxStretch": 1,
+            "routesOverSuggestedStretch": 0,
+            "minSegmentPx": 8,
+            "minInteriorSegmentPx": null,
+            "shortSegmentCount": 6,
+            "shortEndpointSegmentCount": 6,
+            "shortInteriorSegmentCount": 0,
+            "microSegmentCount": 0
+          },
+          "suggestedLimits": {
+            "bendsPerRelationship": 2,
+            "stretch": 1.35,
+            "segmentPx": 16,
+            "microSegmentPx": 8
+          },
+          "routeReview": {
+            "crossings": [],
+            "detours": []
+          },
+          "leadingSpace": {
+            "measured": false,
+            "reviewSuggested": false
+          },
+          "desktopReadability": {
+            "budgetBasis": "legacy-930",
+            "readerContract": "declared-wide-v1",
+            "availableDiagramWidth": 930,
+            "actualBudgetPx": 930,
+            "limit": "legacy",
+            "requestedTargetPx": null,
+            "requestedTargetMet": null,
+            "hardFloorPx": 6,
+            "hardFloorMet": true,
+            "minimumOwner": {
+              "kind": "node",
+              "id": "validate"
+            },
+            "minimumSourceTextPx": 7.8,
+            "minimumProjectedTextPx": 6.0855704697986575,
+            "semanticTextCount": 45
+          },
+          "issues": []
+        },
+        "provenance": "current",
+        "deliveryReceiptId": "4ed743c9-6524-4a52-bdb3-c0f169ae3ce7"
+      }
+    },
+    "browser-check": {
+      "status": "fail",
+      "exitCode": 1,
+      "durationMs": 2035,
+      "command": [
+        "/usr/bin/node-22",
+        "/home/luis/.agents/skills/archify/bin/archify.mjs",
+        "browser-check",
+        "/home/luis/development/horror-web-comic/.archify/workflow-build-ci-pipeline-20261111-024647/build-validation-ci-pipeline.html",
+        "--json",
+        "--require-provenance"
+      ],
+      "execution": "in-process",
+      "receipt": {
+        "schemaVersion": 1,
+        "ok": false,
+        "command": "browser-check",
+        "evidenceKind": "automated-browser",
+        "status": "fail",
+        "visualReview": "not-requested",
+        "provenance": "current",
+        "deliveryReceiptId": "4ed743c9-6524-4a52-bdb3-c0f169ae3ce7",
+        "artifact": {
+          "path": "/home/luis/development/horror-web-comic/.archify/workflow-build-ci-pipeline-20261111-024647/build-validation-ci-pipeline.html",
+          "sha256": "4779cec8ff298f4937eacca19986002588db79aee0f19c566f319a5c57641523",
+          "bytes": 867157
+        },
+        "state": {
+          "detail": "read",
+          "motion": "still"
+        },
+        "chrome": {
+          "status": "available",
+          "executable": "/home/luis/.local/bin/google-chrome"
+        },
+        "diagnostics": [
+          {
+            "code": "viewer/browser-check-runtime",
+            "severity": "error",
+            "message": "browser-check could not complete its Chrome inspection.",
+            "subject": {
+              "artifact": "/home/luis/development/horror-web-comic/.archify/workflow-build-ci-pipeline-20261111-024647/build-validation-ci-pipeline.html"
+            },
+            "evidence": {
+              "reason": "Chrome navigation failed: net::ERR_FILE_NOT_FOUND"
+            },
+            "supportedFixes": [
+              "resolve the reported Chrome inspection error, then rerun browser-check"
+            ]
+          }
+        ],
+        "containment": {
+          "status": "fail",
+          "policy": "fit-or-reader-declared-readable-vertical-scroll",
+          "viewports": []
+        },
+        "themeStates": {
+          "status": "fail",
+          "viewports": []
+        },
+        "readability": {
+          "status": "fail",
+          "minimumProjectedNodeTextPx": 6,
+          "viewports": []
+        },
+        "viewerChrome": {
+          "status": "fail",
+          "viewports": []
+        },
+        "captures": {
+          "status": "not-requested",
+          "screenshots": [],
+          "contactSheet": null
+        },
+        "sidecars": {
+          "receipt": "build-validation-ci-pipeline.browser-check.json",
+          "files": []
+        },
+        "error": "Chrome navigation failed: net::ERR_FILE_NOT_FOUND"
+      }
+    }
+  },
+  "browserCheck": {
+    "requested": true,
+    "ran": false
+  },
+  "diagnostics": [
+    {
+      "code": "viewer/browser-check-runtime",
+      "severity": "error",
+      "message": "browser-check could not complete its Chrome inspection.",
+      "subject": {
+        "artifact": "/home/luis/development/horror-web-comic/.archify/workflow-build-ci-pipeline-20261111-024647/build-validation-ci-pipeline.html"
+      },
+      "evidence": {
+        "reason": "Chrome navigation failed: net::ERR_FILE_NOT_FOUND"
+      },
+      "supportedFixes": [
+        "resolve the reported Chrome inspection error, then rerun browser-check"
+      ]
+    }
+  ],
+  "evidence": {
+    "receipt": "/home/luis/development/horror-web-comic/.archify/workflow-build-ci-pipeline-20261111-024647/build-validation-ci-pipeline.finalize.json",
+    "summaryReceipt": "/home/luis/development/horror-web-comic/.archify/workflow-build-ci-pipeline-20261111-024647/build-validation-ci-pipeline.finalize-summary.json",
+    "browserCheckReceipt": "/home/luis/development/horror-web-comic/.archify/workflow-build-ci-pipeline-20261111-024647/build-validation-ci-pipeline.browser-check.json"
+  },
+  "visualReview": "not-requested",
+  "failedStage": "browser-check",
+  "finishedAt": "2026-11-11T06:59:00.547Z",
+  "durationMs": 5465,
+  "update": {
+    "status": "current",
+    "installedVersion": "3.2.0",
+    "availableVersion": "3.2.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-11-10T20:01:33.019Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  }
+}

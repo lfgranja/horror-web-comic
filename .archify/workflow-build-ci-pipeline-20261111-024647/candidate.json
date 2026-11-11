@@ -1,0 +1,507 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Horror Web Comic — Build, Validation, and CI Pipeline",
+    "output": ".archify/workflow-build-ci-pipeline-20261111-024647/build-validation-ci-pipeline.html",
+    "quality_profile": "showcase",
+    "locale": "en",
+    "repository": {
+      "url": "https://github.com/lfgranja/horror-web-comic.git",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "1247555487c8968e1e8ee1124e5c5d1a1e3f6e68"
+    }
+  },
+  "lanes": [
+    {
+      "id": "sources",
+      "label": "Sources & Config"
+    },
+    {
+      "id": "local_gates",
+      "label": "Local Gates & Scripts"
+    },
+    {
+      "id": "artifacts",
+      "label": "Generated & Dist Artifacts"
+    },
+    {
+      "id": "ci",
+      "label": "CI Jobs & Quality Gates"
+    }
+  ],
+  "phases": [
+    {
+      "id": "p_inputs",
+      "label": "Authoring inputs",
+      "fromCol": 0,
+      "toCol": 0
+    },
+    {
+      "id": "p_validate",
+      "label": "Validate & prepare",
+      "fromCol": 1,
+      "toCol": 2,
+      "variant": "emphasis"
+    },
+    {
+      "id": "p_bundle",
+      "label": "Generate & bundle",
+      "fromCol": 3,
+      "toCol": 4,
+      "variant": "dashed"
+    },
+    {
+      "id": "p_verify",
+      "label": "Verify & audit",
+      "fromCol": 5,
+      "toCol": 5,
+      "variant": "security"
+    }
+  ],
+  "groups": [
+    {
+      "id": "g_chain",
+      "label": "npm run ci gate order",
+      "lane": "local_gates",
+      "fromCol": 1,
+      "toCol": 5,
+      "variant": "emphasis"
+    },
+    {
+      "id": "g_ci_jobs",
+      "label": "Additional CI jobs",
+      "lane": "ci",
+      "fromCol": 4,
+      "toCol": 5,
+      "variant": "dashed"
+    }
+  ],
+  "mainPath": [
+    "src_inputs",
+    "preflight",
+    "validate",
+    "test_unit",
+    "build_images",
+    "build_dist",
+    "test_e2e",
+    "ci_gate"
+  ],
+  "nodes": [
+    {
+      "id": "src_inputs",
+      "lane": "sources",
+      "col": 0,
+      "type": "database",
+      "label": "Source Inputs",
+      "sublabel": "src/, manifests, configs, media-src/",
+      "sources": [
+        {
+          "path": "package.json",
+          "line": 1,
+          "end_line": 25
+        },
+        {
+          "path": "budget.json",
+          "line": 1,
+          "end_line": 8
+        },
+        {
+          "path": "lighthouserc.json",
+          "line": 1,
+          "end_line": 38
+        }
+      ]
+    },
+    {
+      "id": "preflight",
+      "lane": "local_gates",
+      "col": 1,
+      "type": "backend",
+      "label": "Preflight",
+      "sublabel": "Toolchain & dependency checks",
+      "sources": [
+        {
+          "path": "scripts/preflight.mjs",
+          "line": 1,
+          "end_line": 80
+        },
+        {
+          "path": "package.json",
+          "line": 10,
+          "end_line": 24
+        }
+      ]
+    },
+    {
+      "id": "validate",
+      "lane": "local_gates",
+      "col": 1,
+      "type": "security",
+      "label": "Validate Manifest",
+      "sublabel": "Schema + refs + srcsets",
+      "sources": [
+        {
+          "path": "scripts/validate-manifest.mjs",
+          "line": 1,
+          "end_line": 90
+        },
+        {
+          "path": "package.json",
+          "line": 19,
+          "end_line": 19
+        }
+      ],
+      "yOffset": 85
+    },
+    {
+      "id": "test_unit",
+      "lane": "local_gates",
+      "col": 2,
+      "type": "backend",
+      "label": "Unit Tests",
+      "sublabel": "node --test unit suite",
+      "sources": [
+        {
+          "path": "package.json",
+          "line": 14,
+          "end_line": 14
+        },
+        {
+          "path": ".github/workflows/ci.yml",
+          "line": 81,
+          "end_line": 83
+        }
+      ]
+    },
+    {
+      "id": "build_images",
+      "lane": "local_gates",
+      "col": 3,
+      "type": "backend",
+      "label": "Build Images/Audio",
+      "sublabel": "Masters to light/standard variants",
+      "sources": [
+        {
+          "path": "scripts/build-images.mjs",
+          "line": 1,
+          "end_line": 90
+        },
+        {
+          "path": "package.json",
+          "line": 21,
+          "end_line": 21
+        }
+      ]
+    },
+    {
+      "id": "build_dist",
+      "lane": "local_gates",
+      "col": 4,
+      "type": "backend",
+      "label": "Production Build",
+      "sublabel": "esbuild bundle, copy, budgets",
+      "sources": [
+        {
+          "path": "scripts/build.mjs",
+          "line": 1,
+          "end_line": 90
+        },
+        {
+          "path": "package.json",
+          "line": 22,
+          "end_line": 22
+        }
+      ]
+    },
+    {
+      "id": "test_e2e",
+      "lane": "local_gates",
+      "col": 5,
+      "type": "frontend",
+      "label": "E2E Matrix",
+      "sublabel": "Playwright via range server",
+      "sources": [
+        {
+          "path": "playwright.config.js",
+          "line": 1,
+          "end_line": 62
+        },
+        {
+          "path": "scripts/serve-e2e.mjs",
+          "line": 1,
+          "end_line": 40
+        }
+      ],
+      "yOffset": -85
+    },
+    {
+      "id": "test_perf",
+      "lane": "local_gates",
+      "col": 5,
+      "type": "backend",
+      "label": "Performance Budgets",
+      "sublabel": "Perf specs + metrics gates",
+      "sources": [
+        {
+          "path": "package.json",
+          "line": 16,
+          "end_line": 17
+        },
+        {
+          "path": ".github/workflows/ci.yml",
+          "line": 93,
+          "end_line": 95
+        }
+      ],
+      "yOffset": 85
+    },
+    {
+      "id": "gen_assets",
+      "lane": "artifacts",
+      "col": 3,
+      "type": "database",
+      "label": "Generated Assets",
+      "sublabel": "assets/frames/generated, audio",
+      "sources": [
+        {
+          "path": "scripts/build-images.mjs",
+          "line": 13,
+          "end_line": 35
+        }
+      ]
+    },
+    {
+      "id": "dist_out",
+      "lane": "artifacts",
+      "col": 4,
+      "type": "cloud",
+      "label": "dist/ Output",
+      "sublabel": "Bundled app + publishable roots",
+      "sources": [
+        {
+          "path": "scripts/build.mjs",
+          "line": 17,
+          "end_line": 18
+        },
+        {
+          "path": "scripts/build.mjs",
+          "line": 37,
+          "end_line": 55
+        }
+      ]
+    },
+    {
+      "id": "ci_gate",
+      "lane": "ci",
+      "col": 5,
+      "type": "security",
+      "label": "CI gate Job",
+      "sublabel": "Ordered checks + trailers/LHCI",
+      "sources": [
+        {
+          "path": ".github/workflows/ci.yml",
+          "line": 1,
+          "end_line": 121
+        }
+      ]
+    },
+    {
+      "id": "webkit_layout",
+      "lane": "ci",
+      "col": 4,
+      "type": "frontend",
+      "label": "webkit-layout-gate",
+      "sublabel": "Targeted WebKit layout specs",
+      "sources": [
+        {
+          "path": ".github/workflows/ci.yml",
+          "line": 161,
+          "end_line": 197
+        }
+      ]
+    },
+    {
+      "id": "macos_compositor",
+      "lane": "ci",
+      "col": 4,
+      "type": "frontend",
+      "label": "macos-webkit-compositor",
+      "sublabel": "SC-018 on hardware compositor",
+      "sources": [
+        {
+          "path": ".github/workflows/ci.yml",
+          "line": 232,
+          "end_line": 267
+        }
+      ],
+      "yOffset": 85
+    },
+    {
+      "id": "lhci",
+      "lane": "ci",
+      "col": 5,
+      "type": "cloud",
+      "label": "Lighthouse Audit",
+      "sublabel": "Perf/a11y/LCP/CLS assertions",
+      "sources": [
+        {
+          "path": "lighthouserc.json",
+          "line": 1,
+          "end_line": 38
+        },
+        {
+          "path": ".github/workflows/ci.yml",
+          "line": 98,
+          "end_line": 103
+        }
+      ],
+      "yOffset": -85
+    }
+  ],
+  "edges": [
+    {
+      "id": "e_src_pre",
+      "from": "src_inputs",
+      "to": "preflight",
+      "label": "inputs",
+      "variant": "default"
+    },
+    {
+      "id": "e_pre_validate",
+      "from": "preflight",
+      "to": "validate",
+      "label": "env OK",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e_pre_unit",
+      "from": "preflight",
+      "to": "test_unit",
+      "label": "env OK",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e_validate_unit",
+      "from": "validate",
+      "to": "test_unit",
+      "label": "valid",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e_unit_img",
+      "from": "test_unit",
+      "to": "build_images",
+      "label": "pass",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e_img_assets",
+      "from": "build_images",
+      "to": "gen_assets",
+      "label": "variants",
+      "variant": "default"
+    },
+    {
+      "id": "e_assets_build",
+      "from": "gen_assets",
+      "to": "build_dist",
+      "label": "publishable",
+      "variant": "default",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "e_img_build",
+      "from": "build_images",
+      "to": "build_dist",
+      "label": "media ready",
+      "variant": "emphasis",
+      "toSide": "left"
+    },
+    {
+      "id": "e_build_dist",
+      "from": "build_dist",
+      "to": "dist_out",
+      "label": "emit",
+      "variant": "default"
+    },
+    {
+      "id": "e_build_e2e",
+      "from": "build_dist",
+      "to": "test_e2e",
+      "label": "serve/build",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e_build_perf",
+      "from": "build_dist",
+      "to": "test_perf",
+      "label": "built app",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e_e2e_gate",
+      "from": "test_e2e",
+      "to": "ci_gate",
+      "label": "matrix result",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e_perf_gate",
+      "from": "test_perf",
+      "to": "ci_gate",
+      "label": "budget result",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e_dist_lhci",
+      "from": "dist_out",
+      "to": "lhci",
+      "label": "static dist",
+      "variant": "default"
+    },
+    {
+      "id": "e_lhci_gate",
+      "from": "lhci",
+      "to": "ci_gate",
+      "label": "audit",
+      "variant": "security"
+    },
+    {
+      "id": "e_src_wk",
+      "from": "src_inputs",
+      "to": "webkit_layout",
+      "label": "tracked specs/src",
+      "variant": "dashed",
+      "role": "branch"
+    },
+    {
+      "id": "e_src_macos",
+      "from": "src_inputs",
+      "to": "macos_compositor",
+      "label": "tracked fixtures/src",
+      "variant": "dashed",
+      "role": "branch"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Local Chain",
+      "items": [
+        "npm run ci enforces ordered gates: preflight, validate, unit, build:images, build, e2e, perf.",
+        "Build emits bundled app and publishable assets to dist/ with budget/validation checks."
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "CI Verification",
+      "items": [
+        "gate job runs the full chain plus trailers and Lighthouse delivery assertions on dist/.",
+        "Dedicated jobs provide targeted WebKit layout signal and macOS hardware-compositor perf evidence."
+      ]
+    }
+  ]
+}

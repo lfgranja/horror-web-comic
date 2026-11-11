@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "ok": false,
+  "command": "finalize",
+  "status": "fail",
+  "type": "workflow",
+  "quality": "showcase",
+  "specification": {
+    "path": "/home/luis/development/horror-web-comic/.archify/workflow-build-ci-pipeline-20261111-024647/candidate.json",
+    "sha256": "8d2e4d76809e1f08c6ecaf0acc6b2594fc142bc7c8f61372166bfbbf961622ec",
+    "bytes": 11011
+  },
+  "artifact": {
+    "path": "/home/luis/development/horror-web-comic/.archify/workflow-build-ci-pipeline-20261111-024647/build-validation-ci-pipeline.html",
+    "sha256": "4779cec8ff298f4937eacca19986002588db79aee0f19c566f319a5c57641523",
+    "bytes": 867157
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "fail"
+  },
+  "failedStage": "browser-check",
+  "diagnostics": [
+    {
+      "code": "viewer/browser-check-runtime",
+      "severity": "error",
+      "message": "browser-check could not complete its Chrome inspection.",
+      "subject": {
+        "artifact": "/home/luis/development/horror-web-comic/.archify/workflow-build-ci-pipeline-20261111-024647/build-validation-ci-pipeline.html"
+      },
+      "evidence": {
+        "reason": "Chrome navigation failed: net::ERR_FILE_NOT_FOUND"
+      },
+      "supportedFixes": [
+        "resolve the reported Chrome inspection error, then rerun browser-check"
+      ]
+    }
+  ],
+  "diagnosticSummary": {
+    "total": 1,
+    "shown": 1,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "/home/luis/development/horror-web-comic/.archify/workflow-build-ci-pipeline-20261111-024647/build-validation-ci-pipeline.finalize.json",
+    "summaryReceipt": "/home/luis/development/horror-web-comic/.archify/workflow-build-ci-pipeline-20261111-024647/build-validation-ci-pipeline.finalize-summary.json",
+    "browserCheckReceipt": "/home/luis/development/horror-web-comic/.archify/workflow-build-ci-pipeline-20261111-024647/build-validation-ci-pipeline.browser-check.json"
+  },
+  "update": {
+    "status": "current",
+    "installedVersion": "3.2.0",
+    "availableVersion": "3.2.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-11-10T20:01:33.019Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  },
+  "visualReview": "not-requested",
+  "durationMs": 5465,
+  "browserCheck": {
+    "requested": true,
+    "ran": false
+  }
+}
