@@ -274,11 +274,17 @@ async function boot() {
         }, 5000);
       } catch {}
     };
-    const applySensoryMode = (mode) => {
+    const applySensoryMode = (mode, { persist = true } = {}) => {
       const m = mode === 'safe-accessible' ? 'safe-accessible' : 'immersive-fx';
       document.documentElement.setAttribute('data-sensory-mode', m);
-      try { storage?.setSensoryMode?.(m); } catch {}
-      try { globalThis.localStorage?.setItem('hwc.sensoryMode', m); try { globalThis.localStorage?.removeItem?.('horror_comic_sensory_mode'); } catch {} } catch {}
+      // Persist/broadcast only for a local change. Applying a mode that arrived
+      // from another tab must not write it back: that write emits a storage
+      // event (and a BroadcastChannel message) in the other tab, which applies
+      // it again, and the two tabs keep each other busy forever.
+      if (persist) {
+        try { storage?.setSensoryMode?.(m); } catch {}
+        try { globalThis.localStorage?.setItem('hwc.sensoryMode', m); try { globalThis.localStorage?.removeItem?.('horror_comic_sensory_mode'); } catch {} } catch {}
+      }
       if (toggleSensory) toggleSensory.setAttribute('aria-pressed', m === 'immersive-fx' ? 'true' : 'false');
       if (badge) { updateBadge(m); badge.classList.add('visible'); setTimeout(() => badge.classList.remove('visible'), 5000); }
       if (m === 'safe-accessible') {
@@ -290,7 +296,7 @@ async function boot() {
     if (reducedMotionPre) eff = 'safe-accessible';
     if (!eff) eff = 'safe-accessible';
     try { globalThis.localStorage?.setItem('hwc.sensoryMode', eff); globalThis.localStorage?.removeItem?.('horror_comic_sensory_mode'); } catch {}
-    applySensoryMode(eff);
+    applySensoryMode(eff, { persist: false });
     try { globalThis.__currentStory = story; } catch {}
     toggleSensory?.addEventListener('click', async () => {
       let current = globalThis.localStorage?.getItem('hwc.sensoryMode') || globalThis.localStorage?.getItem('horror_comic_sensory_mode') || 'safe-accessible';
@@ -315,11 +321,9 @@ async function boot() {
         try {
           if (mode === 'safe-accessible') {
             try { if (typeof player?.purgeSensoryEffects === 'function') { player.purgeSensoryEffects(); } else { audio?.stopAll?.(0); const image = document.querySelector('#frame-image'); image?.classList.remove('memory-distortion', 'memory-distortion-severe'); } } catch {}
-            applySensoryMode(mode);
-            try { globalThis.localStorage?.setItem('hwc.sensoryMode', mode); } catch {}
+            applySensoryMode(mode, { persist: false });
           } else if (mode === 'immersive-fx') {
-            applySensoryMode(mode);
-            try { globalThis.localStorage?.setItem('hwc.sensoryMode', mode); } catch {}
+            applySensoryMode(mode, { persist: false });
           }
         } catch {}
       });

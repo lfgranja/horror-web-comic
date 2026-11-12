@@ -362,7 +362,9 @@
   justify-items: center;
   grid-template-rows: minmax(0, 1fr);
   top: 0;
-  /* Keep band strictly above controls to avoid intercepting nav controls */
+  /* Keep the band strictly above the control bar so fixed overlay content can
+     never intercept navigation controls (FR-033). The bar's viewport-relative
+     top edge is published on the shared ancestor by the player. */
   bottom: max(7.5rem, calc(100dvh - var(--control-bar-top, 100dvh)));
   padding: max(var(--space-4), var(--safe-top)) max(var(--space-4), var(--safe-right)) 0 max(var(--space-4), var(--safe-left));
   pointer-events: none;
@@ -397,26 +399,31 @@
   font-size: 0.85rem;
 }
 
-#end-overlay .overlay-card button,
-#end-overlay .overlay-card a {
-  pointer-events: auto;
-  /* Pinned to the bottom of the card's scrollport. The card is the scroll
-     container above, so `sticky` + `bottom: 0` keeps the action inside the
-     PAINTED band however short that band is. An opaque
-     background is required. */
+#end-overlay .end-actions {
+  display: grid;
+  gap: 0.5rem;
+  /* Pin the action group to the bottom of the card's scrollport so the
+     primary replay control stays inside the painted band on short viewports.
+     The group (not each sibling) is sticky to avoid overlapping controls. */
   position: sticky;
   bottom: 0;
+  z-index: 1;
+  padding-top: 0.35rem;
   background-color: var(--ink-900);
 }
 
-/* Ensure end overlay covers navigation controls on narrow viewports */
+#end-overlay .overlay-card button,
+#end-overlay .overlay-card a {
+  pointer-events: auto;
+}
+
 @media (max-width: 420px) {
   #end-overlay {
     bottom: max(7rem, calc(100dvh - var(--control-bar-top, 100dvh)));
     padding-bottom: max(var(--space-3), var(--safe-bottom));
   }
   #end-overlay .overlay-card {
-    max-height: 92vh;
+    max-height: 100%;
   }
 }
 

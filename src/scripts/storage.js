@@ -108,6 +108,8 @@ export class StorageManager {
     this.themeChannelMessageHandler = null;
     this.sensoryChannel = null;
     this.sensoryChannelMessageHandler = null;
+    this.lastSensoryMode = null;
+    this.lastTheme = null;
     this.storageListenerAttached = false;
     this.disposed = false;
     this.defaultsOnly = false;
@@ -121,7 +123,10 @@ export class StorageManager {
           const newTheme = event?.newValue;
           if (VALID_THEMES.has(newTheme)) {
             this.defaultsOnly = false;
-            this.set('hwc.theme', newTheme);
+            // The originating tab already persisted the value, and localStorage
+            // is shared by every tab of the origin. Writing it again here would
+            // emit a second storage event for the same change and could bounce
+            // between tabs indefinitely.
             this.notifyTheme(newTheme);
           }
         } else if (event?.key === 'hwc.sensoryMode' || event?.key === 'horror_comic_sensory_mode') {
@@ -396,6 +401,11 @@ export class StorageManager {
   }
 
   notifySensory(mode) {
+    // Storage events and BroadcastChannel messages can carry the same mode
+    // twice. Notify once per distinct value so listeners never do duplicate
+    // work for a single change.
+    if (mode === this.lastSensoryMode) return;
+    this.lastSensoryMode = mode;
     for (const listener of this.sensoryListeners) {
       try {
         listener(mode);
@@ -414,7 +424,12 @@ export class StorageManager {
   setSensoryMode(mode) {
     if (mode !== 'safe-accessible' && mode !== 'immersive-fx') return;
     this.defaultsOnly = false;
-    this.set('hwc.sensoryMode', mode);
+    if (this.getSensoryMode() !== mode) this.set('hwc.sensoryMode', mode);
+    // The same change can reach this method twice in one user action (the
+    // click handler persists it and the mode applier persists it again).
+    // Broadcast and notify once per distinct mode; tabs that receive the
+    // message only apply it, never write it back, so this terminates.
+    if (this.lastSensoryMode === mode) return mode;
     if (!this.disposed && this.sensoryChannel) {
       try {
         this.sensoryChannel.postMessage({ mode, timestamp: Date.now() });
@@ -437,6 +452,10 @@ export class StorageManager {
   }
 
   notifyTheme(themeId) {
+    // BroadcastChannel and the storage event can deliver the same theme for a
+    // single change. Notify once per distinct value.
+    if (themeId === this.lastTheme) return;
+    this.lastTheme = themeId;
     for (const listener of this.themeListeners) {
       try {
         listener(themeId);
