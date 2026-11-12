@@ -1,0 +1,33 @@
+{
+  "schema_version": "hwc-sdd-baseline-1.0",
+  "updated_at": "2026-11-12",
+  "description": "Baseline explícita da cadeia SDD (R4/R7) para estado real das specs. Aceita gaps/pendências conhecidos sem aprovação falsa; endurecer ao obter evidência (remover exceções). Toda exceção carrega owner e expires — exceções expiradas viram aviso no gate e devem ser renovadas ou fechadas.",
+  "allow_missing": {},
+  "exceptions": {
+    "001-cinematic-player": {
+      "validate_status": "conditional",
+      "release_status": "not_ready",
+      "owner": "@lfgranja",
+      "expires": "2026-12-31",
+      "reason": "Spec parcial: tarefas/evidências abertas (usabilidade n>=10, WCAG AAA AT/manual, matriz WebKit/Safari/dispositivo, FPS referência SC-018). Validação/release integral pendentes de evidência.",
+      "refs": ["ESC-HWC-20261111-002", "ESC-HWC-20261111-003"]
+    },
+    "002-theme-switcher": {
+      "validate_status": "conditional",
+      "release_status": "not_ready",
+      "owner": "@lfgranja",
+      "expires": "2026-12-11",
+      "reason": "Aprovação retroativa suspensa em 2026-11-12: E2E theme-persistence/theme-switcher vermelho nos runs #42825569449 e #43020030961 (causa: loop cross-tab de escrita; correção em PR #182 aguardando run de CI verde em dev). Promoção depende de evidência verde na matriz.",
+      "refs": ["specs/002-theme-switcher/tasks.md", ".specify/validations/002-theme-switcher/validate.md"]
+    },
+    "005-korean-horror-mechanics": {
+      "validate_status": "blocked",
+      "release_status": "blocked",
+      "owner": "@lfgranja",
+      "expires": "2026-12-11",
+      "reason": "T047 aberta; CI dev #42825569449 falho (webkit-layout-gate @320x568, end overlay intercepta controles) e #43020030961 falho na matriz E2E com 26 testes; causa raiz identificada no loop cross-tab de escrita sensorial/tema, corrigida em fix/spec005-cross-tab-sync-loop (PR #182). R4/R7 bloqueados até run verde em dev.",
+      "refs": ["ESC-HWC-20261111-001", "specs/005-korean-horror-mechanics/tasks.md"]
+    }
+  },
+  "notes": "003/004: validação/release retroativos permitidos com evidência citada e limitações [NV] declaradas (attestation.md / escopo automatizado). 002 rebaixado (E2E vermelho) até run verde em dev. O gate acopla R7 a R4 — RELEASED com validação não APPROVED falha, exceto waiver explícito por allow_release_despite_unapproved_validation na exceção. Assessment slug mapping não exigido por este gate (ver checklist)."
+}
