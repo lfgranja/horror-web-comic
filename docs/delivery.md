@@ -18,7 +18,7 @@ e imprime, para cada falha, o comando de correção.
 | Chromium, Firefox, WebKit | revisão do Playwright fixado | downloads do Playwright | `npm test`, `npm run test:e2e`, `npm run test:perf` |
 | Bibliotecas de sistema dos navegadores | exigidas pelo WebKit, Firefox e Chromium | `sudo npx playwright install-deps` | `npm test`, `npm run test:e2e`, `npm run test:perf` |
 | Chrome ou Chromium | versão atual | `CHROME_PATH` ou `PATH` | `npm run lhci` |
-| Lighthouse CI | 0.14.0 | `node_modules/.bin/lhci` | `npm run lhci` |
+| Lighthouse CI | 0.15.1 | `node_modules/.bin/lhci` | `npm run lhci` |
 
 A checagem de navegadores tem duas etapas: `playwright-browsers` exige que o
 executável de cada projeto de `playwright.config.js` exista em disco, e
@@ -42,8 +42,8 @@ O preflight também exige que:
   nem `&` final, para que nenhum portão de navegador ou de referência fique
   oculto.
 
-Versões exatas do toolchain: `@lhci/cli` 0.14.0, `@playwright/test` 1.63.0,
-`ajv` 8.20.0, `ajv-formats` 3.0.1, `esbuild` 0.24.2 e `sharp` 0.33.5.
+Versões exatas do toolchain: `@lhci/cli` 0.15.1, `@playwright/test` 1.64.1,
+`ajv` 8.20.0, `ajv-formats` 3.0.1, `esbuild` 0.28.2 e `sharp` 0.35.5.
 
 Provisionamento de um host novo:
 

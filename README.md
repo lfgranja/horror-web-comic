@@ -23,9 +23,9 @@ navegador da matriz em modo headless e falha quando o binário foi baixado mas n
 inicia por falta de bibliotecas do sistema.
 
 As ferramentas de build e de auditoria são instaladas pelo próprio projeto, com
-versões exatas em `package.json` e `package-lock.json`: `@lhci/cli` 0.14.0,
-`@playwright/test` 1.63.0, `ajv` 8.20.0, `ajv-formats` 3.0.1, `esbuild` 0.24.2 e
-`sharp` 0.33.5. Nada usa intervalo semver: toda dependência é fixada e o
+versões exatas em `package.json` e `package-lock.json`: `@lhci/cli` 0.15.1,
+`@playwright/test` 1.64.1, `ajv` 8.20.0, `ajv-formats` 3.0.1, `esbuild` 0.28.2 e
+`sharp` 0.35.5. Nada usa intervalo semver: toda dependência é fixada e o
 preflight falha se `package.json`, `package-lock.json` e `node_modules` divergirem.
 
 ## Desenvolvimento
