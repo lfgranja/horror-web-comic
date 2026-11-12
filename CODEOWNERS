@@ -1,0 +1,35 @@
+# horror-web-comic — code ownership (GitHub CODEOWNERS)
+# Revisão humana onde o gate determinístico não chega. Merge humano obrigatório.
+
+# SDD artifacts e especificações
+/specs/ @lfgranja
+/.specify/ @lfgranja
+
+# Governança, CI e scripts
+/docs/governance/ @lfgranja
+/docs/adr/ @lfgranja
+/scripts/ @lfgranja
+/.github/workflows/ @lfgranja
+
+# Núcleo sensível de runtime (playback, áudio, storage, boot, manifesto)
+/src/scripts/player.js @lfgranja
+/src/scripts/audio.js @lfgranja
+/src/scripts/storage.js @lfgranja
+/src/scripts/main.js @lfgranja
+/src/scripts/story-loader.js @lfgranja
+/src/scripts/a11y.js @lfgranja
+/src/scripts/light-variants.js @lfgranja
+/src/scripts/capabilities.js @lfgranja
+/src/scripts/safe-reference.js @lfgranja
+/src/scripts/sensory-taxonomy.js @lfgranja
+
+# Estilos (tokens/temas/layout; regressões WebKit vivem aqui)
+/src/styles/ @lfgranja
+
+# Telemetria e dados de execuções
+/docs/telemetry/ @lfgranja
+
+# Configs e contratos de execução
+/budget.json @lfgranja
+/playwright.config.js @lfgranja
+/lighthouserc.json @lfgranja

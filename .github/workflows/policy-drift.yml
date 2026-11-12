@@ -1,0 +1,36 @@
+name: Policy Drift
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+  push:
+    branches: [dev, main]
+    paths:
+      - ".github/workflows/policy-drift.yml"
+      - "docs/governance/hub-policy-manifest.json"
+      - "docs/governance/satellite-manifest.json"
+      - "scripts/ci/check_policy_drift.py"
+  pull_request:
+    branches: [dev, main]
+    paths:
+      - ".github/workflows/policy-drift.yml"
+      - "docs/governance/hub-policy-manifest.json"
+      - "docs/governance/satellite-manifest.json"
+      - "scripts/ci/check_policy_drift.py"
+
+permissions:
+  contents: read
+
+jobs:
+  policy-drift:
+    name: policy-drift
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+      - name: Run policy drift check
+        run: python3 scripts/ci/check_policy_drift.py docs/governance/hub-policy-manifest.json docs/governance/satellite-manifest.json
