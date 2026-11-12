@@ -125,9 +125,11 @@ export class CinematicPlayer {
     // The description is announced on a debounce, so the control bar's height
     // changes AFTER render(). Re-publish it whenever the live region resizes,
     // otherwise --control-bar-height stays stale and the end-of-narrative card
-    // covers the navigation controls (FR-033).
+    // covers the navigation controls (FR-033). The control bar itself can also
+    // reflow/wrap across breakpoints and viewport changes.
     this.descriptionResizeObserver = new ResizeObserver(() => this.publishControlBarHeight());
     if (this.description) this.descriptionResizeObserver.observe(this.description);
+    if (this.controlBar) this.descriptionResizeObserver.observe(this.controlBar);
     this.resumeOverlayKeydownHandler = (event) => {
       if (event.key === 'Escape') {
         event.preventDefault();
@@ -168,23 +170,21 @@ export class CinematicPlayer {
     if (!bar || this.destroyed) return;
     const rect = bar.getBoundingClientRect();
     const height = Math.ceil(rect.height);
-    if (height > 0) this.root.style.setProperty('--control-bar-height', `${height}px`);
-    // The end overlay is fixed to the viewport while the control bar scrolls
-    // with the document, so it also needs the bar's viewport-relative top edge:
-    // the overlay's band must stop where the bar BEGINS, otherwise a card
-    // centred in the band hangs back over the controls it must not intercept
-    // (FR-033). Only the end overlay consumes it, so the (layout-forcing)
-    // measurement is skipped until that overlay has been shown.
-    if (this.endOverlayShown) {
-      // The end overlay is a sibling of #player (both live under #app), so the
-      // custom property has to be published on their shared ancestor for the
-      // overlay's rule to see it. --control-bar-top is the bar's
-      // viewport-relative top edge: the overlay's band must stop where the bar
-      // begins, or a card centred in the band hangs back over the controls it
-      // must not intercept (FR-033).
-      const scope = this.endOverlay.closest('.app-shell') || this.root;
-      scope.style.setProperty('--control-bar-top', `${Math.ceil(rect.top)}px`);
+    const top = Math.max(0, Math.ceil(rect.top));
+    // The end overlay is a sibling of #player (both live under #app), so the
+    // overlay's clearance variables must be published on their shared ancestor
+    // for the fixed overlay to consume them (FR-033).
+    const scope = this.endOverlay?.closest('.app-shell') || this.root;
+    if (height > 0) {
+      this.root.style.setProperty('--control-bar-height', `${height}px`);
+      scope.style.setProperty('--control-bar-height', `${height}px`);
     }
+    // The end overlay is fixed to the viewport while the control bar scrolls
+    // with the document, so it needs the bar's viewport-relative top edge and a
+    // measured height-based clearance. Publishing eagerly avoids a WebKit timing
+    // window where the overlay becomes visible before the first post-show
+    // measurement settles.
+    scope.style.setProperty('--control-bar-top', `${top}px`);
   }
 
   buildFrames() {
@@ -404,7 +404,10 @@ export class CinematicPlayer {
     this.endOverlayShown = true;
     if (!wasHidden) return;
     this.publishControlBarHeight();
-    requestAnimationFrame(() => this.publishControlBarHeight());
+    requestAnimationFrame(() => {
+      this.publishControlBarHeight();
+      requestAnimationFrame(() => this.publishControlBarHeight());
+    });
   }
 
   goEnd() {
