@@ -78,13 +78,20 @@ test.describe('Theme Switcher - Comutação visual, estabilidade e latência (US
   test('medição determinística SC-005: comutação síncrona com latência visual < 16ms e zero app frames agendados', async ({ page }) => {
     await openPlayer(page, 'tests/fixtures/story.json', { pause: true });
 
-    // Instala probe de requestAnimationFrame
+    // Instala probe de requestAnimationFrame com atribuição dona/total, mesma
+    // técnica do tests/perf/fps.spec.js: o contador abaixo conta TODOS os
+    // rAF registrados na janela armada — inclusive o frame próprio do await do
+    // sampler. Subtração do próprio sampler é feita separadamente (own), de
+    // modo que `appFrames` conte somente o que a aplicação registra. Sem isso,
+    // o teste falha (2 registrados, 0 da aplicação) em qualquer host em que o
+    // navegador mantenha rAF interno/pilado na janela de troca de tema —
+    // falso positivo em CI, não uma regressão de loop da aplicação.
     await page.evaluate(() => {
-      window.__themeProbe = { appFrames: 0, armed: false };
+      window.__themeProbe = { total: 0, own: 0, armed: false };
       const origRaf = window.requestAnimationFrame.bind(window);
       window.requestAnimationFrame = (cb) => {
         if (window.__themeProbe.armed) {
-          window.__themeProbe.appFrames += 1;
+          window.__themeProbe.total += 1;
         }
         return origRaf(cb);
       };
@@ -104,8 +111,9 @@ test.describe('Theme Switcher - Comutação visual, estabilidade e latência (US
       const syncDuration = performance.now() - start;
       const appliedTheme = document.documentElement.getAttribute('data-theme');
 
-      // Espera um frame de renderização
-      await new Promise((r) => requestAnimationFrame(r));
+      // Espera um frame de renderização. O registro do próprio sampler é
+      // contabilizado em `own` e subtraído no final — não é "app frames".
+      await new Promise((r) => { window.__themeProbe.own += 1; requestAnimationFrame(r); });
       const visualLatency = performance.now() - start;
       window.__themeProbe.armed = false;
 
@@ -113,7 +121,7 @@ test.describe('Theme Switcher - Comutação visual, estabilidade e latência (US
         syncDuration,
         visualLatency,
         appliedTheme,
-        appFrames: window.__themeProbe.appFrames
+        appFrames: window.__themeProbe.total - window.__themeProbe.own
       };
     });
 
