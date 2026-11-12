@@ -6,7 +6,10 @@ on:
 
 jobs:
   gate:
-    runs-on: ubuntu-latest
+    # Pin the OS: ubuntu-latest is mid-migration 24.04 -> 26.04 (runs can swap
+    # OS between pushes this week). 24.04 is the exact image this workflow was
+    # validated on.
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
         with:
@@ -159,7 +162,7 @@ jobs:
   # this list explicit rather than globbing — a glob would quietly grow the job
   # into a second full matrix and reintroduce the 20-minute wait.
   webkit-layout-gate:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
 

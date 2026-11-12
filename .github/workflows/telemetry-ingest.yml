@@ -1,0 +1,44 @@
+name: Telemetry (validate + ingest)
+
+on:
+  push:
+    branches: [dev, main]
+    paths:
+      - "docs/telemetry/**"
+      - "scripts/telemetry/**"
+      - "docs/governance/execution-record.schema.json"
+      - ".github/workflows/telemetry-ingest.yml"
+  pull_request:
+    branches: [dev, main]
+    paths:
+      - "docs/telemetry/**"
+      - "scripts/telemetry/**"
+      - "docs/governance/execution-record.schema.json"
+      - ".github/workflows/telemetry-ingest.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  telemetry-ingest:
+    name: telemetry-ingest
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+      # Fail-closed: a token-shaped string or high-entropy secret in the record
+      # must fail the job, not just produce a warning. (--strict only warns;
+      # --strict-redaction exits 2.)
+      - name: Validate telemetry JSONL (secret scan)
+        run: python3 scripts/telemetry/validate_telemetry.py docs/telemetry/execution-record.jsonl --strict-redaction
+      - name: Ingest telemetry (self-check)
+        run: python3 scripts/telemetry/ingest_telemetry.py telemetry-ingest-report.json docs/telemetry/execution-record.jsonl
+      - name: Upload ingest report
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: telemetry-ingest-report
+          path: telemetry-ingest-report.json

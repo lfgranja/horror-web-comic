@@ -23,3 +23,6 @@ Thumbs.db
 .cursor/
 .claude/
 .aider*
+
+# Telemetry ingest report produced by the telemetry-ingest workflow/local runs
+telemetry-ingest-report.json

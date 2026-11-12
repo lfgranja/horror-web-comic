@@ -473,6 +473,108 @@ test('setTheme emits BroadcastChannel("theme") message and onTheme receives it',
   }
 });
 
+test('a theme storage event is applied without being written back', () => {
+  const writes = [];
+  const values = new Map([
+    ['hwc.schemaVersion', '1'],
+    ['hwc.theme', 'cinema']
+  ]);
+  const storage = new StorageManager({
+    getItem: (key) => values.get(key) ?? null,
+    setItem: (key, value) => {
+      writes.push([key, value]);
+      values.set(key, value);
+    },
+    removeItem: (key) => values.delete(key)
+  });
+  const received = [];
+  storage.onTheme((theme) => received.push(theme));
+
+  // Another tab already persisted the new theme. Re-writing it here would emit
+  // a second storage event and could bounce between tabs forever.
+  storage.handleStorage({ key: 'hwc.theme', newValue: 'noir' });
+  storage.handleStorage({ key: 'hwc.theme', newValue: 'noir' });
+
+  assert.deepEqual(received, ['noir']);
+  assert.equal(writes.filter(([key]) => key === 'hwc.theme').length, 0);
+  assert.equal(values.get('hwc.theme'), 'cinema');
+  storage.dispose();
+});
+
+test('setSensoryMode notifies once per distinct mode across tabs', () => {
+  const originalChannel = globalThis.BroadcastChannel;
+  const windowDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'window');
+  const channels = new Set();
+  class TestChannel {
+    constructor(name) {
+      this.name = name;
+      this.listeners = new Set();
+      channels.add(this);
+    }
+    addEventListener(type, listener) {
+      if (type === 'message') this.listeners.add(listener);
+    }
+    postMessage(data) {
+      for (const channel of channels) {
+        if (channel === this || channel.closed || channel.name !== this.name) continue;
+        for (const listener of channel.listeners) listener({ data });
+      }
+    }
+    close() {
+      this.closed = true;
+      channels.delete(this);
+    }
+  }
+  Object.defineProperty(globalThis, 'BroadcastChannel', { configurable: true, value: TestChannel });
+  Object.defineProperty(globalThis, 'window', { configurable: true, value: {} });
+
+  try {
+    const first = new StorageManager(null);
+    const second = new StorageManager(null);
+    const received = [];
+    second.onSensory((mode) => received.push(mode));
+
+    // The click handler and the mode applier both persist the same value in one
+    // user action; only the first call may broadcast.
+    first.setSensoryMode('immersive-fx');
+    first.setSensoryMode('immersive-fx');
+    assert.deepEqual(received, ['immersive-fx']);
+
+    first.setSensoryMode('safe-accessible');
+    assert.deepEqual(received, ['immersive-fx', 'safe-accessible']);
+
+    first.dispose();
+    second.dispose();
+  } finally {
+    if (originalChannel) Object.defineProperty(globalThis, 'BroadcastChannel', { configurable: true, value: originalChannel });
+    else delete globalThis.BroadcastChannel;
+    if (windowDescriptor) Object.defineProperty(globalThis, 'window', windowDescriptor);
+    else delete globalThis.window;
+  }
+});
+
+test('a sensory storage event does not write the mode back', () => {
+  const writes = [];
+  const values = new Map([['hwc.schemaVersion', '1']]);
+  const storage = new StorageManager({
+    getItem: (key) => values.get(key) ?? null,
+    setItem: (key, value) => {
+      writes.push([key, value]);
+      values.set(key, value);
+    },
+    removeItem: (key) => values.delete(key)
+  });
+  const received = [];
+  storage.onSensory((mode) => received.push(mode));
+
+  storage.handleStorage({ key: 'hwc.sensoryMode', newValue: 'immersive-fx' });
+  storage.handleStorage({ key: 'hwc.sensoryMode', newValue: 'immersive-fx' });
+
+  assert.deepEqual(received, ['immersive-fx']);
+  assert.equal(writes.filter(([key]) => key === 'hwc.sensoryMode').length, 0);
+  storage.dispose();
+});
+
 test('onTheme receives changes via storage event when BroadcastChannel is unavailable', () => {
   const originalChannel = globalThis.BroadcastChannel;
   const originalAddEventListener = globalThis.addEventListener;

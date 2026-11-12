@@ -46,6 +46,13 @@ npm run test:perf        # Perf budgets (Chromium)
 npm run test:perf:webkit # Perf on WebKit projects
 npm run ci               # preflight → validate → test:unit → build:images → build → test:e2e → test:perf
 npm run ci:lighthouse    # Lighthouse CI
+
+# Governance gates (GitHub Actions: sdd-gate.yml, policy-drift.yml, telemetry-ingest.yml)
+python3 scripts/ci/sdd-gate.py                                  # R4/R7 chain gate vs docs/governance/sdd-chain-baseline.json
+python3 scripts/ci/check_policy_drift.py docs/governance/hub-policy-manifest.json docs/governance/satellite-manifest.json
+python3 scripts/telemetry/validate_telemetry.py docs/telemetry/execution-record.jsonl --strict-redaction
+python3 scripts/telemetry/ingest_telemetry.py telemetry-ingest-report.json docs/telemetry/execution-record.jsonl
+node --test tests/unit/sdd-gate.test.js                         # regression suite for the SDD gate + escalation registry checks
 npm run serve            # python3 -m http.server 8080 (dev only; use scripts/serve-e2e.mjs for E2E)
 ```
 

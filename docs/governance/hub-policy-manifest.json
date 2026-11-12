@@ -1,0 +1,21 @@
+{
+  "schema_version": "026.1.0",
+  "hub": "mdmv-dark-factory",
+  "hub_sha": "2535843cf572c708319c53b1bbab7a7be2dd36f5",
+  "required_policies": [
+    "022",
+    "023",
+    "024",
+    "025",
+    "026",
+    "031"
+  ],
+  "required_files": [
+    "scripts/ci/sdd-gate.py",
+    ".github/workflows/sdd-gate.yml",
+    "scripts/ci/check_policy_drift.py",
+    "docs/governance/satellite-manifest.json",
+    "docs/governance/sdd-chain-baseline.json"
+  ],
+  "notes": "Vendored and adapted snapshot for satellite horror-web-comic (GitHub/dev). Hub canonical manifest (2535843...) references Forgejo paths (.forgejo/workflows/hub-docs-gate.yml, scripts/ci/hub_docs_gate.py) and includes policy 028 (casv-rust pilot, not applicable). Adapted to local GitHub equivalents and governance artifacts present in this repo: SDD gate script/workflow, policy drift script, satellite manifest, and explicit SDD chain baseline (honest state for specs 001/005). 022 treated as local-only/proposta-pendente for GitHub-specific CI/protection adaptations. Satellites report adopted_policies/files_present/hub_sha via satellite-manifest.json. ESCOPO DO DRIFT CHECK: verificação de coerência local entre os dois manifestos vendorizados — não detecta mutação do hub vivo (sem rede). Refresh da SHA do hub e/ou re-adaptação do snapshot exige procedimento explícito do hub (NV nesta adoção)."
+}
