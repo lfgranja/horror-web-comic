@@ -1,0 +1,86 @@
+# horror-web-comic — pilha de escalonamentos (024, baseada no padrão MDMV)
+# Append/update via PR. Todo bloqueio relevante vira item rastreável; não remover histórico.
+# owner: @lfgranja
+
+- id: ESC-HWC-20261111-001
+  data: 2026-11-11
+  origem: "CI dev / Spec 005 T047 (WebKit layout gate)"
+  tipo_023: capacidade
+  bloqueio: "CI dev #42825569449 (webkit-layout-gate @320x568, end overlay intercepta controles) e #43020030961 (merge #181) falho na matriz E2E com 26 testes (sync, theme-persistence, theme-switcher, persistence-flow em todos os motores; zz-end-state-coverage em WebKit+Firefox). Causa raiz principal identificada: loop cross-tab de escrita sensorial/tema (main.js applySensoryMode re-persistia modo recebido de outra aba; storage.js re-notificava em toda chamada; handler de tema reescrevia o valor) — reproduzido localmente a 100% CPU nas duas abas; correção committed em fix/spec005-cross-tab-sync-loop (PR #182, com pin ubuntu-24.04). ffa3445 corrige end overlay (sticky action group). Evidência E2E/CI verde pendente."
+  capacidade_faltante: ["execução do webkit-layout-gate/full npm run ci em runner/ambiente compatível com WebKit", "evidência de run verde em dev"]
+  autorizacao_faltante: ["autorização para commitar/push/PR apenas dos arquivos intencionais da correção após evidência verde"]
+  risco: medio
+  impacto: "bloqueia T047 e validação/release R4/R7 da spec 005-korean-horror-mechanics; baseline SDD mantém 005 como bloqueado (sem aprovação falsa)"
+  frequencia: recorrente
+  controle_atual: "fixes committed em fix/spec005-cross-tab-sync-loop (ffa3445 end overlay + loop cross-tab 65b6c45 + CI pin 220332e), PR #182 aberto para dev; specs/005 tasks.md T047 aberta; validate/release 005 marcados bloqueados; baseline SDD aceita estado pendente com owner/expires"
+  candidato_automacao: "reproduzir/validar em CI (ubuntu-latest + macos compositor já no workflow) após aplicar fix intencional; gate determinístico decide"
+  precondicoes: ["run CI completa verde em dev (gate + webkit-layout-gate + macos-webkit-compositor)", "merge PR #182", "evidência WebKit verde"]
+  gatilho_reavaliacao: ["novo run CI em dev", "mudança em end-overlay/player layout", "evidência WebKit verde"]
+  status: aberto
+  owner: "@lfgranja"
+  refs:
+    - "specs/005-korean-horror-mechanics/tasks.md (T047)"
+    - ".specify/bugs/webkit-layout-gate-end-overlay-intercept-41390164478/*"
+    - ".specify/bugs/webkit-layout-gate-end-overlay-run-41387605113/*"
+    - ".github/workflows/ci.yml (webkit-layout-gate, macos-webkit-compositor)"
+
+- id: ESC-HWC-20261111-002
+  data: 2026-11-11
+  origem: "Spec 001-cinematic-player — evidências manuais/dispositivo/matriz"
+  tipo_023: misto
+  bloqueio: "Spec 001 possui tarefas abertas (33) e evidências pendentes: estudos de usabilidade n>=10 (descoberta de áudio, compreensão sem áudio), auditoria WCAG 2.2 AAA com AT real/teclado/screen-reader e fluxos manuais, execução/registro da matriz completa Chrome/Firefox/WebKit/Safari desktop e Chrome/Safari mobile (320-2560, orientações, touch/teclado), certificação FPS transições no dispositivo/referência SC-018 em contexto certificável. Parte automatizada existe, mas não cobre escopo integral."
+  capacidade_faltante: ["participantes humanos/AT real", "dispositivos/browsers/matriz certificável (WebKit/Safari real onde exigido)", "ambiente de medição FPS de referência"]
+  autorizacao_faltante: ["planejamento/execução de estudos e sessões manuais"]
+  risco: medio
+  impacto: "impede validação/release integral R4/R7 da spec 001; cadeia SDD mantém 001 como parcial/condicionada (baseline)"
+  frequencia: pontual-recorrente
+  controle_atual: "tasks.md com itens abertos; validate/release 001 marcados condicionais; sdd-chain-baseline aceita validate_not_approved/release_not_ready"
+  candidato_automacao: "automatizar proxies onde possível (já parcialmente); estudos/AT/dispositivo permanecem humanos"
+  precondicoes: ["protocolo de estudo aprovado", "acesso a participantes/AT/dispositivos", "registro de evidência em artifacts nomeados"]
+  gatilho_reavaliacao: ["execução de estudos", "execução de matriz/dispositivo", "fechamento de tarefas 001"]
+  status: aberto
+  owner: "@lfgranja"
+  refs:
+    - "specs/001-cinematic-player/tasks.md"
+    - "specs/001-cinematic-player/spec.md"
+    - ".specify/validations/001-cinematic-player/validate.md"
+
+- id: ESC-HWC-20261111-003
+  data: 2026-11-11
+  origem: "Ambiente local WebKit"
+  tipo_023: capacidade
+  bloqueio: "Preflight/browser-launch e execução local de projetos WebKit/Safari podem falhar neste host (histórico: dependências ausentes/libicu incompatível; apenas ambiente/runner compatível comprova). Provas locais WebKit não devem ser alegadas sem evidência."
+  capacidade_faltante: ["host/runner com dependências WebKit/Playwright compatíveis"]
+  autorizacao_faltante: []
+  risco: baixo-medio
+  impacto: "limita verificação local de layout/compositor WebKit; depende de CI/runner compatível para evidência"
+  frequencia: recorrente
+  controle_atual: "CI possui webkit-layout-gate (pin ubuntu-24.04 desde 2026-11-12) e macos-webkit-compositor (macos-15); alegações locais condicionadas a evidência"
+  candidato_automacao: "confiar em jobs de CI como fonte de verdade para WebKit; documentar NV local"
+  precondicoes: ["runner compatível ou host provisionado"]
+  gatilho_reavaliacao: ["mudança de host local", "atualização PlayKit/libs", "run CI verde"]
+  status: aberto
+  owner: "@lfgranja"
+  refs:
+    - ".github/workflows/ci.yml"
+    - "AGENTS.md (Testing & QA, gotchas WebKit)"
+
+- id: ESC-HWC-20261111-004
+  data: 2026-11-11
+  origem: "Governança GitHub / 022 local-only"
+  tipo_023: autorizacao
+  bloqueio: "Estado real verificado no GitHub em 2026-11-11: dev tem proteção com review policy (0 approvals exigidos) e SEM required status checks; main exige required check “head-must-be-dev” (NÃO produzido por nenhum workflow deste repo) + 1 aprovação; require_code_owner_reviews=false; enforce_admins=false; CODEOWNERS consultivo; allow_auto_merge=false. Escalonar required checks (ci/sdd-gate/policy-drift) é decisão admin do repositório, pendente de autorização explícita."
+  capacidade_faltante: ["configuração/admin de protections/rulesets/required checks no GitHub"]
+  autorizacao_faltante: ["autorização explícita de admin para alterar proteções/required checks; nunca habilitar auto-merge cego"]
+  risco: baixo-medio
+  impacto: "gates existem mas podem não ser obrigatórios por policy de branch até configuração; enforcement de merge depende de política do repositório"
+  frequencia: pontual
+  controle_atual: "workflows sdd-gate/policy-drift/telemetry-ingest (pin ubuntu-24.04, py 3.12, actions SHA, permissions: read) e ci prontos; 022 local-only/proposta-pendente; sem auto-merge (allow_auto_merge=false)"
+  candidato_automacao: "configurar required checks (ci, sdd-gate, policy-drift conforme decisão) via settings/rulesets com revisão humana"
+  precondicoes: ["autorização admin", "contexts estáveis", "política 022/025 respeitada"]
+  gatilho_reavaliacao: ["mudança de proteção de branch", "novo required check"]
+  status: aberto
+  owner: "@lfgranja"
+  refs:
+    - "docs/adr/001-adocao-mdmv-dark-factory.md"
+    - "docs/governance/satellite-manifest.json"
